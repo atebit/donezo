@@ -19,14 +19,11 @@ ___
 - [Getting started](#getting-started)
 - [Showcase](#showcase)
 
-## Monday Description
-Monday is an app in which you can manage projects and tasks using a table board. A board contains groups, lists and tasks. Usually each project is a board, and the groups and the tasks and titles to do in the project. Users can modify the board and change group and task locations using Drag and Drop.
+## Description
+Manage projects and tasks using a table board. A board contains groups, lists and tasks. Usually each project is a board, and the groups and the tasks and titles to do in the project. Users can modify the board and change group and task locations using Drag and Drop.
 Users can work together and watch live changes. 
-There are many other features in monday, such as status, priority, due date for tasks, members and more. 
-Every thing Monday has, we also had. 
+There are many other features, such as status, priority, due date for tasks, members and more. 
 More about it in the [features section](#application-features).
-
-You are more than welcome to ***check it out*** ( [right here](https://monday-8oy3.onrender.com/ "Github pages link"))
 
 ## Application Features
 - Create ***Boards*** and manage projects: Using ***D&D***, create, remove, duplicate, update groups and tasks, activity log for all the activity in the board, and for each board you can remove and add task columns.
