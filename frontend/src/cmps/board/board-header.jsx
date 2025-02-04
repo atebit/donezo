@@ -49,7 +49,30 @@ export function BoardHeader ({ board, onSetFilter, isStarredOpen, setIsShowDescr
 
     if (!board.members) return <div></div>
 
-    // Removed kanban
+
+    // Removed "last seen" in the very top of the header...
+    // <Tooltip title="Show board members" arrow>
+    //     <div className='members-last-seen flex' onClick={() => toggleIsOpen('last-viewed')}>
+    //         <span className='last-seen-title'>Last seen</span>
+    //         <div className='flex members-imgs'>
+    //             <img className='member-img1' src={board.members.length ? board.members[0].imgUrl : guest} alt="member" />
+    //             <img className='member-img2' src={board.members.length > 1 ? board.members[1].imgUrl : guest} alt="member" />
+    //             <div className='show-more-members'>
+    //                 <span className='show-more-count'>+2</span>
+    //             </div>
+    //         </div>
+    //     </div>
+    // </Tooltip>
+
+    // removed "invite memebers" and it lives next to the "activity" icon in the top of the header
+    // <Tooltip title="Invite members" arrow>
+    //     <div className="invite" onClick={() => setIsInviteModalOpen(prev => !prev)}>
+    //         <RiUserAddLine className="invite-icon" />
+    //         <span className='invite-title'> Invite / 1</span>
+    //     </div>
+    // </Tooltip>
+
+    // Removed kanban, it lives between List and Dashboard
     // <Tooltip title="Kanban" arrow>
     //     <div className={`type-btn ${boardType === 'kanban' ? ' active' : ''}`} onClick={() => onSetBoardType('kanban')}>
     //         <BsKanban />
@@ -82,24 +105,9 @@ export function BoardHeader ({ board, onSetFilter, isStarredOpen, setIsShowDescr
                 </div>
                 <div className='board-tools flex align-center'>
                     <Tooltip title="Show board activity" arrow>
-                        <div className='activity' onClick={() => toggleIsOpen('activity')}><FiActivity /></div>
-                    </Tooltip>
-                    <Tooltip title="Show board members" arrow>
-                        <div className='members-last-seen flex' onClick={() => toggleIsOpen('last-viewed')}>
-                            <span className='last-seen-title'>Last seen</span>
-                            <div className='flex members-imgs'>
-                                <img className='member-img1' src={board.members.length ? board.members[0].imgUrl : guest} alt="member" />
-                                <img className='member-img2' src={board.members.length > 1 ? board.members[1].imgUrl : guest} alt="member" />
-                                <div className='show-more-members'>
-                                    <span className='show-more-count'>+2</span>
-                                </div>
-                            </div>
-                        </div>
-                    </Tooltip>
-                    <Tooltip title="Invite members" arrow>
-                        <div className="invite" onClick={() => setIsInviteModalOpen(prev => !prev)}>
-                            <RiUserAddLine className="invite-icon" />
-                            <span className='invite-title'> Invite / 1</span>
+                        <div className='activity' onClick={() => toggleIsOpen('activity')}>
+                            <FiActivity />
+                            <span>&nbsp;Activity</span>
                         </div>
                     </Tooltip>
                 </div>
@@ -108,11 +116,11 @@ export function BoardHeader ({ board, onSetFilter, isStarredOpen, setIsShowDescr
                 {board.description && <p className='board-description-link'>{board.description} <span onClick={() => setIsShowDescription(true)}>See More</span></p>}
             </div>
             <div className='board-display-btns flex' >
-                <Tooltip title="Main table" arrow>
+                <Tooltip title="Lists" arrow>
                     <div className={`type-btn ${boardType === 'table' ? ' active' : ''}`} onClick={() => onSetBoardType('table')} >
                         <GrHomeRounded className='icon' />
-                        <span className='wide' onClick={() => onSetBoardType('table')}>Main Table</span>
-                        <span className='mobile'>Main Table</span>
+                        <span className='wide' onClick={() => onSetBoardType('table')}>Lists</span>
+                        <span className='mobile'>Lists</span>
                     </div>
                 </Tooltip>
                 <Tooltip title="Dashboard" arrow>
