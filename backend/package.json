@@ -4,10 +4,7 @@
     "description": "production ready server",
     "main": "server.js",
     "scripts": {
-        "start": "nodemon server.js",
-        "server:dev": "nodemon server.js",
-        "server:prod": "set NODE_ENV=production&&node server.js",
-        "server:prod:mac": "export NODE_ENV=production&&node server.js"
+        "seed:user": "node scripts/seed-user.js"
     },
     "author": "Me",
     "license": "ISC",
@@ -17,11 +14,13 @@
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
         "cryptr": "^6.0.3",
+        "dotenv": "^16.4.7",
         "express": "^4.17.1",
         "mongodb": "^3.2.7",
+        "mongoose": "^8.9.6",
         "socket.io": "^4.2.0"
     },
     "devDependencies": {
-        "nodemon": "^2.0.20"
+        "nodemon": "^3.1.9"
     }
 }

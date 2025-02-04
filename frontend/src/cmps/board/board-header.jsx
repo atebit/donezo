@@ -48,6 +48,18 @@ export function BoardHeader ({ board, onSetFilter, isStarredOpen, setIsShowDescr
     }
 
     if (!board.members) return <div></div>
+
+    // Removed kanban
+    // <Tooltip title="Kanban" arrow>
+    //     <div className={`type-btn ${boardType === 'kanban' ? ' active' : ''}`} onClick={() => onSetBoardType('kanban')}>
+    //         <BsKanban />
+    //         <span className='wide'  >Kanban</span>
+    //         <span className='mobile' onClick={() => onSetBoardType('kanban')}>Kanban</span>
+    //     </div>
+    // </Tooltip>
+
+
+
     return (
         <header className="board-header">
             <section className='board-title flex align-center space-around'>
@@ -101,13 +113,6 @@ export function BoardHeader ({ board, onSetFilter, isStarredOpen, setIsShowDescr
                         <GrHomeRounded className='icon' />
                         <span className='wide' onClick={() => onSetBoardType('table')}>Main Table</span>
                         <span className='mobile'>Main Table</span>
-                    </div>
-                </Tooltip>
-                <Tooltip title="Kanban" arrow>
-                    <div className={`type-btn ${boardType === 'kanban' ? ' active' : ''}`} onClick={() => onSetBoardType('kanban')}>
-                        <BsKanban />
-                        <span className='wide'  >Kanban</span>
-                        <span className='mobile' onClick={() => onSetBoardType('kanban')}>Kanban</span>
                     </div>
                 </Tooltip>
                 <Tooltip title="Dashboard" arrow>

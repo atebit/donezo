@@ -108,6 +108,7 @@ function FromToCreate({ activity }) {
 }
 
 function FromToPerson({ activity }) {
+    
     return (
         <div className='from-to person-container'>
             <span>{activity.from}</span>

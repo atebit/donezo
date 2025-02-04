@@ -14,16 +14,6 @@ export default function WorkspaceBoard({handleChange , filterByToEdit, setIsCrea
           <div className="workspace-title-container flex space-between align-center">
               <span className='workspace-title'>Workspace</span>
           </div>
-          <div className='workspace-select flex space-between align-center'>
-              <div className='workspace-logo flex align-items'>
-                  <div className='lightning-container'>
-                      <BsFillLightningFill />
-                  </div>
-                  <AiFillHome className='home' />
-                  <h5 className='workspace-title'>Sprint 4</h5>
-              </div>
-              <IoIosArrowDown className='icon' />
-          </div>
           <div className='workspace-btns'>
               <div onClick={() => setIsCreateModalOpen((prev) => !prev)} >
                   <AiOutlinePlus className='icon' />

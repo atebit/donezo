@@ -3,6 +3,8 @@ import { combineReducers, legacy_createStore as createStore } from 'redux'
 import { boardReducer } from './board.reducer' 
 import { userReducer } from './user.reducer'
 
+import structuredClone from '@ungap/structured-clone';
+
 const rootReducer = combineReducers({
     boardModule: boardReducer,
     userModule: userReducer 

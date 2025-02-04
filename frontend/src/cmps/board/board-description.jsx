@@ -37,15 +37,7 @@ export function BoardDescription({ setIsShowDescription, board }) {
             </div>
             <div className="board-info flex column">
                 <span className="title">Board info</span>
-                <div className="workspace-info">
-                    <span className="header">Workspace</span>
-                    <div className="workspace-details flex">
-                        <span className="lightning-container">
-                            <BsFillLightningFill />
-                        </span>
-                        <span className="workspace-name">Sprint 4</span>
-                    </div>
-                </div>
+               
                 <div className="created-by">
                     <span className="header">Created At</span>
                     <div className="created-by-details flex">

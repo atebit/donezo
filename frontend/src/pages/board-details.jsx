@@ -1,3 +1,4 @@
+import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -68,6 +69,11 @@ export function BoardDetails () {
     }
 
     if (!board) return <Loader />
+
+    // const list = {boardType === 'table' && <GroupList board={board} />}
+    // const kanban = {boardType === 'kanban' && <GroupListKanban board={board} /> }
+
+
     return (
         <section className="board-details flex">
             <div className='sidebar flex'>
@@ -77,10 +83,6 @@ export function BoardDetails () {
             <main className="board-main">
                 <BoardHeader boardType={boardType} setBoardType={setBoardType} board={board} onSetFilter={onSetFilter} isStarredOpen={isStarredOpen} setIsShowDescription={setIsShowDescription} setIsInviteModalOpen={setIsInviteModalOpen} />
                 {boardType === 'table' && <GroupList board={board} />}
-
-                {boardType === 'kanban' &&
-                    <GroupListKanban board={board} />
-                }
                 <BoardModal setIsMouseOver={setIsMouseOver} />
                 {boardType === 'dashboard' && <Dashboard />}
             </main>

@@ -14,13 +14,15 @@ export function PriorityPicker({ info, onUpdate }) {
     activity.from = label
     activity.task = {id: info.id, title: info.title}
 
+    const priority = info.priority;
+
     function onToggleMenuModal() {
         const isOpen = dynamicModalObj?.task?.id === info.id && dynamicModalObj?.type === 'priority' ? !dynamicModalObj.isOpen : true
         const { x, y } = elPrioritySection.current.getClientRects()[0]
         setDynamicModalObj({ isOpen, pos: { x: (x - 35), y: (y + 38) }, type: 'priority', task: info, onTaskUpdate: onUpdate, activity: activity })
     }
     return <section ref={elPrioritySection} className="status-priority-picker picker" style={{ backgroundColor: color }} onClick={onToggleMenuModal}>
-        <div>{info.priority}</div>
+        <div>{priority}</div>
         <span className="fold"></span>
     </section>
 }

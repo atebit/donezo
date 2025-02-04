@@ -17,6 +17,8 @@ export function StatusPicker({ info, onUpdate }) {
     activity.from = label
     activity.task = { id: info.id, title: info.title }
 
+    const status = info.status;
+
     function onToggleMenuModal() {
         const isOpen = dynamicModalObj?.task?.id === info.id && dynamicModalObj?.type === 'status' ? !dynamicModalObj.isOpen : true
         const { x, y } = elStatusSection.current.getClientRects()[0]
@@ -25,7 +27,7 @@ export function StatusPicker({ info, onUpdate }) {
 
     return (
         <section role="contentinfo" ref={elStatusSection} className="status-priority-picker picker" style={{ backgroundColor: color }} onClick={onToggleMenuModal}>
-            <div className={classText}>{info.status}</div>
+            <div className={classText}>{status}</div>
             <span className="fold"></span>
         </section>
     )

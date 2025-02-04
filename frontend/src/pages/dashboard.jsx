@@ -1,3 +1,4 @@
+import React from 'react';
 import { useSelector } from "react-redux";
 import { LabelChart } from "../cmps/chart/label-chart";
 import { MemberChart } from "../cmps/chart/member-chart";

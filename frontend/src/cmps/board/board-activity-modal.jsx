@@ -80,6 +80,7 @@ export function BoardActivityModal({ board, activityLog }) {
                         </div>
 
                         {board.members.map(member => {
+                            console.log("---> member",member)
                             return <li key={member._id}> <LastViewed member={member} /> </li>
                         })}
                     </section>

@@ -15,6 +15,8 @@ import { TbArrowsDiagonal } from 'react-icons/tb'
 import { BiDotsHorizontalRounded, BiMessageRoundedAdd } from 'react-icons/bi'
 import { HiOutlineChatBubbleOvalLeft } from 'react-icons/hi2'
 
+import { v4 as uuidv4 } from 'uuid'
+
 export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCheckbox }) {
     const [isClick, setIsClick] = useState(false)
     const isOpen = useSelector((storeState) => storeState.boardModule.isBoardModalOpen)
@@ -102,13 +104,14 @@ export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCh
                 </div>
             </div>
             {board.cmpsOrder.map((cmp, idx) => {
+                const key = cmp.id || `${cmp.type}-${idx}`;
                 return (
                     <DynamicCmp
                         cmp={cmp}
-                        key={cmp + idx}
+                        key={key}
                         info={task}
-                        onUpdate={updateTask}
-                    />)
+                        onUpdate={updateTask} />
+                )
             })}
             <div className="empty-div"></div>
         </section>
@@ -116,7 +119,12 @@ export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCh
 }
 
 function DynamicCmp({ cmp, info, onUpdate }) {
-    switch (cmp) {
+    const cmpType = cmp;
+    // console.log( '=========TaskPreview (task row)');
+    // console.log( '=cmpType',cmpType);
+    // console.log( '=cmp',cmp);
+    // console.log( '=info',info);
+    switch (cmpType) {
         case "status-picker":
             return <StatusPicker info={info} onUpdate={onUpdate} />
         case "member-picker":
@@ -132,6 +140,7 @@ function DynamicCmp({ cmp, info, onUpdate }) {
         case "updated-picker":
             return <UpdatedPicker info={info} onUpdate={onUpdate} />
         default:
-            return <p>UNKNOWN {cmp}</p>
+            return <section role="contentinfo" className="status-priority-picker picker"><span style={{color:'#000'}}>{info.status}*</span></section>
+            // return <section>{cmp}</section>;
     }
 }

@@ -15,6 +15,8 @@ import { BsFillCircleFill } from 'react-icons/bs'
 import { BiDotsHorizontalRounded } from 'react-icons/bi'
 import { AiOutlinePlus } from 'react-icons/ai'
 
+import { v4 as uuidv4 } from 'uuid'
+
 export function GroupPreview ({ group, board, idx }) {
     const [taskToEdit, setTaskToEdit] = useState(boardService.getEmptyTask())
     const [isTyping, setIsTyping] = useState(false)
@@ -86,6 +88,7 @@ export function GroupPreview ({ group, board, idx }) {
     }
 
     function handleHorizontalDrag (ev) {
+        if (!ev.destination) return;
         const updatedTitles = [...board.cmpsOrder]
         const [draggedItem] = updatedTitles.splice(ev.source.index, 1)
         updatedTitles.splice(ev.destination.index, 0, draggedItem)
@@ -165,19 +168,26 @@ export function GroupPreview ({ group, board, idx }) {
                                             </div>
                                             <div className="task title">Task</div>
                                         </div>
-                                        {board.cmpsOrder.map((title, idx) =>
-                                            <Draggable key={title} draggableId={title} index={idx}>
+
+
+                                        {board.cmpsOrder.map((cmp, idx) =>{
+                                            const cmpKey = `${cmp}-${idx}`;
+                                            return <Draggable key={cmpKey} draggableId={cmpKey} index={idx}>
                                                 {(provided, snapshot) => {
                                                     return (
                                                         <li ref={provided.innerRef}
                                                             {...provided.draggableProps}
-                                                            {...provided.dragHandleProps} className={title + ' cmp-order-title title'} key={idx}>
-                                                            <TitleGroupPreview title={title} group={group} board={board} />
+                                                            {...provided.dragHandleProps} 
+                                                            className={'${cmp} cmp-order-title title'}>
+                                                            <TitleGroupPreview title={cmp} group={group} board={board} />
                                                         </li>
                                                     )
                                                 }}
                                             </Draggable>
-                                        )}
+                                        })}
+
+
+
                                         <div ref={elAddColumn} className="add-picker-task flex align-items" onClick={toggleColumnModal}>
                                             <span className={`add-btn ${getAddColumnClassName() ? 'active' : ''}`}>
                                                 <AiOutlinePlus className={`${getAddColumnClassName() ? 'plus' : 'close'}`} />
@@ -190,15 +200,47 @@ export function GroupPreview ({ group, board, idx }) {
                         <Droppable droppableId={group.id} type='task'>
                             {(droppableProvided) => (
                                 <div ref={droppableProvided.innerRef} {...droppableProvided.droppableProps} >
-                                    {group.tasks.map((task, idx) => (
-                                        <Draggable key={task.id} draggableId={task.id} index={idx}>
-                                            {(provided) => (
-                                                <li ref={provided.innerRef}{...provided.draggableProps} {...provided.dragHandleProps} key={idx}>
-                                                    <TaskPreview task={task} group={group} board={board} handleCheckboxChange={handleCheckboxChange} isMainCheckbox={isMainCheckbox} />
-                                                </li>
-                                            )}
-                                        </Draggable>
-                                    ))}
+
+                                    {
+                                        group.tasks.map(
+                                            (task, idx) => {
+                                                const draggableId = task.id ? task.id : `${group.id}-${idx}`;
+                                                // console.log( '=========TaskPreview (task row)');
+                                                // console.log( '=draggableId',draggableId);
+                                                // console.log( '=idx',idx);
+                                                // console.log( '=task',task);
+                                                // console.log( '=group',group);
+                                                // console.log( '=board',board);
+                                                return(
+                                                    <Draggable 
+                                                        key={draggableId}
+                                                        draggableId={draggableId}
+                                                        index={idx}>
+                                                        {(provided) => {
+                                                            return (
+                                                                <li 
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}>
+                                                                    <TaskPreview
+                                                                        task={task}
+                                                                        group={group}
+                                                                        board={board}
+                                                                        handleCheckboxChange={handleCheckboxChange}
+                                                                        isMainCheckbox={isMainCheckbox} />
+                                                                </li>
+                                                            )
+                                                        }
+                                                    }
+                                                    </Draggable>
+                                                )
+
+                                            }
+                                        )
+                                    }
+
+
+
                                     {droppableProvided.placeholder}
                                     <div className="add-task flex">
                                         <div className="sticky-div" style={{ borderColor: group.color }}>
@@ -224,13 +266,17 @@ export function GroupPreview ({ group, board, idx }) {
                                 <div className="hidden"></div>
                             </div>
                             <div className="statistic-container flex">
-                                {board.cmpsOrder.map((cmpType, idx) => {
-                                    return (
-                                        <div key={idx} className={`title ${idx === 0 ? ' first ' : ''}${cmpType}`}>
-                                            <StatisticGroup cmpType={cmpType} board={board} group={group} />
-                                        </div>
-                                    )
-                                })}
+
+
+                              {board.cmpsOrder.map((cmpType, idx) => {
+                                  return (
+                                      <div key={idx} className={`title ${idx === 0 ? ' first ' : ''}${cmpType}`}>
+                                          <StatisticGroup cmpType={cmpType} board={board} group={group} />
+                                      </div>
+                                  )
+                              })}
+
+
                             </div>
                             <div className="empty-div"></div>
                         </div>

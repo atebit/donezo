@@ -1,7 +1,7 @@
 
-# MyDay - pixel perfect, E2E clone of Monday (React + Node.js). 
+# Donezo - E2E clone of Monday (React + Node.js) forked from MyDay
 
-Table-style task management board app inspired by Monday.com, [Here is my project link](https://monday-8oy3.onrender.com/ "MyDay link").
+Table-style task management board app inspired by Monday.com, [Project link (not avail yet)](https://donezo.netlify.com/).
 
 For those of you who are already familliar with Monday, we added some intersting and unique features - [features](#application-features).
 If you are not familliar with the App, read about it [here](#monday-description).
@@ -50,7 +50,7 @@ The layout and pixel-perfect were made with Sass (functions, mixins, variables).
 Head to the repository on top and clone the project or download the files.
 
 ```
-git clone https://github.com/idandavid1/My-Day
+git clone https://github.com/atebit/donezo
 
 ```
 
@@ -105,6 +105,4 @@ The layout we have built from the very first moment enabled us to make the websi
 <img src="frontend/src/assets/img/readme/phone-board.png" width="25%" style="float: left"/><img src="frontend/src/assets/img/readme/chat-phone.png" width="25%" style="float: left;"/><img src="frontend/src/assets/img/readme/favorite-phone.png" width="25%" style="float: left;"/><img src="frontend/src/assets/img/readme/activity-phone.png" width="25%" style="float: left;"/>
 
 ### Authors
- - [Idan David](https://github.com/idandavid1)
- - [Ofer Gavrilov](https://github.com/oferGavrilov)
- - [Ofek Abramovitch](https://github.com/ofekAbramovitch)
+ - [Christopher Smith](https://github.com/atebit)
