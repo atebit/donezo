@@ -1,7 +1,7 @@
 
 # Donezo - E2E clone of Monday (React + Node.js) 
 
-Project is forked from MyDay.
+[A lot of work was done to get it to even render](https://github.com/atebit/donezo/commit/61be8a3da9d381ce593b1bb7bed43ac57173ec59) which is captured in the initial commit to this new repository. Project is forked from [MyDay](https://github.com/idandavid1/My-Day). 
 
 Table-style task management board app inspired by Monday.com, [Project link (not avail yet)](https://donezo.netlify.com/).
 
