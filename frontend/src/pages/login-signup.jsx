@@ -91,7 +91,7 @@ export function LoginSignup() {
         <div className="login-signup">
             <LoginPageHeader />
             <form className="form-container layout" onSubmit={(ev) => onSubmit(ev, isSignup)}>
-                <h1>{isSignup ? 'Create your MyDay account here ' : 'Log in to your account'}</h1>
+                <h1>{isSignup ? 'Create your Donezo account here ' : 'Log in to your account'}</h1>
                 {isSignup && <ImgUploader onUploaded={onUploaded} />}
                 {!isSignup && <p className="login-explain">Enter your username and password</p>}
                 {isSignup && <p className="login-explain">Enter your full name, username and password</p>}

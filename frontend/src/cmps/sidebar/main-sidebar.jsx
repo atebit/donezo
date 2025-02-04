@@ -20,13 +20,17 @@ export function MainSidebar ({ setIsLoginModalOpen, setWorkspaceDisplay, setIsWo
         setWorkspaceDisplay(icon)
         setIsWorkspaceOpen(true)
     }
+
+
+    // make the Home logo go to the boards, not to the signup page...
+
     return (
         <section className="main-sidebar flex">
             <span className='open-workspace-btn'>
                 <AiOutlineMenu onClick={() => setIsWorkspaceOpen(prev => !prev)} />
             </span>
             <Link to={'/'} className='icon-link'>
-                <Tooltip title="Home" arrow>
+                <Tooltip title="donezo" arrow>
                     <img className='home-img' src={logo} alt="logo" onClick={closeDynamicModal} />
                 </Tooltip>
             </Link>

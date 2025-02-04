@@ -14,7 +14,7 @@ export default function HomeTeaser () {
             <div className='layout'>
                 <div className='teaser-header'>
                     <span className='teaser-header-title'><b>Everything </b>you need for any <b>workflow</b></span>
-                    <p className='teaser-header-paragraph'>Easily build your ideal workflow with myday building blocks.</p>
+                    <p className='teaser-header-paragraph'>Easily build your ideal workflow with donezo building blocks.</p>
                 </div>
                 <div className='views-container'>
                     {views.map(view => (
