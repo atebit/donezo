@@ -9,7 +9,6 @@ For those of you who are already familliar with Monday, we added some intersting
 If you are not familliar with the App, read about it [here](#monday-description).
 And, if you are tired and just want to see some images of the website, [scroll to the bottom...](#showcase)
 
-![Main board image](frontend/src/assets/img/readme/table.png "Board-main-page")
 
 ___
 
@@ -73,38 +72,30 @@ npm i
 npm start
 ```
 
-You shuold get a console ouput that the server is up and running at localhost:3000.
-
-That's it! The App should be opened automatically, enjoy!
+You shuold get a console ouput that the server is up and running at `localhost:3000`.
 
 ## Showcase
 
 ### Homepage
 The landing page in which the user can sign up / login, or press the call to action button to start demo if the are limited with time.
 
-![Homepage image](frontend/src/assets/img/readme/home-page.png "Home-page")
 
 ### Board
-All the functionality that you have in Monday. D&D, live-updates, editing tasks to the deepest level, side-menu, editing board members and much more - just [check it out...!](https://monday-8oy3.onrender.com/ "Skello link")
+D&D, live-updates, editing tasks to the deepest level, side-menu, editing board members and much more..
 
-![Main board image](frontend/src/assets/img/readme/table.png "Board-main-page")
 
 ### Signup
 We created an e2e authentication flow, including encrypting the users' details, midelwears and ****Google Login***.
 
-![Login image](frontend/src/assets/img/readme/login.png "login-page")
 
 ### Task details
 Here the members can add messages and to follow after the activity for every task and to watch it happens live
 
-![Task details image](frontend/src/assets/img/readme/activity.png "task-details")
-![Task details image](frontend/src/assets/img/readme/chat.png "task-details")
 
 ### Some mobile!
 Just a taste of the mobile experience. We used different **mixins**, **conditional rendering**, and the **"mobile first"** approach. 
 The layout we have built from the very first moment enabled us to make the website responsive without a lot of effort.
 
-<img src="frontend/src/assets/img/readme/phone-board.png" width="25%" style="float: left"/><img src="frontend/src/assets/img/readme/chat-phone.png" width="25%" style="float: left;"/><img src="frontend/src/assets/img/readme/favorite-phone.png" width="25%" style="float: left;"/><img src="frontend/src/assets/img/readme/activity-phone.png" width="25%" style="float: left;"/>
 
 ### Authors
  - [Christopher Smith](https://github.com/atebit)

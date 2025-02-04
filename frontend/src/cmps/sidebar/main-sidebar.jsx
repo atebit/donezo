@@ -21,7 +21,6 @@ export function MainSidebar ({ setIsLoginModalOpen, setWorkspaceDisplay, setIsWo
         setIsWorkspaceOpen(true)
     }
 
-
     // make the Home logo go to the boards, not to the signup page...
 
     return (
