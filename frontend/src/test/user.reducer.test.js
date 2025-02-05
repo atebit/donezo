@@ -2,7 +2,7 @@ import {userReducer}  from '../store/user.reducer.js';
 
 describe('userReducer', () => {
 
-    const mockUser = {fullname: "tal", imgUrl: "https://res.cloudinary.com/dcwibf9o5/image/upload/v1676463194/byy5vnabu2wfjdcnyaeq.jpg", _id: "63eccc56d710bb63bcad0813"}
+    const mockUser = {fullname: "SeedChris", imgUrl: "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg", _id: "63eccc56d710bb63bcad0813"}
     const initialState = {
         user: null
     }

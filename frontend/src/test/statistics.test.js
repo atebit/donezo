@@ -43,8 +43,8 @@ const mockBoard = {
     "members": [
         {
             "id": "m101",
-            "fullname": "Tal Tarablus",
-            "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
+            "fullname": "SeedChris",
+            "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
         },
     ],
     "groups": [{
