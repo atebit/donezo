@@ -118,8 +118,8 @@ function getEmptyComment() {
         "archivedAt": Date.now(),
         "byMember": {
             "_id": null,
-            "fullname": "Guest",
-            "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1675013009/guest_f8d60j.png"
+            "fullname": "SeedGuest",
+            "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757897/guest_f8d60j_psycw9.png"
         }, "txt": "",
         "style": {
             "textDecoration": "none",
@@ -136,8 +136,8 @@ function getEmptyActivity() {
         "createdAt": Date.now(),
         "byMember": userService.getLoggedinUser() || {
             "_id": null,
-            "fullname": "Guest",
-            "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1675013009/guest_f8d60j.png"
+            "fullname": "SeedGuest",
+            "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757897/guest_f8d60j_psycw9.png"
         },
         "task": {
             "id": "c101",
@@ -154,8 +154,8 @@ function getEmptyBoard() {
         "archivedAt": Date.now(),
         "isStarred": false,
         "createdBy":{
-            "fullname":"Ofer Gavrilov",
-            "imgUrl":"https://res.cloudinary.com/du63kkxhl/image/upload/v1674069496/me_dpbzfs.jpg",
+            "fullname":"SeedChris",
+            "imgUrl":"https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg",
             "_id": utilService.makeId()
         },
         "labels": [
@@ -198,24 +198,9 @@ function getEmptyBoard() {
         "members": [
             {
                 "_id": "m101",
-                "fullname": "Tal Tarablus",
-                "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
+                "fullname": "SeedChris",
+                "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
             },
-            {
-                "_id": "m102",
-                "fullname": "Idan David",
-                "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673820094/%D7%A2%D7%99%D7%93%D7%9F_jranbo.jpg"
-            },
-            {
-                "_id": "m103",
-                "fullname": "Ofek Tarablus",
-                "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1674069458/image_exxnux.png"
-            },
-            {
-                "_id": "m104",
-                "fullname": "Ofer Tarablus",
-                "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1674069496/me_dpbzfs.jpg"
-            }
         ],
         "groups": [],
         "activities": [],

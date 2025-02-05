@@ -103,8 +103,8 @@ function getEmptyComment() {
         "archivedAt": Date.now(),
         "byMember": {
             "_id": "m101",
-            "fullname": "Tal Tarablus",
-            "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
+            "fullname": "SeedChris",
+            "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
         }, "txt": "",
         "style": {
             "textDecoration": "none",
@@ -121,8 +121,8 @@ function getEmptyActivity() {
         "createdAt": Date.now(),
         "byMember": userService.getLoggedinUser() || {
             "_id": "u101",
-            "fullname": "Abi Abambi",
-            "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
+            "fullname": "SeedChris",
+            "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
         },
         "task": {
             "id": "c101",
@@ -158,14 +158,9 @@ function getEmptyBoard() {
         "members": [
             {
                 "_id": "m101",
-                "fullname": "Tal Tarablus",
-                "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
-            },
-            {
-                "_id": "m102",
-                "fullname": "Idan David",
-                "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673820094/%D7%A2%D7%99%D7%93%D7%9F_jranbo.jpg"
-            }],
+                "fullname": "SeedChris",
+                "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
+            },],
         "groups": [],
         "activities": [],
         "cmpsOrder": ["status-picker", "member-picker", "date-picker", 'priority-picker']
@@ -179,13 +174,13 @@ function _createBoards() {
         boards.push(
             {
                 "_id": "b101",
-                "title": "Robot dev proj",
+                "title": "Seed Proj",
                 "archivedAt": 1589983468418,
                 "isStarred": false,
                 "createdBy": {
                     "_id": "m102",
-                    "fullname": "Idan David",
-                    "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673820094/%D7%A2%D7%99%D7%93%D7%9F_jranbo.jpg"
+                    "fullname": "SeedChris",
+                    "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
                 },
                 "labels": [
                     {
@@ -227,24 +222,9 @@ function _createBoards() {
                 "members": [
                     {
                         "id": "m101",
-                        "fullname": "Tal Tarablus",
-                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
+                        "fullname": "SeedChris",
+                        "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
                     },
-                    {
-                        "id": "m102",
-                        "fullname": "Idan David",
-                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673820094/%D7%A2%D7%99%D7%93%D7%9F_jranbo.jpg"
-                    },
-                    {
-                        "id": "m103",
-                        "fullname": "Ofek Tarablus",
-                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1674069458/image_exxnux.png"
-                    },
-                    {
-                        "id": "m104",
-                        "fullname": "Ofer Tarablus",
-                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1674069496/me_dpbzfs.jpg"
-                    }
                 ],
                 "groups": [{
                     "id": "g101",
@@ -264,9 +244,10 @@ function _createBoards() {
                                     "archivedAt": 1589983468418,
                                     "byMember": {
                                         "_id": "m101",
-                                        "fullname": "Tal Tarablus",
-                                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
-                                    }, "txt": "babababababaababaab",
+                                        "fullname": "SeedChris",
+                                        "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
+                                    }, 
+                                    "txt": "seedtext",
                                     "style": {
                                         "textDecoration": "none",
                                         "fontWeight": "normal",
@@ -274,36 +255,6 @@ function _createBoards() {
                                         "textAlign": "Left"
                                     }
                                 },
-                                {
-                                    "id": "a102",
-                                    "archivedAt": 1589983468418,
-                                    "byMember": {
-                                        "_id": "m102",
-                                        "fullname": "Idan David",
-                                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673820094/%D7%A2%D7%99%D7%93%D7%9F_jranbo.jpg"
-                                    }, "txt": "bababa",
-                                    "style": {
-                                        "textDecoration": "none",
-                                        "fontWeight": "normal",
-                                        "fontStyle": "normal",
-                                        "textAlign": "Left"
-                                    }
-                                },
-                                {
-                                    "id": "a103",
-                                    "archivedAt": 1589983468418,
-                                    "byMember": {
-                                        "_id": "m102",
-                                        "fullname": "Tal Tarablus",
-                                        "imgUrl": "https://res.cloudinary.com/du63kkxhl/image/upload/v1673788222/cld-sample.jpg"
-                                    }, "txt": "baba",
-                                    "style": {
-                                        "textDecoration": "none",
-                                        "fontWeight": "normal",
-                                        "fontStyle": "normal",
-                                        "textAlign": "Left"
-                                    }
-                                }
                             ]
                         },
                         {
