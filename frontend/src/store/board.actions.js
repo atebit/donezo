@@ -1,6 +1,17 @@
 import { boardService } from '../services/board.service.js'
 import { store } from './store.js'
-import { SET_FILTER_BOARD, SET_BOARDS, SET_BOARD, REMOVE_BOARD, ADD_BOARD, UPDATE_BOARD, SET_FILTER, SET_MODAL, REMOVE_GROUP, SET_DYNAMIC_MODAL } from "./board.reducer.js"
+import {
+  SET_FILTER_BOARD,
+  SET_BOARDS,
+  SET_BOARD,
+  REMOVE_BOARD,
+  ADD_BOARD,
+  UPDATE_BOARD,
+  SET_FILTER,
+  SET_MODAL,
+  REMOVE_GROUP,
+  SET_DYNAMIC_MODAL
+} from "./board.reducer.js"
 import { utilService } from '../services/util.service.js'
 import { socketService, SOCKET_EMIT_SEND_UPDATE_BOARD } from '../services/socket.service.js'
 
@@ -137,7 +148,6 @@ export async function addTask(task, group, filteredBoard, activity) {
   try {
     const { board } = store.getState().boardModule
     task.id = utilService.makeId()
-    // For new tasks, initialize cells if needed
     if (!task.cells) task.cells = {}
     group.tasks.push(task)
     board.groups = board.groups.map(currGroup => currGroup.id === group.id ? group : currGroup)
@@ -207,7 +217,6 @@ export async function updateTaskAction(filteredBoard, groupId, saveTask, activit
     if (activity) {
       await addActivity(filteredBoard, activity)
     }
-    // Assume that if using new structure, saveTask may include cells property.
     const board = await boardService.updateTask(filteredBoard._id, groupId, saveTask)
     _updateTask(filteredBoard, groupId, saveTask)
     store.dispatch({ type: SET_BOARD, board })
@@ -282,67 +291,40 @@ export function closeDynamicModal() {
   store.dispatch({ type: SET_DYNAMIC_MODAL, dynamicModalObj })
 }
 
-// Drag and drop
+
+
+// Drag and drop functions
 export async function handleOnDragEnd(result, board) {
   let newBoard = structuredClone(board);
-  if (!result.destination) {
-    return;
-  }
+  if (!result.destination) return;
+  // Reordering groups
   if (result.type === 'group') {
-    const updatedGroups = [...board.groups]
-    const [draggedItem] = updatedGroups.splice(result.source.index, 1)
-    updatedGroups.splice(result.destination.index, 0, draggedItem)
-    board.groups = updatedGroups
-    saveBoard(board)
+    const updatedGroups = [...board.groups];
+    const [draggedItem] = updatedGroups.splice(result.source.index, 1);
+    updatedGroups.splice(result.destination.index, 0, draggedItem);
+    board.groups = updatedGroups;
+    await saveBoard(board);
   }
+  // Reordering tasks
   if (result.type === 'task') {
-    const startGroup = newBoard.groups.find(group => group.id === result.source.droppableId)
-    const finishGroup = newBoard.groups.find(group => group.id === result.destination.droppableId)
+    const startGroup = newBoard.groups.find(group => group.id === result.source.droppableId);
+    const finishGroup = newBoard.groups.find(group => group.id === result.destination.droppableId);
     if (startGroup !== finishGroup) {
-      const [removedTask] = startGroup.tasks.splice(result.source.index, 1)
-      finishGroup.tasks.splice(result.destination.index, 0, removedTask)
-      updateOptimisticBoard(newBoard, board)
-      return
+      const [removedTask] = startGroup.tasks.splice(result.source.index, 1);
+      finishGroup.tasks.splice(result.destination.index, 0, removedTask);
+      await updateOptimisticBoard(newBoard, board);
+      return;
     }
-    const updatedTasks = [...startGroup.tasks]
-    const [draggedItem] = updatedTasks.splice(result.source.index, 1)
-    updatedTasks.splice(result.destination.index, 0, draggedItem)
-    startGroup.tasks = updatedTasks
-    updateOptimisticBoard(newBoard, board)
-  }
-}
-
-export async function updateGroups(groupId, filteredBoard) {
-  try {
-    const { board } = store.getState().boardModule
-    const groupsToSave = board.groups.filter(group => group.id !== groupId)
-    board.groups = groupsToSave
-    await boardService.save(board)
-    filteredBoard.groups = groupsToSave
-    store.dispatch({ type: SET_BOARD, board })
-    store.dispatch({ type: SET_FILTER_BOARD, filteredBoard })
-    socketService.emit(SOCKET_EMIT_SEND_UPDATE_BOARD, { filteredBoard, board })
-  } catch (err) {
-    throw err
-  }
-}
-
-export async function updateGroupAction(filteredBoard, saveGroup) {
-  try {
-    const { board } = store.getState().boardModule
-    const groupsToSave = board.groups.map(group => group.id === saveGroup.id ? saveGroup : group)
-    await boardService.updateGroup(filteredBoard._id, saveGroup)
-    filteredBoard.groups = groupsToSave
-    board.groups = groupsToSave
-    store.dispatch({ type: SET_BOARD, board })
-    store.dispatch({ type: SET_FILTER_BOARD, filteredBoard })
-    socketService.emit(SOCKET_EMIT_SEND_UPDATE_BOARD, { filteredBoard, board })
-  } catch (err) {
-    throw err
+    const updatedTasks = [...startGroup.tasks];
+    const [draggedItem] = updatedTasks.splice(result.source.index, 1);
+    updatedTasks.splice(result.destination.index, 0, draggedItem);
+    startGroup.tasks = updatedTasks;
+    await updateOptimisticBoard(newBoard, board);
   }
 }
 
 function _updateTask(filteredBoard, groupId, saveTask) {
-  const group = filteredBoard.groups.find(currGroup => currGroup.id === groupId)
-  group.tasks = group.tasks.map(task => task.id === saveTask.id ? saveTask : task)
+  const group = filteredBoard.groups.find(currGroup => currGroup.id === groupId);
+  group.tasks = group.tasks.map(task => task.id === saveTask.id ? saveTask : task);
 }
+export { _updateTask }
