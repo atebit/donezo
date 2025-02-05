@@ -36,9 +36,68 @@ export function boardReducer(state = initialState, action) {
         case ADD_BOARD:
             boards = [action.board, ...state.boards]
             return { ...state, boards }
-        case UPDATE_BOARD:
-            boards = state.boards.map(board => (board._id === action.board._id) ? action.board : board)
-            return { ...state, boards }
+
+        // case UPDATE_BOARD:
+        //     boards = state.boards.map(board => (board._id === action.board._id) ? action.board : board)
+        //     return { ...state, boards }
+
+        // case UPDATE_BOARD:
+        //   const updatedBoards = state.boards.map(board =>
+        //     board._id === action.board._id ? action.board : board
+        //   );
+        //   return {
+        //     ...state,
+        //     boards: updatedBoards,
+        //     board: { ...action.board },
+        //     filteredBoard: { ...action.board }
+        //   }
+
+
+
+case UPDATE_BOARD: {
+  console.log('Reducer UPDATE_BOARD action:', action);
+  let updatedBoard = { ...action.board };
+  if (action.changedLabelInfo) {
+    const { cmpType, oldTitle, newTitle } = action.changedLabelInfo;
+
+    // console.log('Reducer changedLabelInfo:', cmpType, oldTitle, newTitle);
+
+    updatedBoard.groups = updatedBoard.groups.map(group => {
+      // console.log('Processing group:', group.id, group.title);
+      const updatedTasks = group.tasks.map(task => {
+        // console.log('  Task before:', task.id, task.status);
+
+        if (
+            cmpType === 'status-picker' &&
+            task.status &&
+            task.status.replace(/\s+/g, '').toLowerCase() === oldTitle.replace(/\s+/g, '').toLowerCase()
+        ) {
+          // console.log('  Updating task', task.id, 'from', task.status, 'to', newTitle);
+          return { ...task, status: newTitle };
+        }
+        return task;
+      });
+      return { ...group, tasks: updatedTasks };
+    });
+
+    
+  }
+  const updatedBoards = state.boards.map(b =>
+    b._id === updatedBoard._id ? updatedBoard : b
+  );
+  // console.log('Reducer updated board:', updatedBoard);
+  return {
+    ...state,
+    boards: updatedBoards,
+    board: { ...updatedBoard },
+    filteredBoard: { ...updatedBoard }
+  };
+}
+
+
+
+
+
         case SET_MODAL:
             return { ...state, isBoardModalOpen: action.isOpen }
 

@@ -76,6 +76,9 @@ export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCh
         elTaskPreview.current.classList.toggle('on-typing')
     }
 
+    // const boardFromStore = useSelector(storeState => storeState.boardModule.board);
+    // // console.log("TaskPreview", board, boardFromStore)
+
     return (
         <section className={'task-preview flex'} ref={elTaskPreview}>
             <div ref={elMenuTask} className="sticky-div" style={{ borderColor: group.color }}>
@@ -141,6 +144,5 @@ function DynamicCmp({ cmp, info, onUpdate }) {
             return <UpdatedPicker info={info} onUpdate={onUpdate} />
         default:
             return <section role="contentinfo" className="status-priority-picker picker"><span style={{color:'#000'}}>{info.status}*</span></section>
-            // return <section>{cmp}</section>;
     }
 }

@@ -7,7 +7,7 @@ import { AiFillHome } from 'react-icons/ai'
 import { BoardPreview } from '../../board/board-preview'
 
 export default function WorkspaceBoard({handleChange , filterByToEdit, setIsCreateModalOpen, boards}) {
-
+// console.log("all boards", boards)
   return (
       <div className="workspace-sidebar-header">
       <div className='workspace-sidebar-items'>
@@ -17,7 +17,7 @@ export default function WorkspaceBoard({handleChange , filterByToEdit, setIsCrea
           <div className='workspace-btns'>
               <div onClick={() => setIsCreateModalOpen((prev) => !prev)} >
                   <AiOutlinePlus className='icon' />
-                  <span>Add</span>
+                  <span>Add New Board</span>
               </div>
               <div className='search-board'>
                   <div className='flex'>
@@ -35,6 +35,8 @@ export default function WorkspaceBoard({handleChange , filterByToEdit, setIsCrea
       </div>
       <ul className='board-list-container flex column'>
           {boards.map(board => {
+              console.log(board.title)
+
               return <li key={board._id} className='board-list'>
                   <BoardPreview board={board} />
               </li>

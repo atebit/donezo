@@ -13,7 +13,7 @@ export function BoardPreview({ board }) {
     const navigate = useNavigate()
     const elBoardPreview = useRef()
     const dynamicModalObj = useSelector(storeState => storeState.boardModule.dynamicModalObj)
-
+    
     function onChangeBoard(boardId) {
         navigate(`/board/${boardId}`)
         loadBoard(boardId)

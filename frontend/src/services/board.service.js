@@ -19,7 +19,8 @@ export const boardService = {
     getEmptyActivity,
     getEmptyBoard,
     updateTask,
-    updateGroup
+    updateGroup,
+    updateBoardLabels
 }
 
 function query(filter = getDefaultFilterBoards()) {
@@ -64,6 +65,12 @@ function updateTask(boardId, groupId, task) {
 
 function updateGroup(boardId, group) {
     return httpService.put(`${BASE_URL}${boardId}/${group.id}`, group)
+}
+
+function updateBoardLabels(boardId, newLabels) {
+  // Assuming your API supports partial updates of the board document,
+  // you can send an object containing just the labels field.
+  return httpService.put(`${BASE_URL}${boardId}`, { labels: newLabels })
 }
 
 function getDefaultFilterBoards() {
@@ -148,6 +155,7 @@ function getEmptyActivity() {
     }
 }
 
+
 function getEmptyBoard() {
     return {
         "title": 'New Board',
@@ -159,41 +167,13 @@ function getEmptyBoard() {
             "_id": utilService.makeId()
         },
         "labels": [
-            {
-                "id": "l101",
-                "title": "Done",
-                "color": "#00c875"
-            },
-            {
-                "id": "l102",
-                "title": "Progress",
-                "color": "#fdab3d"
-            },
-            {
-                "id": "l103",
-                "title": "Stuck",
-                "color": "#e2445c"
-            },
-            {
-                "id": "l104",
-                "title": "Low",
-                "color": "#ffcb00"
-            },
-            {
-                "id": "l105",
-                "title": "Medium",
-                "color": "#a25ddc"
-            },
-            {
-                "id": "l106",
-                "title": "High",
-                "color": "#e2445c"
-            },
-            {
-                "id": "l107",
-                "title": "",
-                "color": "#c4c4c4"
-            },
+          { id: "l101", cmpType: "status-picker", title: "Done", color: "#00c875" },
+          { id: "l102", cmpType: "member-picker", title: "Progress", color: "#fdab3d" },
+          { id: "l103", cmpType: "date-picker", title: "Stuck", color: "#e2445c" },
+          { id: "l104", cmpType: "priority-picker", title: "Low", color: "#ffcb00" },
+          { id: "l105", cmpType: "number-picker", title: "Medium", color: "#a25ddc" },
+          { id: "l106", cmpType: "file-picker", title: "High", color: "#e2445c" },
+          { id: "l107", cmpType: "updated-picker", title: "", color: "#c4c4c4" },
         ],
         "members": [
             {
