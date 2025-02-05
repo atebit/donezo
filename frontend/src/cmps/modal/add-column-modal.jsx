@@ -34,13 +34,13 @@ export function AddColumnModal ({ dynamicModalObj }) {
                         Status
                     </div>
                 )
-            case 'priority-picker':
-                return (
-                    <div onClick={() => addColumn('priority-picker')}>
-                        <img src={statusImg} alt="" />
-                        Priority
-                    </div>
-                )
+            // case 'priority-picker':
+            //     return (
+            //         <div onClick={() => addColumn('priority-picker')}>
+            //             <img src={statusImg} alt="" />
+            //             Priority
+            //         </div>
+            //     )
             case 'date-picker':
                 return (
                     <div onClick={() => addColumn('date-picker')}>
@@ -55,13 +55,13 @@ export function AddColumnModal ({ dynamicModalObj }) {
                         Person
                     </div>
                 )
-            case "file-picker":
-                return (
-                    <div onClick={() => addColumn('file-picker')}>
-                        <ImFilesEmpty />
-                        Files
-                    </div>
-                )
+            // case "file-picker":
+            //     return (
+            //         <div onClick={() => addColumn('file-picker')}>
+            //             <ImFilesEmpty />
+            //             Files
+            //         </div>
+            //     )
             case "number-picker":
                 return (
                     <div onClick={() => addColumn('number-picker')}>

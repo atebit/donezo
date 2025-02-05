@@ -109,7 +109,7 @@ function getEmptyTask() {
     return {
         "title": "",
         "status": "",
-        "priority": "",
+        // "priority": "",
         "memberIds": [],
         "dueDate": '',
         "comments": [],
@@ -170,9 +170,9 @@ function getEmptyBoard() {
           { id: "l101", cmpType: "status-picker", title: "Done", color: "#00c875" },
           { id: "l102", cmpType: "member-picker", title: "Progress", color: "#fdab3d" },
           { id: "l103", cmpType: "date-picker", title: "Stuck", color: "#e2445c" },
-          { id: "l104", cmpType: "priority-picker", title: "Low", color: "#ffcb00" },
+          // { id: "l104", cmpType: "priority-picker", title: "Low", color: "#ffcb00" },
           { id: "l105", cmpType: "number-picker", title: "Medium", color: "#a25ddc" },
-          { id: "l106", cmpType: "file-picker", title: "High", color: "#e2445c" },
+          // { id: "l106", cmpType: "file-picker", title: "High", color: "#e2445c" },
           { id: "l107", cmpType: "updated-picker", title: "", color: "#c4c4c4" },
         ],
         "members": [
