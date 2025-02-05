@@ -36,61 +36,61 @@ export function boardReducer(state = initialState, action) {
         case ADD_BOARD:
             boards = [action.board, ...state.boards]
             return { ...state, boards }
-
-
         case UPDATE_BOARD: {
-          console.log('Reducer UPDATE_BOARD action:', action);
-          let updatedBoard = { ...action.board };
-          if (action.changedLabelInfo) {
-            const { cmpType, oldTitle, newTitle } = action.changedLabelInfo;
-            // console.log('Reducer changedLabelInfo:', cmpType, oldTitle, newTitle);
-            updatedBoard.groups = updatedBoard.groups.map(group => {
-              // console.log('Processing group:', group.id, group.title);
-              const updatedTasks = group.tasks.map(task => {
-                // console.log('  Task before:', task.id, task.status);
+            let updatedBoard = { ...action.board }
 
-                // TODO: May need to have a dynamic cmpType here...
-                if (
-                    cmpType === 'status-picker' &&
-                    task.status &&
-                    task.status == oldTitle
-                    // task.status.replace(/\s+/g, '').toLowerCase() === oldTitle.replace(/\s+/g, '').toLowerCase()
-                ) {
-                  // console.log('  Updating task', task.id, 'from', task.status, 'to', newTitle);
-                  return { ...task, status: newTitle };
-                }
-                return task;
-              });
-              return { ...group, tasks: updatedTasks };
-            });
+            if (action.changedLabelInfo) {
+                const { cmpType, oldTitle, newTitle } = action.changedLabelInfo;
+                // Try to find a column in the updated board matching the cmpType
+                const column = updatedBoard.columns 
+                  ? updatedBoard.columns.find(c => c.type === cmpType)
+                  : null;
 
-
-          }
-          const updatedBoards = state.boards.map(b =>
-            b._id === updatedBoard._id ? updatedBoard : b
-          );
-          // console.log('Reducer updated board:', updatedBoard);
-          return {
-            ...state,
-            boards: updatedBoards,
-            board: { ...updatedBoard },
-            filteredBoard: { ...updatedBoard }
-          };
+                updatedBoard.groups = updatedBoard.groups.map(group => {
+                    const updatedTasks = group.tasks.map(task => {
+                        // If task has a cells object and we found a column, update the cell value.
+                        if (column && task.cells) {
+                            if (task.cells[column.id] &&
+                                task.cells[column.id].toString().trim().toLowerCase() === oldTitle.trim().toLowerCase()
+                            ) {
+                                return { 
+                                  ...task, 
+                                  cells: { 
+                                    ...task.cells, 
+                                    [column.id]: newTitle 
+                                  } 
+                                };
+                            }
+                        }
+                        // Fallback: if no cells property, update task.status directly.
+                        if (
+                          cmpType === 'status-picker' &&
+                          task.status &&
+                          task.status.trim().toLowerCase() === oldTitle.trim().toLowerCase()
+                        ) {
+                            return { ...task, status: newTitle };
+                        }
+                        return task;
+                    });
+                    return { ...group, tasks: updatedTasks };
+                });
+            }
+            const updatedBoards = state.boards.map(b =>
+                b._id === updatedBoard._id ? updatedBoard : b
+            );
+            return { 
+                ...state, 
+                boards: updatedBoards, 
+                board: { ...updatedBoard },
+                filteredBoard: { ...updatedBoard }
+            };
         }
-
-
-
-
-
         case SET_MODAL:
             return { ...state, isBoardModalOpen: action.isOpen }
-
         case SET_FILTER:
             return { ...state, filter: action.filter }
-
-
-        case SET_DYNAMIC_MODAL:{
-            return {...state, dynamicModalObj: action.dynamicModalObj}
+        case SET_DYNAMIC_MODAL: {
+            return { ...state, dynamicModalObj: action.dynamicModalObj }
         }
         default:
             return state
