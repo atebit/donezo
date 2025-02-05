@@ -1,4 +1,4 @@
 module.exports = {
-  dbURL: 'mongodb+srv://idandavid:idan5375@cluster0.zkktgr5.mongodb.net/?retryWrites=true&w=majority',
-  dbName: 'monday_DB'
+  dbURL: 'mongodb+srv://atebitcreative:bi246oB3QoSH47Wf@donezo.pv02j.mongodb.net/?retryWrites=true&w=majority',
+  dbName: 'donezo'
 }
