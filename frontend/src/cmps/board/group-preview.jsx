@@ -136,6 +136,77 @@ export function GroupPreview ({ group, board, idx }) {
         return dynamicModalObj.isOpen === true && dynamicModalObj.type === 'add-column' && dynamicModalObj?.group?.id === group.id
     }
 
+
+    function renderColumnHeaders(){
+        return board.cmpsOrder.map((cmp, idx) =>{
+            const cmpKey = `${cmp}-${idx}`;
+            return <Draggable key={cmpKey} draggableId={cmpKey} index={idx}>
+                {(provided, snapshot) => {
+                    return (
+                        <li ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps} 
+                            className={'${cmp} cmp-order-title title'}>
+                            <TitleGroupPreview title={cmp} group={group} board={board} />
+                        </li>
+                    )
+                }}
+            </Draggable>
+        })
+    }
+
+    function renderTasks(){
+        return group.tasks.map(
+            (task, idx) => {
+                const draggableId = task.id ? task.id : `${group.id}-${idx}`;
+                // console.log( '=========TaskPreview (task row)');
+                // console.log( '=draggableId',draggableId);
+                // console.log( '=idx',idx);
+                // console.log( '=task',task);
+                // console.log( '=group',group);
+                // console.log( '=board',board);
+                return(
+                    <Draggable 
+                        key={draggableId}
+                        draggableId={draggableId}
+                        index={idx}>
+                        {(provided) => {
+                            return (
+                                <li 
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}>
+                                    <TaskPreview
+                                        task={task}
+                                        group={group}
+                                        board={board}
+                                        handleCheckboxChange={handleCheckboxChange}
+                                        isMainCheckbox={isMainCheckbox} />
+                                </li>
+                            )
+                        }
+                    }
+                    </Draggable>
+                )
+
+            }
+        )
+
+    }
+
+    function renderStats(){
+        return board.cmpsOrder.map((cmpType, idx) => {
+          return (
+              <div key={idx} className={`title ${idx === 0 ? ' first ' : ''}${cmpType}`}>
+                  <StatisticGroup cmpType={cmpType} board={board} group={group} />
+              </div>
+          )
+      })
+
+    }
+
+
+
     return <ul className="group-preview flex column" >
         <Draggable key={group.id} draggableId={group.id} index={idx}>
             {(provided) => {
@@ -170,21 +241,7 @@ export function GroupPreview ({ group, board, idx }) {
                                         </div>
 
 
-                                        {board.cmpsOrder.map((cmp, idx) =>{
-                                            const cmpKey = `${cmp}-${idx}`;
-                                            return <Draggable key={cmpKey} draggableId={cmpKey} index={idx}>
-                                                {(provided, snapshot) => {
-                                                    return (
-                                                        <li ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            {...provided.dragHandleProps} 
-                                                            className={'${cmp} cmp-order-title title'}>
-                                                            <TitleGroupPreview title={cmp} group={group} board={board} />
-                                                        </li>
-                                                    )
-                                                }}
-                                            </Draggable>
-                                        })}
+                                        {renderColumnHeaders()}
 
 
 
@@ -201,45 +258,7 @@ export function GroupPreview ({ group, board, idx }) {
                             {(droppableProvided) => (
                                 <div ref={droppableProvided.innerRef} {...droppableProvided.droppableProps} >
 
-                                    {
-                                        group.tasks.map(
-                                            (task, idx) => {
-                                                const draggableId = task.id ? task.id : `${group.id}-${idx}`;
-                                                // console.log( '=========TaskPreview (task row)');
-                                                // console.log( '=draggableId',draggableId);
-                                                // console.log( '=idx',idx);
-                                                // console.log( '=task',task);
-                                                // console.log( '=group',group);
-                                                // console.log( '=board',board);
-                                                return(
-                                                    <Draggable 
-                                                        key={draggableId}
-                                                        draggableId={draggableId}
-                                                        index={idx}>
-                                                        {(provided) => {
-                                                            return (
-                                                                <li 
-                                                                ref={provided.innerRef}
-                                                                {...provided.draggableProps}
-                                                                {...provided.dragHandleProps}>
-                                                                    <TaskPreview
-                                                                        task={task}
-                                                                        group={group}
-                                                                        board={board}
-                                                                        handleCheckboxChange={handleCheckboxChange}
-                                                                        isMainCheckbox={isMainCheckbox} />
-                                                                </li>
-                                                            )
-                                                        }
-                                                    }
-                                                    </Draggable>
-                                                )
-
-                                            }
-                                        )
-                                    }
-
-
+                                    { renderTasks() }
 
                                     {droppableProvided.placeholder}
                                     <div className="add-task flex">
@@ -268,13 +287,7 @@ export function GroupPreview ({ group, board, idx }) {
                             <div className="statistic-container flex">
 
 
-                              {board.cmpsOrder.map((cmpType, idx) => {
-                                  return (
-                                      <div key={idx} className={`title ${idx === 0 ? ' first ' : ''}${cmpType}`}>
-                                          <StatisticGroup cmpType={cmpType} board={board} group={group} />
-                                      </div>
-                                  )
-                              })}
+                              {renderStats()}
 
 
                             </div>
