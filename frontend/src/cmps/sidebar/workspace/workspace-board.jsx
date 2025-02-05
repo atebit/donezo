@@ -35,8 +35,7 @@ export default function WorkspaceBoard({handleChange , filterByToEdit, setIsCrea
       </div>
       <ul className='board-list-container flex column'>
           {boards.map(board => {
-              console.log(board.title)
-
+              // console.log(board.title)
               return <li key={board._id} className='board-list'>
                   <BoardPreview board={board} />
               </li>
