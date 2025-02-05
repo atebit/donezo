@@ -192,13 +192,13 @@ function getEmptyBoard() {
     activities: [],
     // New property: columns – an array of column configurations
     columns: [
-      { id: "col1", type: "status-picker", title: "Status 1" },
-      { id: "col2", type: "status-picker", title: "Status 2" },
-      { id: "col3", type: "status-picker", title: "Status 3" },
-      { id: "col4", type: "status-picker", title: "Status 4" },
-      { id: "col5", type: "status-picker", title: "Status 5" },
-      { id: "col6", type: "member-picker", title: "Owner" },
-      { id: "col7", type: "date-picker", title: "Due Date" }
+      // { id: "col1", type: "status-picker", title: "Status 1" },
+      // { id: "col2", type: "status-picker", title: "Status 2" },
+      // { id: "col3", type: "status-picker", title: "Status 3" },
+      // { id: "col4", type: "status-picker", title: "Status 4" },
+      // { id: "col5", type: "status-picker", title: "Status 5" },
+      // { id: "col6", type: "member-picker", title: "Owner" },
+      // { id: "col7", type: "date-picker", title: "Due Date" }
     ],
     description: "",
     // We still keep cmpsOption for backward compatibility
