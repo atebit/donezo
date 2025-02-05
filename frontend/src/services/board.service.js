@@ -167,13 +167,16 @@ function getEmptyBoard() {
             "_id": utilService.makeId()
         },
         "labels": [
-          { id: "l101", cmpType: "status-picker", title: "Done", color: "#00c875" },
-          { id: "l102", cmpType: "member-picker", title: "Progress", color: "#fdab3d" },
-          { id: "l103", cmpType: "date-picker", title: "Stuck", color: "#e2445c" },
-          // { id: "l104", cmpType: "priority-picker", title: "Low", color: "#ffcb00" },
-          { id: "l105", cmpType: "number-picker", title: "Medium", color: "#a25ddc" },
-          // { id: "l106", cmpType: "file-picker", title: "High", color: "#e2445c" },
-          { id: "l107", cmpType: "updated-picker", title: "", color: "#c4c4c4" },
+          { id: "l101", cmpType: "status-picker", title: "Done", color: "#00C875" },
+          { id: "l102", cmpType: "status-picker", title: "High Priority", color: "#E2435C" },
+          { id: "l103", cmpType: "status-picker", title: "Medium Priority", color: "#FF9B15" },
+          { id: "l104", cmpType: "status-picker", title: "Low Priority", color: "#ffcb00" },
+          { id: "l105", cmpType: "status-picker", title: "Second High Priority", color: "#A704FF" },
+          { id: "l106", cmpType: "status-picker", title: "Second Medium Priority", color: "#714AFF" },
+          { id: "l107", cmpType: "status-picker", title: "Second Low Priority", color: "#32BBFF" },
+          { id: "l108", cmpType: "status-picker", title: "Stuck", color: "#8F182B" },
+          { id: "l109", cmpType: "status-picker", title: "Dead", color: "#3F3F3F" },
+          { id: "l110", cmpType: "status-picker", title: "Empty", color: "#c4c4c4" },
         ],
         "members": [
             {
