@@ -40,7 +40,7 @@ export function boardReducer(state = initialState, action) {
 
 
 case UPDATE_BOARD: {
-    console.log("UPDATE_BOARD", action)
+    console.log("SET_DYNAMIC_MODAL", action)
   let updatedBoard = { ...action.board };
 
   if (action.changedLabelInfo) {
