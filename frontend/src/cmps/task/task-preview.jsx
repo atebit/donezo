@@ -28,12 +28,16 @@ export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCh
 
     const guest = "https://res.cloudinary.com/du63kkxhl/image/upload/v1675013009/guest_f8d60j.png"
 
+    console.log("TaskPreview", task, group, board)
+
     useEffect(() => {
         setIsClick(isMainCheckbox.isActive)
     }, [isMainCheckbox])
 
     async function updateTask(columnId, data, activity) {
         const taskToUpdate = structuredClone(task)
+
+        // console.log("TaskPreview:updateTask", columnId, data, activity)
         // Update the cell value for the given column
         taskToUpdate.cells = { ...taskToUpdate.cells, [columnId]: data }
         taskToUpdate.updatedBy.date = Date.now()

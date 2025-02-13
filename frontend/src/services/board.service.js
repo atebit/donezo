@@ -111,7 +111,7 @@ function getEmptyTask() {
   // we now store a cells object to hold values for each column.
   return {
     title: "",
-    cells: {},  // e.g., { "col1": "Done", "col2": "In Progress", ... }
+    cells: [],  // e.g., { "col1": "Done", "col2": "In Progress", ... }
     memberIds: [],
     dueDate: '',
     comments: [],

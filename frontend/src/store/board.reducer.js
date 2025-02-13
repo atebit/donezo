@@ -36,61 +36,71 @@ export function boardReducer(state = initialState, action) {
         case ADD_BOARD:
             boards = [action.board, ...state.boards]
             return { ...state, boards }
-        case UPDATE_BOARD: {
-            let updatedBoard = { ...action.board }
 
-            if (action.changedLabelInfo) {
-                const { cmpType, oldTitle, newTitle } = action.changedLabelInfo;
-                // Try to find a column in the updated board matching the cmpType
-                const column = updatedBoard.columns 
-                  ? updatedBoard.columns.find(c => c.type === cmpType)
-                  : null;
 
-                updatedBoard.groups = updatedBoard.groups.map(group => {
-                    const updatedTasks = group.tasks.map(task => {
-                        // If task has a cells object and we found a column, update the cell value.
-                        if (column && task.cells) {
-                            if (task.cells[column.id] &&
-                                task.cells[column.id].toString().trim().toLowerCase() === oldTitle.trim().toLowerCase()
-                            ) {
-                                return { 
-                                  ...task, 
-                                  cells: { 
-                                    ...task.cells, 
-                                    [column.id]: newTitle 
-                                  } 
-                                };
-                            }
-                        }
-                        // Fallback: if no cells property, update task.status directly.
-                        if (
-                          cmpType === 'status-picker' &&
-                          task.status &&
-                          task.status.trim().toLowerCase() === oldTitle.trim().toLowerCase()
-                        ) {
-                            return { ...task, status: newTitle };
-                        }
-                        return task;
-                    });
-                    return { ...group, tasks: updatedTasks };
-                });
+
+case UPDATE_BOARD: {
+    console.log("UPDATE_BOARD", action)
+  let updatedBoard = { ...action.board };
+
+  if (action.changedLabelInfo) {
+    const { cmpType, oldTitle, newTitle } = action.changedLabelInfo;
+    // Retrieve the columnId from the action, if available.
+    const columnId = action.changedLabelInfo.columnId || action.columnId;
+    
+    updatedBoard.groups = updatedBoard.groups.map(group => {
+      const updatedTasks = group.tasks.map(task => {
+        // Ensure task.cells is an object
+        const cells = task.cells ? { ...task.cells } : {};
+
+        // If we have a columnId from the modal, try to update that cell.
+        if (columnId) {
+          if (cells.hasOwnProperty(columnId)) {
+            if (
+              cells[columnId] &&
+              cells[columnId].toString().trim().toLowerCase() === oldTitle.trim().toLowerCase()
+            ) {
+              cells[columnId] = newTitle;
             }
-            const updatedBoards = state.boards.map(b =>
-                b._id === updatedBoard._id ? updatedBoard : b
-            );
-            return { 
-                ...state, 
-                boards: updatedBoards, 
-                board: { ...updatedBoard },
-                filteredBoard: { ...updatedBoard }
-            };
+            // Return the task with the updated cells.
+            return { ...task, cells };
+          }
+          // Fallback: if the cell keyed by columnId doesn't exist, check if task.status exists.
         }
+        if (
+          cmpType === 'status-picker' &&
+          task.status &&
+          task.status.trim().toLowerCase() === oldTitle.trim().toLowerCase()
+        ) {
+          return { ...task, status: newTitle };
+        }
+        return task;
+      });
+      return { ...group, tasks: updatedTasks };
+    });
+  }
+
+  const updatedBoards = state.boards.map(b =>
+    b._id === updatedBoard._id ? updatedBoard : b
+  );
+  return {
+    ...state,
+    boards: updatedBoards,
+    board: { ...updatedBoard },
+    filteredBoard: { ...updatedBoard }
+  };
+}
+
+
+
+
         case SET_MODAL:
             return { ...state, isBoardModalOpen: action.isOpen }
         case SET_FILTER:
             return { ...state, filter: action.filter }
         case SET_DYNAMIC_MODAL: {
             // console.log("BoardReducer:SET_DYNAMIC_MODAL",action.dynamicModalObj )
+            console.log("SET_DYNAMIC_MODAL", action)
             return { ...state, dynamicModalObj: action.dynamicModalObj }
         }
         default:

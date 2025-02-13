@@ -7,8 +7,8 @@ export function RemoveColumnModal({ dynamicModalObj }) {
   const board = useSelector(storeState => storeState.boardModule.filteredBoard)
 
   async function onRemoveColumn(idx) {
-    console.log("RemoveColumnModal:onRemoveColumn > dynamicModalObj", dynamicModalObj)
-    console.log("RemoveColumnModal:onRemoveColumn > board", board)
+    // console.log("RemoveColumnModal:onRemoveColumn > dynamicModalObj", dynamicModalObj)
+    // console.log("RemoveColumnModal:onRemoveColumn > board", board)
     try {
       // Remove the column at the given index from board.columns
       if (board.columns && board.columns.length > idx) {

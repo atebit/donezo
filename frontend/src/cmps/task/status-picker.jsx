@@ -9,10 +9,14 @@ export function StatusPicker({ info, columnId, onUpdate }) {
   const activity = boardService.getEmptyActivity()
   const elStatusSection = useRef()
 
-  // Use the new cell structure: each task now stores its value in task.cells keyed by columnId.
-  const cellValue = info.cells && info.cells[columnId] ? info.cells[columnId] : ""
-  // Assume the cellValue is the id of a label; look it up in board.labels.
-  const label = board.labels.find(l => l.id === cellValue)
+  // Fallback: if there's no cell for the given columnId, use info.status.
+  const cellValue = (info.cells && info.cells[columnId]) || info.status || ""
+  // Try to find a label using the cellValue as an id.
+  let label = board.labels.find(l => l.id === cellValue)
+  // Fallback: if not found, try matching by title (case-insensitive).
+  if (!label && cellValue) {
+    label = board.labels.find(l => l.title.trim().toLowerCase() === cellValue.trim().toLowerCase())
+  }
   const displayTitle = label ? label.title : ""
   const color = label ? label.color : "#c4c4c4"
 
