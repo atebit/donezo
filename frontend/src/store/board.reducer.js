@@ -90,7 +90,7 @@ export function boardReducer(state = initialState, action) {
         case SET_FILTER:
             return { ...state, filter: action.filter }
         case SET_DYNAMIC_MODAL: {
-            console.log("BoardReducer:SET_DYNAMIC_MODAL",action.dynamicModalObj )
+            // console.log("BoardReducer:SET_DYNAMIC_MODAL",action.dynamicModalObj )
             return { ...state, dynamicModalObj: action.dynamicModalObj }
         }
         default:

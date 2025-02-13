@@ -35,10 +35,10 @@ export function TitleGroupPreview({ title, group, isKanban, idx }) {
         const { x, y } = elRemoveColumn.current.getClientRects()[0]
         setDynamicModalObj({ isOpen, pos: { x: (x - 75), y: (y + 28) }, type: 'remove-column', group: group, cmpOrder: title, idx: idx})
     }
-
+    // console.log("TitleGroupPreview:render > title", title)
     return (
         <>
-            {getTitleName(title)}
+            {title}
             <span ref={elRemoveColumn} className="open-modal-icon">
                 {!isKanban && <BiDotsHorizontalRounded onClick={onToggleMenuModal} />}
             </span>

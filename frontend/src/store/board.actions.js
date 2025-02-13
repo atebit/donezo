@@ -283,7 +283,7 @@ export function setFilter(filter) {
 }
 
 export function setDynamicModalObj(dynamicModalObj) {
-  console.log("BoardActons:setDynamicModalObj", dynamicModalObj)
+  // console.log("BoardActons:setDynamicModalObj", dynamicModalObj)
   store.dispatch({ type: SET_DYNAMIC_MODAL, dynamicModalObj })
 }
 

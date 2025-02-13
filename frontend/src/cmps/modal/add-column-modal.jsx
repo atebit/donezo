@@ -11,8 +11,8 @@ const statusImg = require('../../assets/img/status.png')
 
 export function AddColumnModal({ dynamicModalObj }) {
   const board = useSelector(storeState => storeState.boardModule.filteredBoard)
-  console.log("AddColumnModal board:", board)
-  console.log("Dynamic modal object:", dynamicModalObj)
+  // console.log("AddColumnModal board:", board)
+  // console.log("AddColumnModal > Dynamic modal object:", dynamicModalObj)
 
   // Define a default list of all available column types.
   const availableColumnTypes = [
@@ -26,22 +26,29 @@ export function AddColumnModal({ dynamicModalObj }) {
 
   // Helper to get a default title based on column type
   function getDefaultTitle(columnType) {
+    // console.log("AddColumnModal:getDefaultTitle", columnType)
+    let title = '';
     switch (columnType) {
       case 'status-picker':
-        return 'New Status'
+        title = 'Status'
+        break;
       case 'date-picker':
-        return 'New Date'
+        title = 'Date'
+        break;
       case 'member-picker':
-        return 'New Person'
+        title = 'Person'
+        break;
       case 'number-picker':
-        return 'New Number'
+        title = 'Number'
+        break;
       case 'updated-picker':
-        return 'New Updated'
+        title = 'Updated'
+        break;
       case 'checkbox-picker':
-        return 'New Checkbox'
-      default:
-        return 'New Column'
+        title = 'Checkbox'
+        break;
     }
+    return title + " " + board.columns.length
   }
 
   async function addColumn(columnType) {
