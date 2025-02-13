@@ -5,91 +5,127 @@ import { BsCheckSquare } from "react-icons/bs"
 import { HiOutlineUserCircle } from 'react-icons/hi'
 import { loadBoard, saveBoard, setDynamicModalObj } from '../../store/board.actions'
 import { useSelector } from 'react-redux'
+import { utilService } from '../../services/util.service'
 
 const statusImg = require('../../assets/img/status.png')
 
-export function AddColumnModal ({ dynamicModalObj }) {
-    const board = useSelector(storeState => storeState.boardModule.filteredBoard)
+export function AddColumnModal({ dynamicModalObj }) {
+  const board = useSelector(storeState => storeState.boardModule.filteredBoard)
+  console.log("AddColumnModal board:", board)
+  console.log("Dynamic modal object:", dynamicModalObj)
 
-    console.log(dynamicModalObj.columns)
-    
-    async function addColumn (columnType) {
-        try {
-            board.cmpsOrder.push(columnType)
-            await saveBoard(board)
-            loadBoard(board._id)
-            dynamicModalObj.isOpen = false
-            setDynamicModalObj(dynamicModalObj)
-        } catch (err) {
-            console.log(err)
-        }
+  // Define a default list of all available column types.
+  const availableColumnTypes = [
+    'status-picker',
+    'date-picker',
+    'member-picker',
+    'number-picker',
+    'updated-picker',
+    'checkbox-picker'
+  ];
+
+  // Helper to get a default title based on column type
+  function getDefaultTitle(columnType) {
+    switch (columnType) {
+      case 'status-picker':
+        return 'New Status'
+      case 'date-picker':
+        return 'New Date'
+      case 'member-picker':
+        return 'New Person'
+      case 'number-picker':
+        return 'New Number'
+      case 'updated-picker':
+        return 'New Updated'
+      case 'checkbox-picker':
+        return 'New Checkbox'
+      default:
+        return 'New Column'
     }
+  }
 
-    function getIconAction (column) {
-        switch (column) {
-            case 'status-picker':
-                return (
-                    <div onClick={() => addColumn('status-picker')}>
-                        <img src={statusImg} alt="" />
-                        Status
-                    </div>
-                )
-            // case 'priority-picker':
-            //     return (
-            //         <div onClick={() => addColumn('priority-picker')}>
-            //             <img src={statusImg} alt="" />
-            //             Priority
-            //         </div>
-            //     )
-            case 'date-picker':
-                return (
-                    <div onClick={() => addColumn('date-picker')}>
-                        <CiCalendarDate className='icon' />
-                        Date
-                    </div>
-                )
-            case "member-picker":
-                return (
-                    <div onClick={() => addColumn('member-picker')}>
-                        <HiOutlineUserCircle className='icon' />
-                        Person
-                    </div>
-                )
-            // case "file-picker":
-            //     return (
-            //         <div onClick={() => addColumn('file-picker')}>
-            //             <ImFilesEmpty />
-            //             Files
-            //         </div>
-            //     )
-            case "number-picker":
-                return (
-                    <div onClick={() => addColumn('number-picker')}>
-                        <CiCalculator2 />
-                        Numbers
-                    </div>
-                )
-            case "updated-picker":
-                return (
-                    <div onClick={() => addColumn('updated-picker')}>
-                        <RxCountdownTimer />
-                        Updated
-                    </div>
-                )
-            case "checkbox-picker":
-                return (
-                    <div onClick={() => addColumn('checkbox-picker')}>
-                        <BsCheckSquare />
-                        Checkbox
-                    </div>
-                )
-            default:
-                break;
-        }
+  async function addColumn(columnType) {
+    console.log("AddColumnModal:addColumn", columnType)
+    try {
+      // Ensure board.columns exists; if not, initialize as empty array.
+      if (!board.columns) board.columns = []
+      
+      // Create a new column object.
+      const newColumn = {
+        id: utilService.makeId(),
+        type: columnType,
+        title: getDefaultTitle(columnType)
+      }
+      board.columns.push(newColumn)
+      
+      // Save and reload the board.
+      await saveBoard(board)
+      loadBoard(board._id)
+      
+      // Close the modal.
+      dynamicModalObj.isOpen = false
+      setDynamicModalObj(dynamicModalObj)
+    } catch (err) {
+      console.log(err)
     }
+  }
 
-    if (!dynamicModalObj.columns.length) return <div></div>
-    return <ul className="add-column-modal">
-        {dynamicModalObj.columns.map((column, idx) => <li key={idx}> {getIconAction(column)} </li>)}
-    </ul >
+  function getIconAction(column) {
+    // console.log("AddColumnModal:getIconAction", column)
+    switch (column) {
+      case 'status-picker':
+        return (
+          <div onClick={() => addColumn('status-picker')}>
+            <img src={statusImg} alt="status" />
+            Status
+          </div>
+        )
+      case 'date-picker':
+        return (
+          <div onClick={() => addColumn('date-picker')}>
+            <CiCalendarDate className="icon" />
+            Date
+          </div>
+        )
+      case 'member-picker':
+        return (
+          <div onClick={() => addColumn('member-picker')}>
+            <HiOutlineUserCircle className="icon" />
+            Person
+          </div>
+        )
+      case 'number-picker':
+        return (
+          <div onClick={() => addColumn('number-picker')}>
+            <CiCalculator2 className="icon" />
+            Numbers
+          </div>
+        )
+      case 'updated-picker':
+        return (
+          <div onClick={() => addColumn('updated-picker')}>
+            <RxCountdownTimer className="icon" />
+            Updated
+          </div>
+        )
+      case 'checkbox-picker':
+        return (
+          <div onClick={() => addColumn('checkbox-picker')}>
+            <BsCheckSquare className="icon" />
+            Checkbox
+          </div>
+        )
+      default:
+        return <div>Unknown Column</div>
+    }
+  }
+
+  if (!dynamicModalObj.isOpen) return <div></div>
+  return (
+    <ul className="add-column-modal">
+      {availableColumnTypes.map((column, idx) => (
+        <li key={idx}>{getIconAction(column)}</li>
+      ))}
+    </ul>
+  )
 }

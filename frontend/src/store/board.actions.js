@@ -179,6 +179,7 @@ export async function addTaskOnFirstGroup(filteredBoard) {
 }
 
 export function toggleModal(isOpenModal) {
+  console.log("BoardAction:toggleModal")
   store.dispatch({ type: SET_MODAL, isOpen: !isOpenModal })
 }
 
@@ -282,6 +283,7 @@ export function setFilter(filter) {
 }
 
 export function setDynamicModalObj(dynamicModalObj) {
+  console.log("BoardActons:setDynamicModalObj", dynamicModalObj)
   store.dispatch({ type: SET_DYNAMIC_MODAL, dynamicModalObj })
 }
 

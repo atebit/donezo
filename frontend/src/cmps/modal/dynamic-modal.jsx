@@ -15,8 +15,10 @@ import { BoardMenuModal } from './board-menu-modal'
 export function DynamicModal () {
 
     const dynamicModalObj = useSelector(storeState => storeState.boardModule.dynamicModalObj)
+    console.log("DynamicModal:renderModal", dynamicModalObj)
 
     function getDynamicModalByType (type) {
+        console.log("DynamicModal:getDynamicModalByType", type)
         switch (type) {
             case 'menu-group':
                 return <GroupMenuModal dynamicModalObj={dynamicModalObj} />
@@ -47,17 +49,24 @@ export function DynamicModal () {
     }
 
     function isDynamicModalOpen () {
-        if (dynamicModalObj.isOpen && dynamicModalObj.type === 'add-column' && dynamicModalObj.columns.length === 0) return false
+        console.log("DynamicModal:isDynamicModalOpen", dynamicModalObj)
+        // if (dynamicModalObj.isOpen && dynamicModalObj.type === 'add-column' && dynamicModalObj.columns.length === 0) return false
+        // if (dynamicModalObj.isOpen && dynamicModalObj.type === 'add-column') return true
         return dynamicModalObj.isOpen
+    }
+
+    function renderModal(){
+        console.log("DynamicModal:renderModal > isDynamicModalOpen??", isDynamicModalOpen())
+        return(
+            <div className="dynamic-modal" style={{ left: dynamicModalObj.pos.x, top: dynamicModalObj.pos.y }}>
+            {getDynamicModalByType(dynamicModalObj.type)}
+            </div>
+        )
     }
 
     return (
         <>
-            {isDynamicModalOpen() &&
-                <div className="dynamic-modal" style={{ left: dynamicModalObj.pos.x, top: dynamicModalObj.pos.y }}>
-                    {getDynamicModalByType(dynamicModalObj.type)}
-                </div>
-            }
+            {isDynamicModalOpen() && renderModal()}
         </>
     )
 }
