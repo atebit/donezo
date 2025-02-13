@@ -5,7 +5,7 @@ import { setDynamicModalObj } from "../../store/board.actions"
 
 import { BiDotsHorizontalRounded } from 'react-icons/bi'
 
-export function TitleGroupPreview({ title, group, isKanban }) {
+export function TitleGroupPreview({ title, group, isKanban, idx }) {
     const dynamicModalObj = useSelector(storeState => storeState.boardModule.dynamicModalObj)
     const elRemoveColumn = useRef()
 
@@ -30,10 +30,10 @@ export function TitleGroupPreview({ title, group, isKanban }) {
     }
 
     function onToggleMenuModal() {
-        console.log(elRemoveColumn)
+        // console.log("TitleGroupPreview:onToggleMenuModal", idx)
         const isOpen = dynamicModalObj?.group?.id === group.id && dynamicModalObj?.cmpOrder === title && dynamicModalObj?.type === 'remove-column' ? !dynamicModalObj.isOpen : true
         const { x, y } = elRemoveColumn.current.getClientRects()[0]
-        setDynamicModalObj({ isOpen, pos: { x: (x - 75), y: (y + 28) }, type: 'remove-column', group: group, cmpOrder: title })
+        setDynamicModalObj({ isOpen, pos: { x: (x - 75), y: (y + 28) }, type: 'remove-column', group: group, cmpOrder: title, idx: idx})
     }
 
     return (

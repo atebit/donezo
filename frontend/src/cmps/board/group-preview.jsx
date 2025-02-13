@@ -144,6 +144,7 @@ export function GroupPreview({ group, board, idx }) {
   function renderColumnHeaders() {
     return board.columns.map((col, idx) => {
       const cmpKey = `${col.id}-${idx}`;
+      // console.log("GroupPreview:renderColumnHeaders", col, idx)
       return (
         <Draggable key={cmpKey} draggableId={cmpKey} index={idx}>
           {(provided) => {
@@ -153,7 +154,7 @@ export function GroupPreview({ group, board, idx }) {
                 {...provided.draggableProps}
                 {...provided.dragHandleProps}
                 className={`${col.type} cmp-order-title title`}>
-                <TitleGroupPreview title={col.title} group={group} board={board} />
+                <TitleGroupPreview idx={idx} title={col.title} group={group} board={board} />
               </li>
             )
           }}

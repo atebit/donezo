@@ -45,7 +45,7 @@ export function AddColumnModal({ dynamicModalObj }) {
   }
 
   async function addColumn(columnType) {
-    console.log("AddColumnModal:addColumn", columnType)
+    // console.log("AddColumnModal:addColumn", columnType)
     try {
       // Ensure board.columns exists; if not, initialize as empty array.
       if (!board.columns) board.columns = []
