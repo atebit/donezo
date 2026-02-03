@@ -41,6 +41,20 @@ export async function login(credentials) {
     }
 }
 
+export async function googleLogin(credential) {
+    try {
+        const user = await userService.googleLogin(credential)
+        store.dispatch({
+            type: SET_USER,
+            user
+        })
+        return user
+    } catch (err) {
+        console.log('Cannot login with Google', err)
+        throw err
+    }
+}
+
 export async function signup(credentials) {
     console.log(credentials)
     try {

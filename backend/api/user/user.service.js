@@ -6,6 +6,7 @@ module.exports = {
     query,
     getById,
     getByUsername,
+    upsertGoogleUser,
     remove,
     update,
     add
@@ -93,6 +94,55 @@ async function add(user) {
         return userToAdd
     } catch (err) {
         logger.error('cannot add user', err)
+        throw err
+    }
+}
+
+async function upsertGoogleUser({ googleId, email, fullname, imgUrl }) {
+    try {
+        if (!googleId) throw new Error('Missing googleId')
+        if (!email) throw new Error('Missing email')
+
+        const collection = await dbService.getCollection('user')
+
+        const existingUser = await collection.findOne({ $or: [{ googleId }, { username: email }, { email }] })
+
+        if (existingUser) {
+            await collection.updateOne(
+                { _id: existingUser._id },
+                {
+                    $set: {
+                        googleId,
+                        email,
+                        username: existingUser.username || email,
+                        fullname: fullname || existingUser.fullname,
+                        imgUrl: imgUrl || existingUser.imgUrl,
+                    },
+                }
+            )
+
+            const updated = await collection.findOne({ _id: existingUser._id })
+            delete updated.password
+            updated._id = updated._id.toString()
+            return updated
+        }
+
+        const userToAdd = {
+            googleId,
+            email,
+            username: email,
+            fullname,
+            imgUrl,
+            password: null,
+        }
+
+        const insertRes = await collection.insertOne(userToAdd)
+        const inserted = await collection.findOne({ _id: insertRes.insertedId })
+        delete inserted.password
+        inserted._id = inserted._id.toString()
+        return inserted
+    } catch (err) {
+        logger.error('cannot upsert google user', err)
         throw err
     }
 }

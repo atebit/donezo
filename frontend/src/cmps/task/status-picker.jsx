@@ -12,7 +12,9 @@ export function StatusPicker({ info, onUpdate }) {
     let classText = !info.status ? 'empty-label ' : ''
     classText += 'label-text'
     
-    const label = board.labels.find(label => label.title === info.status)
+    // Use statusLabels with fallback to labels for backward compatibility
+    const statusLabels = board.statusLabels || board.labels || []
+    const label = statusLabels.find(label => label.title === info.status)
     const color = label ? label.color : '#c4c4c4'
     activity.from = label
     activity.task = { id: info.id, title: info.title }
@@ -22,7 +24,7 @@ export function StatusPicker({ info, onUpdate }) {
     function onToggleMenuModal() {
         const isOpen = dynamicModalObj?.task?.id === info.id && dynamicModalObj?.type === 'status' ? !dynamicModalObj.isOpen : true
         const { x, y } = elStatusSection.current.getClientRects()[0]
-        setDynamicModalObj({ isOpen, pos: { x: (x - 35), y: (y + 38) }, type: 'status', task: info, onTaskUpdate: onUpdate, activity: activity })
+        setDynamicModalObj({ isOpen, pos: { x: (x - 35), y: (y + 38) }, type: 'status', task: info, onTaskUpdate: onUpdate, activity: activity, cmpType: 'status-picker' })
     }
 
     return (

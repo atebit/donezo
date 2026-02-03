@@ -1,12 +1,16 @@
 const Cryptr = require('cryptr')
 const bcrypt = require('bcrypt')
+const { OAuth2Client } = require('google-auth-library')
 const userService = require('../user/user.service')
 const logger = require('../../services/logger.service')
 const cryptr = new Cryptr(process.env.SECRET1 || 'Secret-Puk-1234')
 
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
 module.exports = {
     signup,
     login,
+    googleLogin,
     getLoginToken,
     validateToken
 }
@@ -32,6 +36,30 @@ async function signup({username, password, fullname, imgUrl}) {
 
     const hash = await bcrypt.hash(password, saltRounds)
     return userService.add({ username, password: hash, fullname, imgUrl })
+}
+
+async function googleLogin(credential) {
+    try {
+        if (!credential) return Promise.reject('Missing google credential')
+        if (!process.env.GOOGLE_CLIENT_ID) return Promise.reject('Missing GOOGLE_CLIENT_ID')
+
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        })
+        const payload = ticket.getPayload()
+
+        const googleId = payload.sub
+        const email = payload.email
+        const fullname = payload.name || email
+        const imgUrl = payload.picture
+
+        const user = await userService.upsertGoogleUser({ googleId, email, fullname, imgUrl })
+        return user
+    } catch (err) {
+        logger.error('auth.service - googleLogin failed', err)
+        throw err
+    }
 }
 
 

@@ -109,12 +109,17 @@ function getEmptyTask() {
     return {
         "title": "",
         "status": "",
-        // "priority": "",
+        "priority": "",
         "memberIds": [],
         "dueDate": '',
+        "number": null,
+        "checkbox": false,
+        "text": "",
+        "link": "",
         "comments": [],
-        "updatedBy":{
-            "imgUrl":"",
+        "updatedBy": {
+            "imgUrl": "",
+            "date": null
         },
         "file": "",
     }
@@ -161,23 +166,27 @@ function getEmptyBoard() {
         "title": 'New Board',
         "archivedAt": Date.now(),
         "isStarred": false,
-        "createdBy":{
-            "fullname":"SeedChris",
-            "imgUrl":"https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg",
+        "createdBy": {
+            "fullname": "SeedChris",
+            "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg",
             "_id": utilService.makeId()
         },
-        "labels": [
-          { id: "l101", cmpType: "status-picker", title: "Done", color: "#00C875" },
-          { id: "l102", cmpType: "status-picker", title: "High Priority", color: "#E2435C" },
-          { id: "l103", cmpType: "status-picker", title: "Medium Priority", color: "#FF9B15" },
-          { id: "l104", cmpType: "status-picker", title: "Low Priority", color: "#ffcb00" },
-          { id: "l105", cmpType: "status-picker", title: "Second High Priority", color: "#A704FF" },
-          { id: "l106", cmpType: "status-picker", title: "Second Medium Priority", color: "#714AFF" },
-          { id: "l107", cmpType: "status-picker", title: "Second Low Priority", color: "#32BBFF" },
-          { id: "l108", cmpType: "status-picker", title: "Stuck", color: "#8F182B" },
-          { id: "l109", cmpType: "status-picker", title: "Dead", color: "#3F3F3F" },
-          { id: "l110", cmpType: "status-picker", title: "Empty", color: "#c4c4c4" },
+        "statusLabels": [
+            { id: "s101", title: "Done", color: "#00C875" },
+            { id: "s102", title: "Working on it", color: "#FDAB3D" },
+            { id: "s103", title: "Stuck", color: "#E2445C" },
+            { id: "s104", title: "Waiting for review", color: "#A25DDC" },
+            { id: "s105", title: "Pending", color: "#579BFC" },
+            { id: "s106", title: "", color: "#C4C4C4" },
         ],
+        "priorityLabels": [
+            { id: "p101", title: "Critical", color: "#333333" },
+            { id: "p102", title: "High", color: "#E2445C" },
+            { id: "p103", title: "Medium", color: "#FDAB3D" },
+            { id: "p104", title: "Low", color: "#579BFC" },
+            { id: "p105", title: "", color: "#C4C4C4" },
+        ],
+        "labels": [],
         "members": [
             {
                 "_id": "m101",
@@ -187,9 +196,9 @@ function getEmptyBoard() {
         ],
         "groups": [],
         "activities": [],
-        "cmpsOrder": ["status-picker", "member-picker", "date-picker", 'priority-picker', 'updated-picker'],
+        "cmpsOrder": ["status-picker", "member-picker", "date-picker", "priority-picker", "updated-picker"],
         "description": "",
-        "cmpsOption": ["status-picker", "member-picker", "date-picker", 'priority-picker', 'number-picker', 'file-picker', 'updated-picker']
+        "cmpsOption": ["status-picker", "member-picker", "date-picker", "priority-picker", "number-picker", "file-picker", "updated-picker", "checkbox-picker", "text-picker", "link-picker"]
     }
 }
 

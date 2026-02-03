@@ -231,27 +231,29 @@ export function updateBoardAction(updatedBoard, changedLabelInfo) {
       let board = await boardService.save(updatedBoard);
       // console.log('After initial save, board:', board);
       // If we have changed label info, update tasks in the board.
-      if ( changedLabelInfo && changedLabelInfo.cmpType && changedLabelInfo.oldTitle && changedLabelInfo.newTitle ) {
-
+      if (changedLabelInfo && changedLabelInfo.cmpType && changedLabelInfo.oldTitle && changedLabelInfo.newTitle) {
         board.groups.forEach((group, gIdx) => {
           group.tasks.forEach((task, tIdx) => {
-
-            // console.log( 'Before update task', task, changedLabelInfo);
-            // Use normalization to compare task.status to oldTitle
+            // Handle status label changes
             if (
               changedLabelInfo.cmpType === 'status-picker' &&
-              task.status != changedLabelInfo.newTitle &&
-              task.status == changedLabelInfo.oldTitle
+              task.status !== changedLabelInfo.newTitle &&
+              task.status === changedLabelInfo.oldTitle
             ) {
-              // console.log( 'Update task status', task.status, 'to: ',changedLabelInfo.newTitle );
-              // Replace the task with a new object
               group.tasks[tIdx] = { ...task, status: changedLabelInfo.newTitle };
+            }
+            // Handle priority label changes
+            if (
+              changedLabelInfo.cmpType === 'priority-picker' &&
+              task.priority !== changedLabelInfo.newTitle &&
+              task.priority === changedLabelInfo.oldTitle
+            ) {
+              group.tasks[tIdx] = { ...task, priority: changedLabelInfo.newTitle };
             }
           });
         });
         // Save the board again so that the updated tasks persist.
         board = await boardService.save(board);
-        // console.log('After updating tasks, board:', board);
       }
       // Dispatch the updated board. The board already has updated tasks.
       dispatch({ type: UPDATE_BOARD, board });

@@ -25,6 +25,12 @@ export function TitleGroupPreview({ title, group, isKanban }) {
                 return 'Files'
             case 'updated-picker':
                 return 'Last Updated'
+            case 'checkbox-picker':
+                return 'Checkbox'
+            case 'text-picker':
+                return 'Text'
+            case 'link-picker':
+                return 'Link'
             default: return ''
         }
     }

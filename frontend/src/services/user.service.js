@@ -7,6 +7,7 @@ const BASE_URL = 'user/'
 
 export const userService = {
     login,
+    googleLogin,
     logout,
     signup,
     getLoggedinUser,
@@ -38,6 +39,14 @@ async function update({user}) {
 
 async function login(userCred) {
     const user = await httpService.post('auth/login', userCred)
+    if (user) {
+        socketService.login(user._id)
+        return saveLocalUser(user)
+    }
+}
+
+async function googleLogin(credential) {
+    const user = await httpService.post('auth/google', { credential })
     if (user) {
         socketService.login(user._id)
         return saveLocalUser(user)

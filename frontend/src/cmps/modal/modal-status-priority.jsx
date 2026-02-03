@@ -10,14 +10,23 @@ export function ModalStatusPriority({ dynamicModalObj }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedLabels, setEditedLabels] = useState([])
 
-  // When board.labels changes, update the local state
+  // Determine which labels to use based on cmpType
+  const cmpType = dynamicModalObj.cmpType || (dynamicModalObj.type === 'priority' ? 'priority-picker' : 'status-picker')
+  const isStatusPicker = cmpType === 'status-picker'
+  
+  // Get the appropriate labels array with fallback
+  const currentLabels = isStatusPicker 
+    ? (board.statusLabels || board.labels || [])
+    : (board.priorityLabels || board.labels || [])
+
+  // When labels change, update the local state
   useEffect(() => {
-    setEditedLabels(board.labels)
-  }, [board.labels])
+    setEditedLabels(currentLabels)
+  }, [board.statusLabels, board.priorityLabels, board.labels, cmpType])
 
   function onClickModal(labelTitle) {
     dynamicModalObj.activity.action = dynamicModalObj.type
-    dynamicModalObj.activity.to = board.labels.find(label => label.title === labelTitle)
+    dynamicModalObj.activity.to = currentLabels.find(label => label.title === labelTitle)
     dynamicModalObj.onTaskUpdate(dynamicModalObj.type, labelTitle, dynamicModalObj.activity)
     dynamicModalObj.isOpen = false
     setDynamicModalObj(dynamicModalObj)
@@ -34,22 +43,23 @@ export function ModalStatusPriority({ dynamicModalObj }) {
 
   function onSaveLabels() {
     let changedLabelInfo = null;
-    // console.log('ModalStatusPriority.onSaveLabels');
-    for (let i = 0; i < board.labels.length; i++) {
-      if (board.labels[i].title.trim() !== editedLabels[i].title.trim()) {
-
-        // TODO: May need to have a dynamic cmpType here...
-        
+    
+    for (let i = 0; i < currentLabels.length; i++) {
+      if (currentLabels[i].title.trim() !== editedLabels[i].title.trim()) {
         changedLabelInfo = {
-          cmpType: 'status-picker',
-          oldTitle: board.labels[i].title,
+          cmpType: cmpType,
+          oldTitle: currentLabels[i].title,
           newTitle: editedLabels[i].title
         };
-        console.log('ModalStatusPriority.onSaveLabels changedLabelInfo', changedLabelInfo);
         break;
       }
     }
-    const updatedBoard = { ...board, labels: editedLabels };
+    
+    // Update the correct labels array based on cmpType
+    const updatedBoard = isStatusPicker
+      ? { ...board, statusLabels: editedLabels }
+      : { ...board, priorityLabels: editedLabels };
+    
     dispatch(updateBoardAction(updatedBoard, changedLabelInfo));
     setIsEditing(false);
   }
@@ -69,7 +79,7 @@ export function ModalStatusPriority({ dynamicModalObj }) {
                   />
                 </li>
               ))
-            : board.labels.map((label, idx) => (
+            : currentLabels.map((label, idx) => (
                 <li
                   key={idx}
                   style={{ backgroundColor: label.color }}

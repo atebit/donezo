@@ -10,6 +10,7 @@ import { setDynamicModalObj, toggleModal, updateTaskAction } from "../../store/b
 import { UpdatedPicker } from "./updated-picker"
 import { NumberPicker } from "./number-picker"
 import { FilePicker } from "./file-picker"
+import { CheckboxPicker } from "./checkbox-picker"
 
 import { TbArrowsDiagonal } from 'react-icons/tb'
 import { BiDotsHorizontalRounded, BiMessageRoundedAdd } from 'react-icons/bi'
@@ -107,7 +108,7 @@ export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCh
                 </div>
             </div>
             {board.cmpsOrder.map((cmp, idx) => {
-                const key = cmp.id || `${cmp.type}-${idx}`;
+                const key = typeof cmp === 'string' ? `${cmp}-${idx}` : (cmp.id || `column-${idx}`);
                 return (
                     <DynamicCmp
                         cmp={cmp}
@@ -122,11 +123,8 @@ export function TaskPreview({ task, group, board, handleCheckboxChange, isMainCh
 }
 
 function DynamicCmp({ cmp, info, onUpdate }) {
-    const cmpType = cmp;
-    // console.log( '=========TaskPreview (task row)');
-    // console.log( '=cmpType',cmpType);
-    // console.log( '=cmp',cmp);
-    // console.log( '=info',info);
+    const cmpType = typeof cmp === 'string' ? cmp : cmp.type;
+    
     switch (cmpType) {
         case "status-picker":
             return <StatusPicker info={info} onUpdate={onUpdate} />
@@ -142,7 +140,9 @@ function DynamicCmp({ cmp, info, onUpdate }) {
             return <FilePicker info={info} onUpdate={onUpdate} />
         case "updated-picker":
             return <UpdatedPicker info={info} onUpdate={onUpdate} />
+        case "checkbox-picker":
+            return <CheckboxPicker info={info} onUpdate={onUpdate} />
         default:
-            return <section role="contentinfo" className="status-priority-picker picker"><span style={{color:'#000'}}>{info.status}*</span></section>
+            return <section role="contentinfo" className="status-priority-picker picker"><span style={{color:'#000'}}>{cmpType}*</span></section>
     }
 }

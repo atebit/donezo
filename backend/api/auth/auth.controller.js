@@ -1,13 +1,20 @@
 const authService = require('./auth.service')
 const logger = require('../../services/logger.service')
 
+function _getLoginCookieOptions() {
+    if (process.env.NODE_ENV === 'production') {
+        return { sameSite: 'None', secure: true }
+    }
+    return { sameSite: 'Lax', secure: false }
+}
+
 async function login(req, res) {
     const { username, password } = req.body
     try {
         const user = await authService.login(username, password)
         const loginToken = authService.getLoginToken(user)
         logger.info('User login: ', user)
-        res.cookie('loginToken', loginToken, {sameSite: 'None', secure: true})
+        res.cookie('loginToken', loginToken, _getLoginCookieOptions())
         res.json(user)
     } catch (err) {
         logger.error('Failed to Login ' + err)
@@ -23,11 +30,24 @@ async function signup(req, res) {
         const user = await authService.login(credentials.username, credentials.password)
         logger.info('User signup:', user)
         const loginToken = authService.getLoginToken(user)
-        res.cookie('loginToken', loginToken, {sameSite: 'None', secure: true})
+        res.cookie('loginToken', loginToken, _getLoginCookieOptions())
         res.json(user)
     } catch (err) {
         logger.error('Failed to signup ' + err)
         res.status(500).send({ err: 'Failed to signup' })
+    }
+}
+
+async function googleLogin(req, res) {
+    try {
+        const { credential } = req.body
+        const user = await authService.googleLogin(credential)
+        const loginToken = authService.getLoginToken(user)
+        res.cookie('loginToken', loginToken, _getLoginCookieOptions())
+        res.json(user)
+    } catch (err) {
+        logger.error('Failed Google login ' + err)
+        res.status(401).send({ err: 'Failed Google login' })
     }
 }
 
@@ -43,5 +63,6 @@ async function logout(req, res){
 module.exports = {
     login,
     signup,
-    logout
+    logout,
+    googleLogin
 }

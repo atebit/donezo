@@ -94,7 +94,16 @@ function getEmptyTask() {
         "priority": "",
         "memberIds": [],
         "dueDate": '',
-        "comments": []
+        "number": null,
+        "checkbox": false,
+        "text": "",
+        "link": "",
+        "comments": [],
+        "updatedBy": {
+            "imgUrl": "",
+            "date": null
+        },
+        "file": "",
     }
 }
 
@@ -138,32 +147,34 @@ function getEmptyBoard() {
         "title": 'New Board',
         "archivedAt": Date.now(),
         "isStarred": false,
-        "labels": [
-            {
-                "id": "l101",
-                "title": "Done",
-                "color": "#037f4c"
-            },
-            {
-                "id": "l102",
-                "title": "Progress",
-                "color": "#ffcb00"
-            },
-            {
-                "id": "l103",
-                "title": "stack",
-                "color": "#e2445c"
-            }
+        "statusLabels": [
+            { id: "s101", title: "Done", color: "#00C875" },
+            { id: "s102", title: "Working on it", color: "#FDAB3D" },
+            { id: "s103", title: "Stuck", color: "#E2445C" },
+            { id: "s104", title: "Waiting for review", color: "#A25DDC" },
+            { id: "s105", title: "Pending", color: "#579BFC" },
+            { id: "s106", title: "", color: "#C4C4C4" },
         ],
+        "priorityLabels": [
+            { id: "p101", title: "Critical", color: "#333333" },
+            { id: "p102", title: "High", color: "#E2445C" },
+            { id: "p103", title: "Medium", color: "#FDAB3D" },
+            { id: "p104", title: "Low", color: "#579BFC" },
+            { id: "p105", title: "", color: "#C4C4C4" },
+        ],
+        "labels": [],
         "members": [
             {
                 "_id": "m101",
                 "fullname": "SeedChris",
                 "imgUrl": "https://res.cloudinary.com/dnc31jftb/image/upload/c_thumb,w_200,g_face/v1738757693/chrispic2_ub4t3b.jpg"
-            },],
+            },
+        ],
         "groups": [],
         "activities": [],
-        "cmpsOrder": ["status-picker", "member-picker", "date-picker", 'priority-picker']
+        "cmpsOrder": ["status-picker", "member-picker", "date-picker", "priority-picker", "updated-picker"],
+        "description": "",
+        "cmpsOption": ["status-picker", "member-picker", "date-picker", "priority-picker", "number-picker", "file-picker", "updated-picker", "checkbox-picker", "text-picker", "link-picker"]
     }
 }
 
