@@ -15,7 +15,7 @@
         "cors": "^2.8.5",
         "cryptr": "^6.0.3",
         "dotenv": "^16.4.7",
-        "express": "^4.17.1",
+        "express": "^4.22.1",
         "google-auth-library": "^9.15.1",
         "mongodb": "^3.2.7",
         "mongoose": "^8.9.6",
