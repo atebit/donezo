@@ -28,6 +28,7 @@ notifications), and operational hygiene (no env docs, no tests, no CI).
 | [08-dependencies.md](08-dependencies.md) | Package audit: outdated, abandoned, unused |
 | [09-roadmap-to-full-featured.md](09-roadmap-to-full-featured.md) | Sequenced plan to ship a full-featured app |
 | [10-supabase-migration.md](10-supabase-migration.md) | Secondary audit: lift assessment for moving persistence/auth/realtime to Supabase |
+| [11-recommendation-migrate-now.md](11-recommendation-migrate-now.md) | Decision memo: why migrating to Supabase first beats iterating on Mongo |
 
 ## Executive summary
 
