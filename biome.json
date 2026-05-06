@@ -1,0 +1,45 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.14/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!backend", "!frontend"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": { "formatter": { "trailingCommas": "all", "quoteStyle": "double" } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": { "noConsole": "error" },
+      "style": {
+        "useImportType": "error",
+        "noDefaultExport": "error"
+      },
+      "correctness": { "noUnusedImports": "error" }
+    }
+  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "overrides": [
+    {
+      "includes": [
+        "app/**/page.tsx",
+        "app/**/layout.tsx",
+        "app/**/error.tsx",
+        "app/**/not-found.tsx",
+        "app/**/loading.tsx",
+        "app/**/route.ts",
+        "next.config.ts",
+        "postcss.config.mjs",
+        "components/ui/**",
+        "**/*.stories.tsx"
+      ],
+      "linter": { "rules": { "style": { "noDefaultExport": "off" } } }
+    }
+  ]
+}
