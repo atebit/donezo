@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
-// TODO Slice B: mount <Toaster /> from "@/components/ui/sonner" once Slice B installs shadcn/sonner
+import { Geist } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import "./globals.css";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Donezo",
@@ -9,8 +13,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="bg-bg text-fg antialiased">{children}</body>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+      <body className="bg-bg text-fg antialiased">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
