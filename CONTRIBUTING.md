@@ -50,7 +50,7 @@ These are non-negotiable stack defaults. Executors and contributors must not dri
 - **Next.js 15 App Router, RSC-first.** Use `"use client"` only for components that require browser APIs or React state/effects. Default to Server Components.
 - **Server Actions for mutations.** No `/api` route handlers except for webhooks. Actions live in `app/**/actions.ts` co-located with the route that calls them.
 - **TypeScript strict.** `any` is banned via Biome rule. Use `unknown` at untrusted boundaries. Imports of types must use `import type`.
-- **Tailwind v4 + shadcn/ui + Radix.** Design tokens live in `app/globals.css` under `@theme`. No `tailwind.config.ts`. No MUI, no SCSS in new code. shadcn components are copied into `components/ui/` and owned by this repo.
+- **Tailwind v4 + shadcn/ui + Base UI** (`@base-ui/react`, the explicit successor to Radix used by shadcn's `base-nova` style). Design tokens live in `app/globals.css` under `@theme`. No `tailwind.config.ts`. No MUI, no SCSS in new code. shadcn components are copied into `components/ui/` and owned by this repo.
 - **Forms: React Hook Form + Zod.** The same Zod schema validates both client-side and inside the Server Action.
 - **RLS is the source of truth for authorization.** Row-Level Security policies in Supabase Postgres enforce access control. Application-layer checks are defense-in-depth, not the gate.
 - **All ids are `uuid v4`** from Postgres (`gen_random_uuid()`). No client-generated ids.
