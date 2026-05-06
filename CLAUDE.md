@@ -42,7 +42,7 @@ From the overview doc; restate here so executors don't drift:
 - **Next.js 15 App Router**, RSC-first. `"use client"` only for interactivity.
 - **Server Actions** for mutations. No `/api` route handlers except webhooks.
 - **TypeScript strict.** Generated Supabase types via `supabase gen types typescript`.
-- **Tailwind v4 + shadcn/ui + Radix.** No MUI, no SCSS in new code.
+- **Tailwind v4 + shadcn/ui + Base UI** (`@base-ui/react`). The current shadcn `base-nova` style uses Base UI, which is the explicit successor to Radix; we adopt it as the canonical primitive layer for this rebuild. No MUI, no SCSS in new code.
 - **Forms:** React Hook Form + Zod. Same Zod schema validates client + server action.
 - **Tables:** TanStack Table + TanStack Virtual.
 - **DnD:** dnd-kit.

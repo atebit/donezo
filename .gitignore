@@ -5,3 +5,28 @@ logs
 .env
 backend/.env
 frontend/.env
+
+# Next.js
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel/
+
+# Turbo
+.turbo/
+
+# Tests
+coverage/
+playwright-report/
+test-results/
+
+# Generated Supabase types
+lib/supabase/types.ts
+
+# Local env overrides
+.env*.local
+
+# Supabase local dev outputs
+supabase/.temp/
