@@ -64,12 +64,11 @@ Storybook is **deferred** per epic 01 decision Q4. Cell renderers will use Playw
 
 ## Legacy code
 
-`frontend/` (CRA + MUI + Redux) and `backend/` (Express + MongoDB) are **read-only**.
+The legacy CRA + MUI + Redux frontend and Express + MongoDB backend have been **removed from git** (after epic 01, commit `a5d47c2`). Maintainers may keep local copies of `frontend/` and `backend/` outside the repo, or untracked inside it — both paths are now in `.gitignore`. They exist for dev reference only.
 
-- No patches, no dependabot fixes, no refactors, no new features.
-- Bug fixes only if they are actively blocking users in production.
-- They will be deleted in a single cleanup commit when the new app reaches feature parity.
-- **Do not run `pnpm install` from `frontend/` or `backend/`.** Those directories use `npm` and have their own `package-lock.json` files. Running pnpm there will create a mismatched lockfile.
+- Do not re-add legacy code to the repo.
+- Do not import from a local copy.
+- Git history before `a5d47c2` still contains the legacy code if needed for archaeology.
 
 ## Vercel project setup (manual, one-time, by repo admin)
 

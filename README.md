@@ -1,98 +1,63 @@
+# Donezo
 
-# Donezo - E2E clone of Monday (React + Node.js) 
+A monday.com-class internal project and task management tool, built on Next.js 15, Supabase, and Vercel.
 
-[A lot of work was done to get it to even render](https://github.com/atebit/donezo/commit/61be8a3da9d381ce593b1bb7bed43ac57173ec59) which is captured in the initial commit to this new repository. Project is forked from [MyDay](https://github.com/idandavid1/My-Day). 
+## Status
 
-Table-style task management board app inspired by Monday.com, [Project link (not avail yet)](https://donezo.netlify.com/).
+Mid-rebuild. The original CRA + Express + MongoDB app has been removed from git (archived in earlier history); the new app is being rebuilt epic-by-epic. See [`docs/conversion-plan/00-overview.md`](docs/conversion-plan/00-overview.md) for the full plan.
 
-For those of you who are already familliar with Monday, we added some intersting and unique features - [features](#application-features).
-If you are not familliar with the App, read about it [here](#monday-description).
-And, if you are tired and just want to see some images of the website, [scroll to the bottom...](#showcase)
+## Stack
 
+- **Framework:** Next.js 15 (App Router, RSC-first)
+- **Language:** TypeScript (strict)
+- **UI:** Tailwind v4 + shadcn/ui (Base UI primitives)
+- **Forms:** React Hook Form + Zod
+- **State:** RSC + Zustand for client-only UI state
+- **DB:** Supabase Postgres (RLS as source of truth for authorization)
+- **Auth:** Supabase Auth (`@supabase/ssr`)
+- **Realtime:** Supabase Realtime
+- **Storage:** Supabase Storage
+- **Email:** Resend + React Email
+- **Errors:** Sentry
+- **Hosting:** Vercel
+- **Tests:** Vitest (unit) + Playwright (e2e) + pgTAP (RLS policies)
+- **Tooling:** Biome (formatter + linter), pnpm
 
-___
+## Local development
 
-### Table of Contents
-- [Monday Description](#monday-description)
-- [Application Features](#application-features)
-- [Technologies](#technologies)
-- [Getting started](#getting-started)
-- [Showcase](#showcase)
+Requires Node 22 LTS and pnpm via corepack.
 
-## Description
-Manage projects and tasks using a table board. A board contains groups, lists and tasks. Usually each project is a board, and the groups and the tasks and titles to do in the project. Users can modify the board and change group and task locations using Drag and Drop.
-Users can work together and watch live changes. 
-There are many other features, such as status, priority, due date for tasks, members and more. 
-More about it in the [features section](#application-features).
-
-## Application Features
-- Create ***Boards*** and manage projects: Using ***D&D***, create, remove, duplicate, update groups and tasks, activity log for all the activity in the board, and for each board you can remove and add task columns.
-- Create and edit ***Task*** to the deepest level: statuses, priority, due date, members, file images, numbers, last updated by, duplicate, move, activity log and live chat.
-- ***Groups:*** - Change the color of the group with the palette color modal using ***lodash library***.
- ***Filtering*** by members / group and task title.
-- Google Login, along with regular authentication which is encrypted and safe.
-
-Of course that we included all the small nuances Monday has. You are not supposed to find any differences! 
-
-## Technologies
-
-The technology stack we used was MERN - MongoDB, Express, React, Node.js.
-The app uses webSockets to update the board in real-time.
-The API calls to the backend are done with the REST API method.
-
-We have used many thirs side libraries for many goals like google-login, lodash, D&D and more.
-The layout and pixel-perfect were made with Sass (functions, mixins, variables). 
-
-## Getting started
-
-Head to the repository on top and clone the project or download the files.
-
-```
-git clone https://github.com/atebit/donezo
-
+```bash
+corepack enable
+pnpm install
+cp .env.example .env.local
+pnpm dev
 ```
 
-Enter the backend folder and make sure you have node_modules installed. After that we will initiate the server with 'npm start':
+Open [http://localhost:3000](http://localhost:3000).
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full setup, scripts, branch conventions, and the Vercel project setup checklist.
+
+## Repository layout
 
 ```
-cd backend
-npm i 
-npm start
+app/                  # Next.js App Router routes + server actions
+components/           # UI components (ui/ for shadcn primitives)
+lib/                  # auth, env, logger, server-action helpers, Supabase clients
+hooks/                # client-side hooks
+stores/               # Zustand stores (UI state only)
+emails/               # React Email templates
+supabase/             # config.toml, migrations, seed
+tests/                # unit, e2e, RLS policy tests
+docs/
+  conversion-plan/    # canonical rebuild plan, one file per epic
+  audit/              # original codebase audit, decision memos
+.claude/              # agent and command definitions for the dispatch workflow
+.github/workflows/    # CI
 ```
 
-You shuold get a console ouput that the server is up and running at port 3030.
-Enter the frontend folder and repeat the same process.
+Full layout in [`docs/conversion-plan/00-overview.md`](docs/conversion-plan/00-overview.md).
 
-```
-cd frontend
-npm i 
-npm start
-```
+## Workflow
 
-You shuold get a console ouput that the server is up and running at `localhost:3000`.
-
-## Showcase
-
-### Homepage
-The landing page in which the user can sign up / login, or press the call to action button to start demo if the are limited with time.
-
-
-### Board
-D&D, live-updates, editing tasks to the deepest level, side-menu, editing board members and much more..
-
-
-### Signup
-We created an e2e authentication flow, including encrypting the users' details, midelwears and ****Google Login***.
-
-
-### Task details
-Here the members can add messages and to follow after the activity for every task and to watch it happens live
-
-
-### Some mobile!
-Just a taste of the mobile experience. We used different **mixins**, **conditional rendering**, and the **"mobile first"** approach. 
-The layout we have built from the very first moment enabled us to make the website responsive without a lot of effort.
-
-
-### Authors
- - [Christopher Smith](https://github.com/atebit)
+The rebuild executes one epic at a time off `main`, with parallel-safe slices dispatched per epic and a per-stage review-and-followup loop. The rules and agent definitions live in [`CLAUDE.md`](CLAUDE.md) and [`.claude/`](.claude/).

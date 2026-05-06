@@ -3,8 +3,12 @@ logs
 
 .DS_Store
 .env
-backend/.env
-frontend/.env
+
+# Legacy code — removed from git after epic 01.
+# Kept locally for dev reference only; never tracked, never deployed.
+# History remains in git up to commit a5d47c2 if needed for archaeology.
+frontend/
+backend/
 
 # Next.js
 .next/

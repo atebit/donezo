@@ -4,9 +4,10 @@ This repo is mid-rewrite: a CRA + Express + MongoDB app is being rebuilt as a Ne
 
 ## Legacy code
 
-- `frontend/` (CRA + MUI + Redux) and `backend/` (Express + MongoDB) are **legacy**. They stay running until parity is reached, then get deleted in one cleanup commit.
-- **Do not patch legacy code.** No dependabot fixes, no refactors, no new features there. Bug fixes only if they block users in production.
-- The new app is built fresh — no porting, no compatibility with legacy data shapes.
+- The legacy CRA + MUI + Redux frontend and Express + MongoDB backend have been **removed from git** (after epic 01, commit `a5d47c2`). Maintainers may keep local copies of `frontend/` and `backend/` outside the repo, or untracked inside it — both paths are now in `.gitignore`. They exist for dev reference only.
+- **Do not re-add legacy code to the repo.** No imports from a local copy, no porting of files, no compatibility shims for legacy data shapes.
+- The new app is built fresh. Anything we want from the legacy product is recreated against the new substrate, not copied.
+- Git history before `a5d47c2` still contains the legacy code if needed for archaeology.
 
 ## Workflow — one epic at a time
 
