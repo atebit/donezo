@@ -1,5 +1,5 @@
 // @ts-expect-error vitest is wired in epic 15
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Tests for lib/env.ts — env schema validation.
@@ -7,13 +7,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
  * NOTE: These tests cannot run until Vitest is installed in epic 15.
  * They are written here so the epic 15 executor can pick them up without changes.
  *
- * Because lib/env.ts eagerly parses process.env at import time, these tests
- * use vi.resetModules() and dynamic imports inside each test to re-evaluate
- * the module with the manipulated environment.
- *
  * `mutableEnv` casts away the NodeJS.ProcessEnv readonly constraint so tests
  * can freely set and delete keys. This is intentional test scaffolding.
  */
+
+// vi.resetModules() ensures each dynamic import re-evaluates lib/env with the current process.env.
 
 // Cast once so tests can mutate freely — intentional test scaffolding.
 const mutableEnv = process.env as Record<string, string | undefined>;
@@ -22,6 +20,7 @@ describe("env schema", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
+    vi.resetModules();
     process.env = { ...originalEnv };
   });
 
