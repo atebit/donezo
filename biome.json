@@ -12,6 +12,7 @@
     "lineWidth": 100
   },
   "javascript": { "formatter": { "trailingCommas": "all", "quoteStyle": "double" } },
+  "css": { "parser": { "tailwindDirectives": true } },
   "linter": {
     "enabled": true,
     "rules": {
