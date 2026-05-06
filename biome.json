@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!backend", "!frontend"]
+    "includes": ["**", "!backend", "!frontend", "!lib/supabase/types.ts"]
   },
   "formatter": {
     "enabled": true,
