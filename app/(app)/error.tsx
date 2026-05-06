@@ -1,0 +1,21 @@
+"use client";
+import { Button } from "@/components/ui/button";
+
+export default function AppError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  // TODO epic 15: report to Sentry
+  // biome-ignore lint/suspicious/noConsole: error boundary fallback before logger wiring
+  console.error(error);
+  return (
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-start justify-center gap-4 p-8">
+      <h1 className="text-2xl font-semibold">This area of the app errored</h1>
+      <p className="text-fg/70">{error.message}</p>
+      <Button onClick={reset}>Try again</Button>
+    </main>
+  );
+}
