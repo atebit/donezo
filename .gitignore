@@ -27,3 +27,6 @@ lib/supabase/types.ts
 
 # Local env overrides
 .env*.local
+
+# Supabase local dev outputs
+supabase/.temp/
