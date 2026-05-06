@@ -11,6 +11,7 @@ import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  // TODO epic 14: wire ThemeProvider so useTheme returns a real value (currently falls back to "system").
   const { theme } = useTheme();
   const resolvedTheme = (theme ?? "system") as NonNullable<ToasterProps["theme"]>;
 
