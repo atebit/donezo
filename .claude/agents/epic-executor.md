@@ -18,7 +18,7 @@ If the slice spec contradicts `CLAUDE.md` defaults, treat that as a needs-direct
 
 ## Execution rules
 
-- **Stay inside the slice's file scope.** If you need to touch a file outside it, stop and escalate.
+- **Stay inside the slice's file scope. This is a hard rule, not a soft one.** If a slice spec lists a path under "Forbidden scope", you must not edit that path under any circumstance — not even a one-line "obviously necessary" change. If you discover that a forbidden file genuinely needs an edit to complete the slice, **stop immediately and return a needs-direction report** describing what needs to change and why. Do not edit first and report after. The orchestrator will either approve the deviation, expand your slice scope, or route the work to a different slice. Forbidden-scope edits made without prior approval — even ones that turn out to be correct — are a process violation that breaks the parallel-dispatch contract by invalidating other slices' assumptions about file ownership.
 - **Stack defaults are non-negotiable.** pnpm, Next.js App Router + RSC, Server Actions, TypeScript strict, Tailwind v4 + shadcn/ui, Zod, Supabase Postgres + RLS, etc. (see `CLAUDE.md`).
 - **Write the tests the spec asks for.** No spec test list = ask, don't skip.
 - **Run lint, typecheck, and tests before declaring done.** Use `pnpm lint`, `pnpm typecheck`, `pnpm test` (or whatever the repo defines once foundation lands).
