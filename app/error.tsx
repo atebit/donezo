@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 
 export default function GlobalError({
   error,
@@ -7,13 +8,14 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  // TODO epic 15: report to Sentry
+  // biome-ignore lint/suspicious/noConsole: error boundary fallback before logger wiring
+  console.error(error);
   return (
-    <main className="p-8">
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-start justify-center gap-4 p-8">
       <h1 className="text-2xl font-semibold">Something went wrong</h1>
-      <p>{error.message}</p>
-      <button type="button" onClick={reset}>
-        Try again
-      </button>
+      <p className="text-fg/70">{error.message}</p>
+      <Button onClick={reset}>Try again</Button>
     </main>
   );
 }
