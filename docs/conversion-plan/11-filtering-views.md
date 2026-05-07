@@ -261,6 +261,20 @@ alter table public.profile
 
 The `view` table itself was created in [02](02-supabase-schema.md). The default-view insertion happens in [05](05-workspaces-boards.md)'s `createBoard` server action — update it to insert "Main table" automatically (already noted in [05](05-workspaces-boards.md)'s tasks).
 
+## Visual fidelity requirements
+
+This epic completes the `<BoardFilter />` toolbar started in [06](06-groups-tasks-table.md) and adds saved-view tabs. Refer to [`component-system.md §1.4`](component-system.md#14-boardfilter-toolbar) and [`design-system.md`](design-system.md).
+
+Must-match:
+
+- **`<BoardFilter />` toolbar full** — gap 5px, each tool 32px tall, font 14px. Tools (`Person`, `Filter`, `Sort`, `Hide`, `Group`, `Search`): padding `0 8px`, color `--color-fg-muted`, glyph 18px. Hover bg `--color-surface-hover`, radius 4px.
+- **Search expand animation** — input width `58 → 140px` over `--motion-medium` on focus. Chrome border on focus `0.5px --color-primary`, bg white. Cursor flips `pointer → text` on focus. See [_board-filter.scss:90-110](../../frontend/src/assets/styles/cmps/board/_board-filter.scss).
+- **Person filter chip active state** — bg `--color-primary-selected` (`#cce5ff`), radius 4px.
+- **`<ViewTabs />`** — same chrome as board view tabs: 32px tall, padding `0 8px`, font 14px weight 500. Active tab gets 2px bottom border `--color-primary`. Inactive hover bg `--color-surface-hover`, radius `4px 4px 0 0`.
+- **`<FilterBuilder />` popover** — uses `<DynamicModal />` chrome from [01](01-foundation.md): bg white, border `1px solid --color-border-strong`, radius 8px, shadow `--shadow-modal`, z-index `--z-popover`.
+- **`<GlobalSearchPalette />` (Cmd-K)** — modal centered, ~640px wide, radius `--radius-md`, shadow `--shadow-modal`. Each result row uses the `<MenuList />` recipe.
+- **Filter operand editors** — reuse the cell-type editors in compact mode (don't redesign per filter type).
+
 ## Tasks
 
 1. **Migration**: `profile.last_view_per_board`.

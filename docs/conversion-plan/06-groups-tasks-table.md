@@ -284,6 +284,26 @@ A subtle issue: when *we* mutate, we'll receive our own Realtime echo. Idempoten
 - No tasks in group: lighter-weight inline message under the group header: "No tasks yet — add one below."
 - Filtered to nothing ([11](11-filtering-views.md)): "No tasks match the current filter. Clear filter."
 
+## Visual fidelity requirements
+
+This epic delivers the core "Monday-feel" of the table view. The components below are the most visible part of the product; every one is locked in [`component-system.md`](component-system.md) and its tokens in [`design-system.md`](design-system.md).
+
+Must-match (this epic must produce something that *feels* like a Monday board, not just a styled HTML table):
+
+- **`<GroupHeader />`** — sticky at `top: 182px` (narrow+) / `149px` (mobile). Title H4 weight 600, 18px, color = group accent (`--color-group-N`). Task count fades in `0 → 1` on hover over `--motion-base`. Overflow menu glyph (`MoreHorizontal` 20px) in off-canvas left column, hidden by default. See [component-system.md §2.2](component-system.md#22-groupheader).
+- **`<TaskRow />`** — 36px tall. Sticky-div on the left with `border-left: 6px solid <group-accent>` (the **group color stripe** is locked — it's how rows visually belong to a group). Drag handle, checkbox (33px), title cell (336px), comment count badge (`14×13` circle bg `--color-primary`). Row hover reveals drag handle + Open expand affordance + comment-add icon over `--motion-base`. See [§2.3](component-system.md#23-taskrow--taskpreview).
+- **Inline-editable title** for group + task — same `<EditableTitle />` pattern from [05](05-workspaces-boards.md). When editing, the row gets the **"on-typing" wash** (`bg: --color-surface-active`, `#cce5ff`) so collaborators perceive a live edit. See [component-system.md §2.1](component-system.md#21-inline-editable-title-blockquote-pattern).
+- **"+ New Item" split-button** — bg `--color-primary`, 32px tall, radius 5px. Two halves with independent corner-rounding on hover, divider in `--color-primary-hover`. Lock the split-button visual contract — it's the toolbar's primary anchor. See [§1.4](component-system.md#14-boardfilter-toolbar) (full filter toolbar lands in [11](11-filtering-views.md), but the split-button itself ships here).
+- **`<BulkActionBar />`** — floating fixed-bottom bar that slides in over `--motion-fast` when ≥1 task is selected. Count tile bg `--color-primary` 63px wide, body padding `0 20px`, action buttons icon-on-top with 18px glyph + 12px label, hover glyph color `--color-primary`. See [§3.9](component-system.md#39-bulkactionbar-floating).
+- **Group color stripe + `<ColorPalette />`** popover — 142px wide grid of 12 swatches from `--color-group-1` through `--color-group-12`. See [§3.3](component-system.md#33-colorpalette-popover).
+- **Group menu, task menu, add-group modals** — all use the `<MenuList />` recipe from [01](01-foundation.md). No bespoke chrome.
+- **Cell skeleton** — 140px min-width, 36px height, `1px solid --color-border-strong` border. Title cell only is filled in this epic; other cells stub to a placeholder of identical chrome.
+
+Motion notes:
+- Row hover reveals (`task-menu`, `open-task-details`, comment-add): `opacity 0 → 1` over `--motion-base`.
+- "+ New Item" hover bg shift: `--motion-slow` (`.4s`).
+- Bulk-bar slide-in: `--motion-fast` (150ms).
+
 ## Tasks
 
 1. **Set up TanStack Table + Virtual + dnd-kit deps.** `pnpm add @tanstack/react-table @tanstack/react-virtual @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`.

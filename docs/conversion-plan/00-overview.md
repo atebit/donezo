@@ -6,7 +6,16 @@ The goal is a credible monday.com-class internal tool. Billing, tenant isolation
 
 ## Why this plan exists
 
-The audit at [`docs/audit/`](../audit/00-index.md) inventories the legacy codebase and concludes that a structural rebuild beats incremental fixes ([decision memo](../audit/11-recommendation-migrate-now.md)). This conversion plan is the execution of that decision. We are not porting code — we are rebuilding on the right substrate, salvaging only the visual design and product knowledge.
+The audit at [`docs/audit/`](../audit/00-index.md) inventories the legacy codebase and concludes that a structural rebuild beats incremental fixes ([decision memo](../audit/11-recommendation-migrate-now.md)). This conversion plan is the execution of that decision. We are not porting code — we are rebuilding on the right substrate.
+
+**Visual fidelity is a hard contract, not aspirational.** The legacy CRA + SCSS + MUI frontend at `frontend/` (kept locally per [CLAUDE.md](../../CLAUDE.md)) is the single source of truth for color, typography, spacing, motion, and component visuals. The new app must match it. Rebuilding "on the right substrate" means new code (Next.js, Supabase, Tailwind, shadcn/ui) — it does **not** mean a new visual identity.
+
+The locked specs are:
+
+- **[`design-system.md`](design-system.md)** — every color, font, spacing value, radius, shadow, z-index, motion duration, and icon mapping, sourced verbatim from `frontend/src/assets/styles/setup/_variables.scss` and the SCSS partials. Includes the canonical `app/globals.css` `@theme` block.
+- **[`component-system.md`](component-system.md)** — every significant legacy component's visual + interaction contract, mapped to the epic that ships it and tagged with a fidelity bar (`must-match` / `match` / `inspired`).
+
+Every epic that touches UI references these docs in a "Visual fidelity requirements" section. Executors must consume tokens from `design-system.md` and component contracts from `component-system.md`; they may not invent palettes, derive new spacing, or pick alternative icons. Architectural deviations escalate to the `epic-researcher` (Opus), as with any other ambiguity.
 
 ## Target stack
 
@@ -14,7 +23,7 @@ The audit at [`docs/audit/`](../audit/00-index.md) inventories the legacy codeba
 |---|---|---|
 | Framework | **Next.js 15 (App Router)** | RSC + server actions remove the bespoke REST layer. File-based routing, middleware, edge runtime, image optimization, built-in caching. |
 | Language | **TypeScript (strict)** | No untyped service modules, no `any`-typed Redux state. Generated Supabase types enforce DB shape end-to-end. |
-| UI | **Tailwind v4 + shadcn/ui + Radix primitives** | Replace MUI + SCSS. Tokens-driven theming, accessible primitives, consistent component vocabulary. Drops ~600KB of MUI. |
+| UI | **Tailwind v4 + shadcn/ui + Radix primitives** | Replace MUI + SCSS. Tokens-driven theming, accessible primitives, consistent component vocabulary. Drops ~600KB of MUI. Tokens locked in [`design-system.md`](design-system.md); component contracts in [`component-system.md`](component-system.md). |
 | Forms | **React Hook Form + Zod** | One schema validates client and server-action inputs. |
 | Tables | **TanStack Table + TanStack Virtual** | Virtualized rows for 10k+ task boards. Headless, fully styleable. |
 | DnD | **dnd-kit** | Replaces abandoned `react-beautiful-dnd`. Touch-capable. Nested drop zones for kanban. |
@@ -37,6 +46,7 @@ The audit at [`docs/audit/`](../audit/00-index.md) inventories the legacy codeba
 
 These shape every epic. When in doubt, return to these.
 
+0. **Visual fidelity is a contract.** Tokens come from [`design-system.md`](design-system.md). Component contracts come from [`component-system.md`](component-system.md). Both are sourced from the legacy `frontend/` SCSS. No "neutral" palette, no "we'll polish later," no inventing tokens during slice work. If a component looks different from the legacy app's screenshot, it's wrong.
 1. **RSC-first.** Default to Server Components. Drop to `"use client"` only for interactivity (drag, picker popovers, optimistic UI). Server Actions handle mutations; no `/api` route handlers unless we need a webhook or third-party integration.
 2. **RLS is the source of truth for authorization.** The server cannot trust the client, but it also doesn't need to: every query goes through Postgres with the user's JWT, and policies enforce access. Server-side checks are a defense-in-depth layer, not the primary gate.
 3. **Type-safe end-to-end.** `supabase gen types typescript` runs on every schema change. Server actions accept Zod-validated input. Component props are narrow.
@@ -125,6 +135,8 @@ The order is not negotiable for the foundation epics. Feature epics (05+) are mo
 
 ```
 00 Overview (you are here)
+   design-system.md   ← consumed by every UI epic
+   component-system.md
 ↓
 01 Foundation ──────────┐
                         ↓
@@ -181,6 +193,7 @@ A board where:
 - Audit log export, compliance modes (SOC2/HIPAA)
 - Public form sharing beyond authenticated users (form view exists; public sharing deferred)
 - Cross-board mirror/dependency cell types (column types listed but stubbed in [07](07-column-system.md))
+- **Marketing / public landing page.** The only public route is the Google sign-in screen ([03](03-auth.md)). The legacy `cmps/home/` + `cmps/custom/` components are not ported; the marketing-only tokens (brand-violet gradients, home-page hero gradient) are not ported either. See [`design-system.md`](design-system.md) and [`component-system.md`](component-system.md).
 
 ## How to read each epic doc
 
@@ -192,9 +205,10 @@ Every epic doc follows the same shape:
 4. **Dependencies** — which earlier epics must be merged.
 5. **Architecture & design choices** — the substantive section. Every nontrivial decision documented with rationale.
 6. **Schema additions / migrations** — SQL where relevant.
-7. **Tasks** — checklist, ordered. Each task is a half-day to two-day chunk.
-8. **Definition of done** — testable criteria.
-9. **Open questions** — things to resolve before starting or during.
+7. **Visual fidelity requirements** (UI epics only) — points at [`design-system.md`](design-system.md) and [`component-system.md`](component-system.md), enumerates the components this epic must match and the tokens it must consume.
+8. **Tasks** — checklist, ordered. Each task is a half-day to two-day chunk.
+9. **Definition of done** — testable criteria.
+10. **Open questions** — things to resolve before starting or during.
 
 ## Conventions
 

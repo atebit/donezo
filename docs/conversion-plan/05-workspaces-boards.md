@@ -200,6 +200,25 @@ alter table public.profile
 alter table public.column add column icon text;
 ```
 
+## Visual fidelity requirements
+
+This epic stands up the app shell and is the first to render Donezo's chrome to a logged-in user. Every component below has a locked spec in [`component-system.md`](component-system.md). Source tokens from [`design-system.md`](design-system.md) — never invent new values.
+
+Must-match components (review screenshots before merge):
+
+- **`<MainSidebar />`** — bg `--color-surface-nav` (`#292f4c`), 66px wide rail, hover wash `rgba(0,0,0,.6)` with 10px radius. Avatar `scale(.9)` on hover. Mobile bottom-bar variant per [component-system.md §1.1](component-system.md#11-mainsidebar-icon-column).
+- **`<WorkspaceSidebar />`** — bg `--color-surface-rail` (`#F6F7FB`), `230px` open / `30px` collapsed. Width animates over `--motion-slow`; inner content opacity fades `0 → 1` with **0.25s delay** so it appears after the rail finishes. Toggle pill on right edge animates padding asymmetrically on hover. See [§1.2](component-system.md#12-workspacesidebar-slide-out-workspace-panel).
+- **`<BoardHeader />`** — sticky bar with title (inline-editable per [§2.1](component-system.md#21-inline-editable-title-blockquote-pattern)), star (`--color-label-yellow` filled), board tools row, member avatar pile (24px, `-5px` overlap, white border), view tabs (only "Table" enabled in this epic; active tab gets 2px bottom border `--color-primary`). See [§1.3](component-system.md#13-boardheader-top-of-board).
+- **`<CreateBoardModal />`** — 500px wide centered modal with `--shadow-modal`. See [§3.7](component-system.md#37-createboardmodal-centered).
+- **`<MemberModal />` / `<InviteModal />`** — 360px panel, member chips bg `--color-chip-member` (`#e5f4ff`), radius `8px`. See [§3.8](component-system.md#38-membermodal--invitemodal).
+- **`<BoardDescriptionModal />`** — 850×550 two-pane modal with right pane bg `--color-surface-info`. See [§3.6](component-system.md#36-boarddescriptionmodal-centered-two-pane).
+- **Active board row** in workspace sidebar uses `--color-surface-active` (`#cce5ff`).
+- **Workspace logo glyph** — 30×30 rounded-8px tile bg `--color-label-green` with white "lightning" + home overlay. See [§1.2](component-system.md#12-workspacesidebar-slide-out-workspace-panel).
+- **Favorites empty-state** — 80px star, line-height 1.5. See [§8.3](component-system.md#83-favorites-empty-state).
+- **`<LastViewed />`** workspace landing widget — see [§8.2](component-system.md#82-lastviewed).
+
+Inline-editable title pattern ([component-system.md §2.1](component-system.md#21-inline-editable-title-blockquote-pattern)) ships its first instance here on the board title — extract as a shared `<EditableTitle />` primitive, since [06](06-groups-tasks-table.md) (group + task) and [09](09-comments-activity.md) (board description) all reuse it.
+
 ## Tasks
 
 1. **Migration** for `profile.last_workspace_id` and `column.icon`.

@@ -196,6 +196,27 @@ Stored in the view's config. Editor: a panel in the view settings.
 - Map view, Workload view, Files view, Chart per group: all stubbed in the "+ Add view" dropdown with a "Coming soon" tooltip; not added in v1.
 - Form public sharing: similar.
 
+## Visual fidelity requirements
+
+This epic spans five different views; each needs to feel cohesive with the table while having its own visual rhythm. Tokens always come from [`design-system.md`](design-system.md); component contracts in [`component-system.md`](component-system.md).
+
+**Must-match — Kanban** ([component-system.md §7.1](component-system.md#71-kanbanboard-lanes--cards)):
+- Lane width `260px`, bg `--color-surface-rail` (`#F6F7FB`).
+- Lane header 44px tall, white text on group color, top corners `8px` rounded.
+- Card bg white, radius 4px, shadow `--shadow-card` (`0px 4px 8px rgb(0 0 0 / 20%)`), font 13px, margin-bottom 8px.
+- Card title row 36px, gap 4px, with chat icon right (24px) + comment count badge (`14×13` circle, bg `--color-primary`).
+- Card content rows: stacked picker rows, each 36px tall with bg `--color-surface-info` (`#f5f6f8`).
+- Lane container max-height `410px`, flex-wrap.
+
+**Match — Calendar / Timeline / Dashboard / Form**:
+- Use `--color-primary` for selected dates and active timeline today-line.
+- Status-pill bars in Timeline use the cell registry's color palette (no new color choices).
+- Dashboard widgets: 2px border `--color-border-strong` with hover border-color `--color-primary` (per [_dashboard.scss:14](../../frontend/src/assets/styles/views/_dashboard.scss)). Widget headers separated by `1px solid --color-border-strong`.
+- Form view inputs reuse the chrome from [03](03-auth.md) auth forms (radius 4px, padding `8px 16px`, focus border `--color-primary`).
+- Card style applied to `<TaskCard />` for kanban/calendar/timeline must come from a single shared renderer — same component, three contexts.
+
+Use the `<MenuList />` primitive for any dropdowns (group-by picker, density toggle, view-tab dropdown). Don't roll bespoke menus per view.
+
 ## Tasks
 
 ### Shared
