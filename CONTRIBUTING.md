@@ -39,6 +39,15 @@ Schema changes go through Supabase CLI:
 
 Note: there is no local Supabase / Docker workflow. Cloud is the source of truth. All developers and CI point at the same project. Coordinate migration PRs to avoid two simultaneous schema changes.
 
+## Authentication
+
+- **Every authed page** in the `app/(app)/` tree calls `requireUser()` from `@/lib/auth/current-user` at the top of its server component. `requireUser()` redirects to `/sign-in` if there's no session.
+- **Every authed server action** is wrapped in `withUser()` from `@/lib/actions`. The handler receives `{ supabase, userId }`. The wrapper rejects unauthenticated callers with `{ ok: false, error: { code: "UNAUTHENTICATED" } }`.
+- **Public pages** (`/`, `/sign-in`, `/sign-up`, `/forgot-password`, `/reset-password`, `/verify-email`, `/auth/callback`) are listed in `lib/auth/public-paths.ts`. The root middleware enforces the redirect rules.
+- **Service-role admin client** (`adminClient()` from `@/lib/supabase/admin`) bypasses RLS. Use only inside server actions and route handlers; the Biome `noRestrictedImports` rule blocks client-component imports.
+- **Email allowlist** (sign-up domain restriction) lives in the `before-user-created` Supabase Edge Function. See `supabase/functions/before-user-created/README.md`.
+- **Email templates** (verify, reset, magic link, invite, email-change) currently use Supabase's default templates. Branded templates land in epic 13 alongside Resend + React Email.
+
 ## Branch naming
 
 **Epic work:**
