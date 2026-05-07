@@ -31,3 +31,6 @@ test-results/
 
 # Supabase local dev outputs
 supabase/.temp/
+
+# Claude worktrees
+.claude/worktrees/
