@@ -3,7 +3,7 @@
 -- RLS assertions for: public.invitation, self-insert into
 -- public.workspace_member and public.board_member via accepted invitation.
 --
--- Assertion count: 12
+-- Assertion count: 13
 --
 -- Coverage targets (from epic 04 definition of done):
 --   - admin can INSERT invitation
@@ -18,6 +18,7 @@
 --   - board-scoped invitation cannot trigger insert into workspace_member (Q13)
 --   - valid board-scoped invitation: invitee can self-insert into board_member
 --   - already-accepted invitation cannot be reused
+--   - valid invitation but role mismatch cannot self-insert as the wrong role
 --
 -- DEPENDENCY: These tests require the invitation table and the updated
 -- wsm_insert / bm_insert policies from Slice D's migration.
@@ -26,7 +27,7 @@
 
 begin;
 
-select plan(12);
+select plan(13);
 
 \i 00_setup.sql
 
@@ -345,6 +346,32 @@ select throws_ok(
     )$$,
   '42501',
   'already-accepted invitation cannot be reused for self-insert'
+);
+
+-- ============================================================
+-- Test 13 (added by F1.3): valid invitation but role mismatch fails
+-- The wsm_insert self-insert clause requires i.role = workspace_member.role.
+-- ============================================================
+
+select tests.reset_to_service_role();
+update public.invitation
+   set accepted_at = null
+ where id = 'i4000000-0000-0000-0000-000000000001';
+delete from public.workspace_member
+  where workspace_id = 'b4000000-0000-0000-0000-000000000001'
+    and user_id = 'a4000000-0000-0000-0000-000000000004';
+
+select tests.set_jwt_user('a4000000-0000-0000-0000-000000000004'::uuid);
+
+select throws_ok(
+  $$insert into public.workspace_member (workspace_id, user_id, role)
+    values (
+      'b4000000-0000-0000-0000-000000000001',
+      'a4000000-0000-0000-0000-000000000004',
+      'admin'
+    )$$,
+  '42501',
+  'invitation with role=member cannot be used to self-insert as admin (role mismatch)'
 );
 
 select tests.reset_to_service_role();
