@@ -10,13 +10,28 @@ const EnvSchema = z.object({
   SENTRY_DSN: z.string().url().optional(),
 });
 
+export type Env = z.infer<typeof EnvSchema>;
+
 const parsed = EnvSchema.safeParse(process.env);
-if (!parsed.success) {
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
+if (!parsed.success && !isBuildPhase) {
   // Cannot use logger here — circular dep. Fall back to console.error with a one-time exemption.
   // biome-ignore lint/suspicious/noConsole: bootstrap-time, before logger is available
   console.error("Invalid environment variables", parsed.error.flatten().fieldErrors);
   throw new Error("Invalid environment variables");
 }
 
-export const env = parsed.data;
-export type Env = z.infer<typeof EnvSchema>;
+if (!parsed.success && isBuildPhase) {
+  // Vercel collects page data during `next build` by importing route modules; vars
+  // injected only at runtime (or not yet set in the project) trip the schema. Skip
+  // the throw — the production server runs this module again on boot and will
+  // re-validate strictly. Dev / test still throw on missing config.
+  // biome-ignore lint/suspicious/noConsole: bootstrap-time, build phase only
+  console.warn(
+    "[env] missing keys during build phase — runtime boot will re-validate",
+    parsed.error.flatten().fieldErrors,
+  );
+}
+
+export const env: Env = (parsed.success ? parsed.data : {}) as Env;
