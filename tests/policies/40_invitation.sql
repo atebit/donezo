@@ -251,6 +251,12 @@ delete from public.workspace_member
   where workspace_id = 'b4000000-0000-0000-0000-000000000001'
     and user_id = 'a4000000-0000-0000-0000-000000000004';
 
+-- Mark the valid invitation as accepted so only the expired one remains;
+-- otherwise the wsm_insert policy still admits via i4...001.
+update public.invitation
+   set accepted_at = now()
+ where id = 'i4000000-0000-0000-0000-000000000001';
+
 select tests.set_jwt_user('a4000000-0000-0000-0000-000000000004'::uuid);
 
 select throws_ok(
