@@ -138,6 +138,7 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           id: string
+          is_private: boolean
           name: string
           updated_at: string
           workspace_id: string
@@ -147,6 +148,7 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           id?: string
+          is_private?: boolean
           name: string
           updated_at?: string
           workspace_id: string
@@ -156,6 +158,7 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           id?: string
+          is_private?: boolean
           name?: string
           updated_at?: string
           workspace_id?: string
@@ -382,6 +385,60 @@ export type Database = {
             columns: ["board_id"]
             isOneToOne: false
             referencedRelation: "board"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitation: {
+        Row: {
+          accepted_at: string | null
+          board_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: string
+          token: string
+          workspace_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          board_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role: string
+          token: string
+          workspace_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          board_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: string
+          token?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "board"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspace"
             referencedColumns: ["id"]
           },
         ]
@@ -643,7 +700,49 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_board: {
+        Args: { p_is_private: boolean; p_name: string; p_workspace_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          is_private: boolean
+          name: string
+          updated_at: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "board"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_workspace: {
+        Args: { p_name: string; p_slug: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "workspace"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      greater_role: { Args: { a: string; b: string }; Returns: string }
+      role_for_board: {
+        Args: { p_board_id: string; p_user_id: string }
+        Returns: string
+      }
+      role_rank: { Args: { r: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
