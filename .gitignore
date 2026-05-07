@@ -34,3 +34,6 @@ supabase/.temp/
 
 # Claude worktrees
 .claude/worktrees/
+
+# Claude Code harness worktrees
+.claire/
