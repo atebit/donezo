@@ -62,6 +62,7 @@
 | 51 | Account settings sub-pages | **Single `app/(app)/account/page.tsx`** with tabbed sections (Profile / Email / Password / Sessions). No sub-routes. | Smaller surface; later split if needed. |
 | 52 | Avatar upload UI | **Slice E ships the form field + server action `updateAvatar(formData)` that reads `File` from FormData, uploads to `avatars/<userId>/avatar.<ext>` via `supabase.storage`, sets `profile.avatar_url`.** No image cropping / preview tooling — accept the file as uploaded. Polish in epic 14. | Smallest viable upload flow. |
 | 53 | Where the avatar URL is read in UI | **From `profile.avatar_url`** (joined into `getCurrentUser()` helper). Helper returns `{ id, email, displayName, avatarUrl }` shape (camelCased TS), not the raw Supabase `User`. Two reads per request (one `auth.getUser()`, one `profile.select`) — acceptable. | App-friendly DTO; avoids snake_case leakage. |
+| Q54 | shadcn `form.tsx` for base-nova | **Skip.** base-nova registry returns no `form` files; Base UI primitives don't need a Slot-based wrapper. Slices E and F use `react-hook-form` directly (`useForm` + `register` + `formState.errors`) with the Slice A `Input` and `Label`. If a shared `<FormField>` helper emerges, slice E or F adds it as a Base UI–native component (no Radix dep). |
 
 ## Open questions for the user (resolved autonomously per the steer)
 
@@ -196,6 +197,8 @@ Everything else. Specifically NOT: `lib/supabase/**`, `lib/actions/**`, `lib/aut
    ```
    This drops `form.tsx`, `input.tsx`, `label.tsx` into `components/ui/`. If the CLI fails (registry mismatch, etc.), escalate — do NOT hand-write the components.
 
+   **Update per Q54:** the registry produces only `input.tsx` and `label.tsx` for base-nova; `form` returns no files (verified). That's expected — slices E and F use RHF directly. Slice A does NOT hand-write a `form.tsx`.
+
 3. **`lib/env.ts`** — add the line **before `SUPABASE_SERVICE_ROLE_KEY`**:
    ```ts
    NEXT_PUBLIC_SITE_URL: z.string().url(),
@@ -248,7 +251,7 @@ Everything else. Specifically NOT: `lib/supabase/**`, `lib/actions/**`, `lib/aut
 - `lib/env.ts` requires `NEXT_PUBLIC_SITE_URL`. **App will fail to boot without it set in `.env.local`.** Document this in the slice done-report.
 - `.env.example` has the new key.
 - `lib/validations/auth.ts` exports all 7 schemas + types.
-- `components/ui/form.tsx`, `input.tsx`, `label.tsx` exist (via shadcn CLI).
+- `components/ui/input.tsx` and `components/ui/label.tsx` exist (via shadcn CLI; `form` is intentionally absent per Q54).
 - `tests/unit/validations-auth.test.ts` exists, valid TypeScript.
 - `git status` shows only intended files.
 
