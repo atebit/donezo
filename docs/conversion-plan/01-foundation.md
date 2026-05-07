@@ -72,35 +72,23 @@ We do **not** plan to use React Server Actions for everything. Long-lived subscr
 
 Tailwind v4 uses CSS-native config (no `tailwind.config.ts` for tokens) — design tokens live in `app/globals.css` under `@theme`. shadcn components are copied into `components/ui/` (not installed as a package), giving us full ownership.
 
-Design tokens (initial set, expand as features need them):
+**Tokens are not "initial — expand as needed."** The full token set is locked in [`design-system.md`](design-system.md), sourced verbatim from the legacy `frontend/` SCSS (see CLAUDE.md). The `@theme` block in `app/globals.css` MUST be the canonical block from [design-system.md §1.2](design-system.md#12-appglobalscss-block-canonical) — Monday-derived blue/navy/yellow/green palette plus brand-violet marketing gradients, plus the bake-out of SCSS `darken()` calls. Do not invent tokens or use a generic "neutral" palette.
 
-```css
-@theme {
-  --color-bg: oklch(99% 0 0);
-  --color-bg-subtle: oklch(97% 0 0);
-  --color-fg: oklch(20% 0 0);
-  --color-fg-muted: oklch(45% 0 0);
-  --color-border: oklch(92% 0 0);
-  --color-primary: oklch(58% 0.2 260);
-  --color-primary-fg: oklch(99% 0 0);
-  --color-danger: oklch(60% 0.22 25);
-  --color-success: oklch(62% 0.18 145);
-  --color-warning: oklch(75% 0.16 75);
+Fonts: load **Figtree** (body) and **Poppins** (display) via `next/font/google` per [design-system.md §2.1.1](design-system.md#211-loader-nextjs-in-applayouttsx). Replace the SCSS `Figtree-Regular.ttf` / `Poppins-Regular.ttf` shipped in legacy with the variable subsets; do not use the legacy single-weight TTFs.
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-
-  --font-sans: 'Inter Variable', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
-}
-```
+Scrollbar styles, overlay color, z-index layers, motion duration tokens, and radii are also locked in [design-system.md](design-system.md). Lift them all into `globals.css` in this epic.
 
 Dark mode via `next-themes` ([14](14-mobile-a11y-polish.md)) — tokens get `[data-theme="dark"]` overrides later. Avoid hex literals in components; reference tokens.
 
 ### shadcn install set (initial)
 
 `button`, `input`, `textarea`, `label`, `select`, `dropdown-menu`, `popover`, `dialog`, `sheet`, `tooltip`, `command`, `avatar`, `badge`, `separator`, `skeleton`, `toast` (sonner), `tabs`, `scroll-area`, `checkbox`, `switch`, `form` (RHF wrapper). Install on demand, not all at once.
+
+Each shadcn primitive lands **already wired to the locked tokens**. The default `button.tsx` shipped by shadcn uses generic `bg-primary` etc. — we keep those class names, but the `--color-primary` value is the Monday `#0073ea`. Re-skin none, restyle none unless [`component-system.md`](component-system.md) calls for a deviation.
+
+### Icon library
+
+Single source: **Lucide React** (`lucide-react`). Establish `lib/icons.ts` re-exporting the named subset we use, with the legacy `react-icons` mapping documented in [design-system.md §9.2](design-system.md#92-mapping-table). No imports from `@mui/icons-material` or `react-icons` in new code.
 
 ### Linting & formatting
 
@@ -211,15 +199,35 @@ For epic 01, scaffold the helper signature even though there's no auth yet — p
 
 Recommended for cell renderers ([07](07-column-system.md)). If we install it, do it now in epic 01 so the configuration is in place. Storybook 8 with the Vite builder. If we skip, document the decision.
 
+## Visual fidelity requirements
+
+This epic owns the design-system foundation. Every token, font, scrollbar style, overlay color, z-index, and icon library that downstream epics will reference must land here. Source: [`design-system.md`](design-system.md), [`component-system.md`](component-system.md).
+
+Must-match items (any drift breaks every later epic):
+
+- The **canonical `@theme` block** from [design-system.md §1.2](design-system.md#12-appglobalscss-block-canonical), including Monday primary `#0073ea`, sidebar navy `#292f4c`, label palette (`#00c875`, `#ffcb00`, `#579bfc`, `#c4c4c4`, `#FDAB3D`, `#E2445C`, `#A25DDC`, `#333333`), 12-color group accents, and brand-violet marketing gradients (`#5034FF → #B4B4FF`).
+- **Figtree** body + **Poppins** display via `next/font/google`, weights 400/500/600/700.
+- Custom **scrollbar** styles per [design-system.md §10](design-system.md#10-scrollbar) (8px, `#A6A5A5` thumb on `#D9D9D9` track).
+- **z-index layer** custom properties (`--z-base/sticky/rail/board-header/overlay/modal/drawer/popover`) per [§7](design-system.md#7-z-index-layers).
+- **Motion duration** tokens (`--motion-instant/fast/base/medium/slow/drawer`) per [§8.1](design-system.md#81-duration-tokens).
+- **Lucide React** wired in `lib/icons.ts`. No `@mui/*` or `react-icons` imports anywhere in the repo.
+- **`<MenuList />` primitive** matching the legacy `@mixin menu-modal` recipe — see [component-system.md §3.2](component-system.md#32-menumodal-recipe-mixin).
+- **`<Logo />`** matching [component-system.md §6.2](component-system.md#62-logo) (PNG fallback acceptable; SVG preferred).
+
+If the executor wants to swap a hex/value for a different one, they must escalate via `epic-researcher` — these are not negotiable in slice work.
+
 ## Tasks
 
 1. **Initialize Next.js project.** `pnpm create next-app@latest` with TypeScript, Tailwind, App Router, Biome (or eslint→biome migration). Confirm Node 22 with `.nvmrc`.
 2. **Configure TypeScript strict.** Replace generated `tsconfig.json` with the strict version from this doc.
-3. **Set up Tailwind v4 design tokens.** Replace generated `globals.css` with `@theme` block. Verify `bg-bg`, `text-fg`, etc. classes work.
-4. **Initialize shadcn/ui.** `pnpm dlx shadcn@latest init`. Install the initial component set listed above.
+3. **Set up Tailwind v4 design tokens.** Replace generated `globals.css` with the canonical `@theme` block from [design-system.md §1.2](design-system.md#12-appglobalscss-block-canonical). Add the scrollbar styles from §10. Verify `bg-surface`, `text-fg`, `bg-primary`, `bg-surface-nav` etc. classes work.
+4. **Initialize shadcn/ui.** `pnpm dlx shadcn@latest init`. Install the initial component set listed above. Verify the default `<Button variant="default">` renders with `--color-primary` (`#0073ea`).
 5. **Configure Biome.** Single `biome.json`. Add the rules listed above. Wire to `lint` script.
 6. **Add environment validator.** `lib/env.ts` per spec. Add `.env.example` with stubbed `NEXT_PUBLIC_SUPABASE_URL` etc. — values land in [02](02-supabase-schema.md).
 7. **Scaffold repository structure.** Create the empty folder layout from [`00-overview.md`](00-overview.md). `.gitkeep` files in empty folders.
+7a. **Wire fonts.** Add `next/font/google` loaders for Figtree (body) and Poppins (display) per [design-system.md §2.1.1](design-system.md#211-loader-nextjs-in-applayouttsx). Apply `--font-display` to `h1`–`h6` in `globals.css`.
+7b. **Add icon module.** `pnpm add lucide-react`. Create `lib/icons.ts` re-exporting the names from [design-system.md §9.2](design-system.md#92-mapping-table). Forbid raw `lucide-react` imports outside this module via Biome rule.
+7c. **Add `<MenuList />` primitive.** Implement the `@mixin menu-modal` recipe from [component-system.md §3.2](component-system.md#32-menumodal-recipe-mixin) as `components/ui/menu-list.tsx`. Used by every dropdown across the app.
 8. **Create error/404 pages.** Global and segment-scoped error boundaries, 404 page, both styled.
 9. **Add logger module.** Pino + pino-pretty in dev. Confirm log output.
 10. **Add server-action helper stub.** `lib/actions/with-user.ts` returning a synthetic user. Document the contract.

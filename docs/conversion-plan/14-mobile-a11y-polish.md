@@ -252,6 +252,23 @@ A coordinated review pass over:
 - **Storybook** (if used): visual regression via Chromatic or Percy.
 - **Playwright visual snapshots**: capture key screens at three viewports (mobile/tablet/desktop) per PR.
 
+## Visual fidelity requirements
+
+This epic adds dark mode, mobile responsive parity, and a polish pass — none of it should re-derive tokens. Pull from [`design-system.md`](design-system.md) and [`component-system.md`](component-system.md) only.
+
+Must-match:
+
+- **Dark mode tokens** — derive from the locked light tokens (don't reinvent the palette). Recommended approach in [design-system.md §1.1.7](design-system.md#117-overlay--misc): invert `--color-fg`/`--color-surface`, dial label saturation back ~10%, keep `--color-primary` close to `#0073ea`. Apply via `[data-theme="dark"]` overrides on `:root`.
+- **Mobile `<MainSidebar />`** — fixed-bottom row at `8vh` height, gap `30px`, hidden tools, hamburger reveals workspace sidebar full-width. See [component-system.md §1.1](component-system.md#11-mainsidebar-icon-column) (mobile contract documented there).
+- **Mobile `<WorkspaceSidebar />`** — open state takes 100vw; toggle pill hidden.
+- **Reduced motion** — `@media (prefers-reduced-motion: reduce)` overrides any animation longer than `--motion-base` (200ms) to `0ms`. Critically: the workspace-sidebar collapse, board drawer slide-in, and status-fold reveal all need this guard.
+- **Skeleton states** — replace the legacy `loader.gif` everywhere with shadcn `<Skeleton />`. Match the ~36px row height for table skeletons so the page doesn't shift layout on hydration.
+- **`<EmptyState />` primitive** — used in trash, no-boards, no-tasks-in-group, favorites-empty. Lock typography: title font-display 24px weight 500, body 14px in `--color-fg-muted`, CTA = primary button.
+- **Color contrast** — every label color in [§1.1.5](design-system.md#115-status--priority-palette-monday-colors) must hit WCAG AA against white text. The orange (`#FDAB3D`) and yellow (`#ffcb00`) labels carry **black** text in legacy at certain sizes — verify.
+- **Animation pass** — all micro-interactions from [§8.3](design-system.md#83-recurring-micro-interaction-patterns) must work after the polish pass; if any have regressed, fix here.
+
+Don't introduce new tokens here. Only consume.
+
 ## Tasks
 
 ### Mobile

@@ -350,6 +350,47 @@ In addition to those from [06](06-groups-tasks-table.md):
 
 Each cell type has stories: empty, populated, in-edit-mode, with config variations. This is the single best argument for keeping Storybook ([01](01-foundation.md) open question).
 
+## Visual fidelity requirements
+
+This is the epic where every cell type in the registry gets its visual contract. Cells are 90% of the board's surface area — fidelity here is the difference between "looks like Monday" and "looks like a styled HTML table." Refer to [`component-system.md §2.4`](component-system.md#24-cell-components-per-type) for the per-type table.
+
+Must-match across all cell types:
+
+- **Cell skeleton** — `min-width: 140px`, `height: 36px`, `1px solid --color-border-strong` border. Don't deviate.
+- **Focus state** — `outline: 1px solid --color-primary` (`#0073ea`) on inputs and contenteditable cells. Hover preview uses `outline: 1px solid --color-border-strong`.
+- **Optimistic update** with no in-flight chrome — cells flick to the new value instantly; no spinner.
+
+Per-type must-matches:
+
+- **`<StatusCell />` / `<PriorityCell />`** — full-bleed bg = label color, centered white label text, **diagonal "fold" reveal in top-right on hover**. The fold animates `border-width 0 → 10×10 → 15×15px` over `--motion-base` with `transition-delay: .2s`. This is the single most distinctive interaction in the product — must match. Empty state bg `--color-label-gray` (`#c4c4c4`). See [_status-priority-picker.scss:6-28](../../frontend/src/assets/styles/cmps/task-picker/_status-priority-picker.scss).
+- **`<StatusLabelEditor />` popover** — 152px-wide chips, gap 8px, white-text-on-color, "Edit Labels" button at bottom with `1px solid --color-border-strong` top border. See [component-system.md §3.4](component-system.md#34-statuslabeleditor-popover).
+- **`<PersonCell />`** — 26px avatars, `-5px` overlap, white border, `+N` overflow tile. Empty state shows muted person glyph in `--color-fg-subtle`.
+- **`<DateCell />`** — centered text input, hover text → `--color-primary`, focus border `--color-primary`.
+- **`<NumberCell />`** — centered numeric input, hover reveals `+`/`−` icons in `--color-primary` and a `clear` chip top-right (bg `--color-surface-hover`, radius 3px) over `--motion-base`.
+- **`<CheckboxCell />`** — centered icon, checked = `--color-primary`, hover wash `rgba(0,0,0,0.05)` over `--motion-base` (note: checked state is **primary blue**, not green).
+- **`<UpdatedByCell />`** — 26px avatar + relative-time string (`2h`, `5d`, `3w`) computed via the legacy `calculateTime` algorithm.
+- **All other cell types** (`text`, `long_text`, `email`, `phone`, `country`, `link`, `tags`, `rating`, `currency`, `vote`, `week`, `location`, `formula`, `created_by`, `created_at_col`) — inherit the cell skeleton, follow the picker patterns above for editor chrome, use `<MenuList />` for any dropdowns.
+
+Default seed labels (these must match exactly — they're the user's first impression of the system):
+
+| Type | Title | Color |
+|---|---|---|
+| Status | Done | `#00C875` |
+| Status | Working on it | `#FDAB3D` |
+| Status | Stuck | `#E2445C` |
+| Status | Waiting for review | `#A25DDC` |
+| Status | Pending | `#579BFC` |
+| Status | (empty) | `#C4C4C4` |
+| Priority | Critical | `#333333` |
+| Priority | High | `#E2445C` |
+| Priority | Medium | `#FDAB3D` |
+| Priority | Low | `#579BFC` |
+| Priority | (empty) | `#C4C4C4` |
+
+These must be inserted in the [02](02-supabase-schema.md) seed; this epic relies on them existing.
+
+**Aggregation row** at group footer: typography 14px (font-weight 500 for the number, 12px for "sum" sub-label in `--color-fg-muted`). See [_group-statistics.scss](../../frontend/src/assets/styles/cmps/group/_group-statistics.scss).
+
 ## Tasks
 
 1. **Define the `CellTypeDef` interface** in `lib/cells/types.ts` with full TS strictness.
