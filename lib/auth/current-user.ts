@@ -1,6 +1,4 @@
 import { redirect } from "next/navigation";
-// biome-ignore lint/style/noRestrictedImports: server-only helper — not a client component or "use client" file
-import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type CurrentUser = {
@@ -18,10 +16,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // TODO epic 04: switch to authed `supabase` client once profile RLS lands.
-  // Until then, profile rows are unreadable to authed clients (default-deny).
-  const admin = adminClient();
-  const { data: profile } = await admin
+  const { data: profile } = await supabase
     .from("profile")
     .select("display_name, avatar_url")
     .eq("id", user.id)
