@@ -4,9 +4,7 @@ import { CreateWorkspaceSchema } from "@/lib/validations/workspace";
 
 export const createWorkspace = withUser(async ({ supabase }, raw) => {
   const input = CreateWorkspaceSchema.parse(raw);
-  // TODO(F1): tighten once db:types regenerates the RPC + invitation types.
-  // biome-ignore lint/suspicious/noExplicitAny: RPC not yet in generated types; F1 tightens
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .rpc("create_workspace", { p_name: input.name, p_slug: input.slug })
     .single();
   if (error) {

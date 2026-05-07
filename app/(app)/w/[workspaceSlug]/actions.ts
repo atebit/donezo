@@ -9,9 +9,7 @@ import { InviteToWorkspaceSchema } from "@/lib/validations/invitation";
 export const createBoard = withUser(async ({ supabase }, raw) => {
   const input = CreateBoardSchema.parse(raw);
   await requireWorkspaceRole(input.workspaceId, "member");
-  // TODO(F1): tighten once db:types regenerates the RPC + invitation types.
-  // biome-ignore lint/suspicious/noExplicitAny: RPC not yet in generated types; F1 tightens
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .rpc("create_board", {
       p_workspace_id: input.workspaceId,
       p_name: input.name,
@@ -26,9 +24,7 @@ export const inviteToWorkspace = withUser(async ({ supabase, userId }, raw) => {
   const input = InviteToWorkspaceSchema.parse(raw);
   await requireWorkspaceRole(input.workspaceId, "admin");
   const token = generateInvitationToken();
-  // TODO(F1): tighten once db:types regenerates the RPC + invitation types.
-  // biome-ignore lint/suspicious/noExplicitAny: invitation table not yet in generated types; F1 tightens
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("invitation")
     .insert({
       workspace_id: input.workspaceId,

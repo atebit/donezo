@@ -11,9 +11,7 @@ export const inviteToBoard = withUser(async ({ supabase, userId }, raw) => {
 
   // Look up the board to get workspace_id (schema requires workspace_id not null on invitation).
   // The user's authed client can read this board because RLS allows admin+ board members.
-  // TODO(F1): tighten once db:types regenerates the RPC + invitation types.
-  // biome-ignore lint/suspicious/noExplicitAny: board + invitation tables cast until F1 tightens types
-  const { data: board, error: boardError } = await (supabase as any)
+  const { data: board, error: boardError } = await supabase
     .from("board")
     .select("workspace_id")
     .eq("id", input.boardId)
@@ -22,8 +20,7 @@ export const inviteToBoard = withUser(async ({ supabase, userId }, raw) => {
   if (!board) throw { code: "NOT_FOUND", message: "Board not found." };
 
   const token = generateInvitationToken();
-  // biome-ignore lint/suspicious/noExplicitAny: invitation table not yet in generated types; F1 tightens
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("invitation")
     .insert({
       workspace_id: board.workspace_id,

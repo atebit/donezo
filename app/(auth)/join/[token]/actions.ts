@@ -10,9 +10,7 @@ export const acceptInvitation = withUser(async ({ supabase, userId }, raw) => {
 
   // 1. Look up the invitation under the user's session. RLS limits visibility
   //    to invitee (matching email, not yet accepted) or admin+.
-  // TODO(F1): tighten once db:types regenerates the RPC + invitation types.
-  // biome-ignore lint/suspicious/noExplicitAny: invitation table not yet in generated types; F1 tightens
-  const { data: inv, error: lookupError } = await (supabase as any)
+  const { data: inv, error: lookupError } = await supabase
     .from("invitation")
     .select("id, workspace_id, board_id, role, accepted_at, expires_at, email")
     .eq("token", input.token)
@@ -30,22 +28,19 @@ export const acceptInvitation = withUser(async ({ supabase, userId }, raw) => {
 
   // 2. Insert membership under user session — RLS gated on invitation match.
   if (inv.board_id) {
-    // biome-ignore lint/suspicious/noExplicitAny: board_member table not yet in generated types; F1 tightens
-    const { error: bmError } = await (supabase as any)
+    const { error: bmError } = await supabase
       .from("board_member")
       .insert({ board_id: inv.board_id, user_id: userId, role: inv.role });
     if (bmError) throw { code: "DB", message: bmError.message };
   } else {
-    // biome-ignore lint/suspicious/noExplicitAny: workspace_member table not yet in generated types; F1 tightens
-    const { error: wmError } = await (supabase as any)
+    const { error: wmError } = await supabase
       .from("workspace_member")
       .insert({ workspace_id: inv.workspace_id, user_id: userId, role: inv.role });
     if (wmError) throw { code: "DB", message: wmError.message };
   }
 
   // 3. Stamp accepted_at — column-restricted via the invitation update trigger.
-  // biome-ignore lint/suspicious/noExplicitAny: invitation table not yet in generated types; F1 tightens
-  const { error: acceptError } = await (supabase as any)
+  const { error: acceptError } = await supabase
     .from("invitation")
     .update({ accepted_at: new Date().toISOString() })
     .eq("id", inv.id);
