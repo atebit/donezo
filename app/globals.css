@@ -4,26 +4,130 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* THEME_TOKENS — owned by Slice B */
+/* THEME_TOKENS — canonical Monday-derived palette (epic-01-followup-2 Slice I) */
 
 @theme {
-  --color-bg: oklch(99% 0 0);
-  --color-bg-subtle: oklch(97% 0 0);
-  --color-fg: oklch(20% 0 0);
-  --color-fg-muted: oklch(45% 0 0);
-  --color-border: oklch(92% 0 0);
-  --color-primary: oklch(58% 0.2 260);
-  --color-primary-fg: oklch(99% 0 0);
-  --color-danger: oklch(60% 0.22 25);
-  --color-success: oklch(62% 0.18 145);
-  --color-warning: oklch(75% 0.16 75);
+  /* App surface */
+  --color-surface: #ffffff;
+  --color-surface-auth: #f7f7f7;
+  --color-surface-rail: #f6f7fb;
+  --color-surface-nav: #292f4c;
+  --color-surface-info: #f5f6f8;
+  --color-surface-row-hover: #f4f5f8;
+  --color-surface-hover: #dcdfec;
+  --color-surface-active: #cce5ff;
+  --color-primary-selected: #cce5ff;
+  --color-primary-selected-hover: #aed4fc;
+  --color-card-selected: #d9f0ff;
+  --color-chip-member: #e5f4ff;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  /* Primary (Monday blue) */
+  --color-primary: #0073ea;
+  --color-primary-hover: #0060b9;
+  --color-primary-foreground: #ffffff;
+  --color-link: #1f76c2;
+  --color-nav-icon: #6c6cff;
 
-  --font-sans: "Inter Variable", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  /* Text & border */
+  --color-fg: #323338;
+  --color-fg-muted: #676879;
+  --color-fg-subtle: #c5c7d0;
+  --color-fg-strong: #1f1f21;
+  --color-border: #d0d4e466;
+  --color-border-solid: #d0d4e4;
+  --color-border-strong: #a8aebb; /* baked darken($border-color, 20%) */
+  --color-border-rail: #8c93a3; /* baked darken($border-color, 30%) */
+  --color-shadow-card: #c3c6d4;
+
+  /* Status / priority labels (Monday palette) */
+  --color-label-green: #00c875;
+  --color-label-green-hover: #0f9b63;
+  --color-label-green-selected: #80e3ba;
+  --color-label-yellow: #ffcb00;
+  --color-label-yellow-hover: #c29e11;
+  --color-label-yellow-selected: #ffe580;
+  --color-label-blue: #579bfc;
+  --color-label-blue-hover: #4c7cc1;
+  --color-label-blue-selected: #abcdfd;
+  --color-label-gray: #c4c4c4;
+  --color-label-gray-hover: #98999a;
+  --color-label-gray-selected: #e1e1e1;
+  --color-label-orange: #fdab3d;
+  --color-label-red: #e2445c;
+  --color-label-purple: #a25ddc;
+  --color-label-pending: #579bfc;
+  --color-label-critical: #333333;
+
+  /* Group accents (12) */
+  --color-group-1: #a25ddc;
+  --color-group-2: #fbbc04;
+  --color-group-3: #f1e4de;
+  --color-group-4: #fdcfe8;
+  --color-group-5: #f28b82;
+  --color-group-6: #fff475;
+  --color-group-7: #ccff90;
+  --color-group-8: #cbf0f8;
+  --color-group-9: #a7ffeb;
+  --color-group-10: #d7aefb;
+  --color-group-11: #e6c9a8;
+  --color-group-12: #e8eaed;
+
+  /* Overlay */
+  --color-overlay: rgba(41, 47, 76, 0.7);
+
+  /* Layout sizes */
+  --size-cell-h: 36px;
+  --size-cell-w: 140px;
+  --size-cell-w-task: 336px;
+  --size-cell-w-checkbox: 32px;
+  --size-cell-w-conversation: 65px;
+  --size-rail-main: 66px;
+  --size-rail-workspace: 230px;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-modal: -3px 4px 14px rgb(0 0 0 / 20%);
+  --shadow-drawer: -6px 0px 14px rgb(0 0 0 / 20%);
+  --shadow-card: 0px 4px 8px rgb(0 0 0 / 20%);
+  --shadow-bulk-bar: 0px 15px 50px rgba(0, 0, 0, 0.3);
+
+  /* Z-index layers */
+  --z-base: 0;
+  --z-sticky: 2;
+  --z-rail: 10;
+  --z-board-header: 30;
+  --z-overlay: 50;
+  --z-modal: 51;
+  --z-drawer: 100;
+  --z-popover: 1000;
+
+  /* Motion durations */
+  --motion-instant: 100ms;
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-medium: 300ms;
+  --motion-slow: 400ms;
+  --motion-drawer: 600ms;
+
+  /* Easing */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Fonts (set by next/font/google in app/layout.tsx) */
+  --font-sans: var(--font-figtree), "Roboto", "Rubik", system-ui, sans-serif;
+  --font-display: var(--font-poppins), "Roboto", "Rubik", system-ui, sans-serif;
+
+  /* Legacy aliases (deprecated; kept until epic 14 reconciliation). */
+  --color-bg: var(--color-surface);
+  --color-bg-subtle: var(--color-surface-rail);
+  --color-primary-fg: var(--color-primary-foreground);
 }
 
 /*
@@ -78,38 +182,53 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Surfaces */
+  --background: #ffffff; /* was: oklch(1 0 0) */
+  --foreground: #323338; /* was: oklch(0.145 0 0) */
+  --card: #ffffff; /* was: oklch(1 0 0) */
+  --card-foreground: #323338;
+  --popover: #ffffff;
+  --popover-foreground: #323338;
+
+  /* Primary (Monday blue) */
+  --primary: #0073ea; /* was: oklch(0.205 0 0) — neutral gray */
+  --primary-foreground: #ffffff;
+
+  /* Secondary / muted / accent — surface variants */
+  --secondary: #f6f7fb; /* surface-rail */
+  --secondary-foreground: #323338;
+  --muted: #dcdfec; /* surface-hover */
+  --muted-foreground: #676879; /* fg-muted */
+  --accent: #cce5ff; /* surface-active */
+  --accent-foreground: #323338;
+
+  /* Status */
+  --destructive: #e2445c; /* label-red */
+
+  /* Inputs / borders / focus ring */
+  --border: #d0d4e466;
+  --input: #d0d4e466;
+  --ring: #0073ea; /* focus ring = primary */
+
+  /* Charts (placeholders; epic 12 dashboard owns the real palette). Use label palette. */
+  --chart-1: #00c875;
+  --chart-2: #ffcb00;
+  --chart-3: #579bfc;
+  --chart-4: #fdab3d;
+  --chart-5: #a25ddc;
+
+  /* Radius */
+  --radius: 0.25rem; /* was: 0.625rem — Monday cells use 4px corners */
+
+  /* Sidebar (shadcn's sidebar component tokens) */
+  --sidebar: #292f4c; /* surface-nav */
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #0073ea;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f6f7fb; /* surface-rail */
+  --sidebar-accent-foreground: #323338;
+  --sidebar-border: #d0d4e466;
+  --sidebar-ring: #0073ea;
 }
 
 .dark {
@@ -149,11 +268,35 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: #878787 #d9d9d9;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: #d9d9d9;
+  }
+  *::-webkit-scrollbar-thumb {
+    border-radius: 25px;
+    background-color: #a6a5a5;
   }
   body {
     @apply bg-background text-foreground;
+    font-size: 18px;
+    line-height: 1.6;
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    margin: 0;
+    padding: 0;
   }
 }
