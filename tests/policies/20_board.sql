@@ -3,7 +3,7 @@
 -- RLS assertions for: public.board, public.board_member
 -- Plus: role_for_board function correctness + security definer check.
 --
--- Assertion count: 13
+-- Assertion count: 15
 --
 -- Coverage targets (from epic 04 definition of done):
 --   - role_for_board is security definer (pg_proc.prosecdef)
@@ -14,16 +14,14 @@
 --   - non-workspace-member cannot SELECT a non-private board
 --   - private-board flag flips visibility (workspace member blocked)
 --   - board admin can UPDATE board.name
---   - board admin cannot DELETE board (requires owner rank policy: admin+ can delete)
---     NOTE: per Slice B, board_delete uses role_rank >= 'admin', so admin CAN delete.
---     The epic doc says "workspace owner only" for board delete, but Slice B ships
---     role_rank >= 'admin'.  Test documents Slice B's actual policy.
+--   - Slice F1.1 tightened the policy to workspace-owner-only; admin and member
+--     are blocked, owner can delete.
 --   - non-workspace-member cannot SELECT tasks on a private board
 -- ============================================================
 
 begin;
 
-select plan(13);
+select plan(15);
 
 \i 00_setup.sql
 
@@ -241,9 +239,9 @@ select is(
 );
 
 -- ============================================================
--- Test 13: workspace member (no board_member row) cannot DELETE public board
--- Slice B's board_delete policy: role_rank >= 'admin'.
--- ws-member has effective role 'member' → blocked (0 rows affected).
+-- Test 13: workspace member cannot DELETE public board
+-- F1.1 policy: workspace_member.role = 'owner' only.
+-- ws-member has role 'member' → blocked (0 rows affected).
 -- ============================================================
 
 select tests.set_jwt_user('a2000000-0000-0000-0000-000000000003'::uuid);
@@ -256,7 +254,47 @@ select is(
    )
    select count(*)::int from deleted),
   0,
-  'workspace member cannot DELETE board (requires admin+; member role blocked)'
+  'workspace member cannot DELETE board (requires workspace owner)'
+);
+
+-- ============================================================
+-- Test 14: workspace admin cannot DELETE public board
+-- F1.1 policy: workspace_member.role = 'owner' only.
+-- ws-admin has role 'admin' → blocked (0 rows affected).
+-- ============================================================
+
+select tests.set_jwt_user('a2000000-0000-0000-0000-000000000002'::uuid);
+
+select is(
+  (with deleted as (
+     delete from public.board
+       where id = 'c2000000-0000-0000-0000-000000000001'
+     returning id
+   )
+   select count(*)::int from deleted),
+  0,
+  'workspace admin cannot DELETE board (requires workspace owner)'
+);
+
+-- ============================================================
+-- Test 15: workspace owner CAN DELETE public board
+-- F1.1 policy: workspace_member.role = 'owner' only.
+-- ws-owner has role 'owner' → allowed (1 row affected).
+-- Note: this test actually deletes the board; place last so tests 13/14
+-- can still reference it.
+-- ============================================================
+
+select tests.set_jwt_user('a2000000-0000-0000-0000-000000000001'::uuid);
+
+select is(
+  (with deleted as (
+     delete from public.board
+       where id = 'c2000000-0000-0000-0000-000000000001'
+     returning id
+   )
+   select count(*)::int from deleted),
+  1,
+  'workspace owner can DELETE board'
 );
 
 select tests.reset_to_service_role();
