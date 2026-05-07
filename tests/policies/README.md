@@ -11,7 +11,7 @@ policies defined in `supabase/migrations/`.
 | `10_workspace.sql` | `workspace`, `workspace_member` | 11 |
 | `20_board.sql` | `board`, `board_member`, `role_for_board()` | 15 |
 | `30_task_cell.sql` | `task`, `cell`, `"column"`, `comment` | 13 |
-| `40_invitation.sql` | `invitation`, `wsm_insert`/`bm_insert` accept flows | 12 |
+| `40_invitation.sql` | `invitation`, `wsm_insert`/`bm_insert` accept flows | 13 |
 | `50_view.sql` | `view` | 8 |
 
 **Total: 60 assertions** across five test files.
