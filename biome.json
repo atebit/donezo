@@ -3,7 +3,7 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!backend", "!frontend"]
+    "includes": ["**", "!backend", "!frontend", "!lib/supabase/types.ts"]
   },
   "formatter": {
     "enabled": true,
@@ -20,7 +20,15 @@
       "suspicious": { "noConsole": "error" },
       "style": {
         "useImportType": "error",
-        "noDefaultExport": "error"
+        "noDefaultExport": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@/lib/supabase/admin": "Bypass-RLS client. Server-only — do not import from client components or \"use client\" files."
+            }
+          }
+        }
       },
       "correctness": { "noUnusedImports": "error" }
     }

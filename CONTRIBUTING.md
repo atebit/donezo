@@ -5,8 +5,10 @@
 1. `git clone <repo-url> && cd donezo`
 2. `corepack enable`
 3. `pnpm install`
-4. `cp .env.example .env.local`
-5. `pnpm dev`
+4. `cp .env.example .env.local` — fill in Supabase keys from a teammate or from the Vercel-Supabase integration in the Vercel dashboard.
+5. `supabase login && supabase link --project-ref <REF>`
+6. `pnpm db:types` — regenerates `lib/supabase/types.ts` from the linked schema.
+7. `pnpm dev`
 
 The dev server starts on `http://localhost:3000`.
 
@@ -24,6 +26,18 @@ The dev server starts on `http://localhost:3000`.
 | `pnpm test` | Run Vitest unit tests |
 | `pnpm test:watch` | Run Vitest in watch mode |
 | `pnpm test:e2e` | Run Playwright e2e tests (wired in epic 15) |
+
+## Schema migrations
+
+Schema changes go through Supabase CLI:
+
+1. `supabase migration new <description>` — creates `supabase/migrations/<ts>_<desc>.sql`
+2. Edit the generated file. Never edit a deployed migration.
+3. `pnpm db:push` — applies the migration to the linked cloud project.
+4. `pnpm db:types` — regenerates `lib/supabase/types.ts`.
+5. Commit the migration AND the regenerated types together.
+
+Note: there is no local Supabase / Docker workflow. Cloud is the source of truth. All developers and CI point at the same project. Coordinate migration PRs to avoid two simultaneous schema changes.
 
 ## Branch naming
 
