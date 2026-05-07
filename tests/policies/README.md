@@ -9,12 +9,12 @@ policies defined in `supabase/migrations/`.
 |------|------------------|--------------------|
 | `00_setup.sql` | helpers (no assertions) | — |
 | `10_workspace.sql` | `workspace`, `workspace_member` | 11 |
-| `20_board.sql` | `board`, `board_member`, `role_for_board()` | 13 |
+| `20_board.sql` | `board`, `board_member`, `role_for_board()` | 15 |
 | `30_task_cell.sql` | `task`, `cell`, `"column"`, `comment` | 13 |
 | `40_invitation.sql` | `invitation`, `wsm_insert`/`bm_insert` accept flows | 12 |
 | `50_view.sql` | `view` | 8 |
 
-**Total: 57 assertions** across five test files.
+**Total: 60 assertions** across five test files.
 
 ## What each file covers
 
@@ -67,8 +67,9 @@ Asserts:
   private board without board_member row, explicit board_member on private board.
 - Workspace viewers can SELECT non-private boards; outsiders cannot.
 - Workspace members cannot SELECT private boards without a `board_member` row.
-- Board admins can UPDATE `board.name`; workspace members (role=member) cannot
-  DELETE boards (requires admin+).
+- Board admins can UPDATE `board.name`; workspace members and admins cannot
+  DELETE boards (F1.1 tightened policy to workspace-owner-only); workspace
+  owners can DELETE boards.
 
 ### `30_task_cell.sql` — Tasks, cells, columns, comments
 
