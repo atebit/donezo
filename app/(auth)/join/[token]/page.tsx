@@ -48,7 +48,6 @@ export default async function JoinPage({
   }
 
   // ── Fetch invitation ──────────────────────────────────────────────────────
-  // revoked_at was added in the workspaces-polish migration; types updated in F1.
   const { data: inv } = await supabase
     .from("invitation")
     .select(
@@ -57,6 +56,7 @@ export default async function JoinPage({
       role,
       accepted_at,
       expires_at,
+      revoked_at,
       email,
       workspace:workspace_id ( id, name, slug ),
       board:board_id ( id, name )
@@ -64,13 +64,6 @@ export default async function JoinPage({
     )
     .eq("token", token)
     .maybeSingle();
-
-  // Fetch revoked_at separately — not yet in generated types; types updated in F1.
-  const { data: invExtra } = (await supabase
-    .from("invitation")
-    .select("revoked_at")
-    .eq("token", token)
-    .maybeSingle()) as { data: { revoked_at: string | null } | null };
 
   // ── State: invitation not found ───────────────────────────────────────────
   if (!inv) {
@@ -112,7 +105,7 @@ export default async function JoinPage({
   }
 
   // ── State: revoked ────────────────────────────────────────────────────────
-  if (invExtra?.revoked_at) {
+  if (inv.revoked_at) {
     return (
       <CardShell>
         <CardHeading
@@ -187,7 +180,6 @@ export default async function JoinPage({
 
   // ── State: active invitation ──────────────────────────────────────────────
   // Cast relation shapes — generated types don't model joined relations.
-  // types updated in F1
   const workspace = inv.workspace as { id: string; name: string; slug: string } | null;
   const board = inv.board as { id: string; name: string } | null;
 
@@ -226,7 +218,6 @@ export default async function JoinPage({
 
       {/* Accept form */}
       <form action={accept}>
-        <input type="hidden" name="token" value={token} />
         <button
           type="submit"
           className="w-full rounded-lg bg-[color:var(--color-primary)] px-4 py-2 text-sm font-medium text-[color:var(--color-primary-foreground)] transition-colors hover:bg-[color:var(--color-primary-hover)]"

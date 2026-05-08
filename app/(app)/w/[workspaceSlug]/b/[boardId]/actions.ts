@@ -67,24 +67,21 @@ export const starBoard = withUser(async ({ supabase, userId }, raw) => {
   const input = StarBoardSchema.parse(raw);
   await requireBoardRole(input.boardId, "viewer");
 
-  // user_starred_board is not in generated types yet — types updated in F1
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any;
   if (input.starred) {
-    const { error } = await sb
+    const { error } = await supabase
       .from("user_starred_board")
       .upsert(
         { user_id: userId, board_id: input.boardId },
         { onConflict: "user_id,board_id", ignoreDuplicates: true },
       );
-    if (error) throw { code: "DB", message: (error as { message: string }).message };
+    if (error) throw { code: "DB", message: error.message };
   } else {
-    const { error } = await sb
+    const { error } = await supabase
       .from("user_starred_board")
       .delete()
       .eq("user_id", userId)
       .eq("board_id", input.boardId);
-    if (error) throw { code: "DB", message: (error as { message: string }).message };
+    if (error) throw { code: "DB", message: error.message };
   }
 
   revalidateTag(`starred:${userId}`);
@@ -119,14 +116,7 @@ export const restoreBoard = withUser(async ({ supabase }, raw) => {
 
   // restore_board is a security-definer RPC that bypasses role_for_board's
   // null-for-deleted-board logic and checks workspace admin+ directly.
-  // types updated in F1 (supabase gen types)
-  type SupabaseWithRpc = {
-    rpc: (
-      name: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: { code?: string; message: string } | null }>;
-  };
-  const { data, error } = await (supabase as unknown as SupabaseWithRpc).rpc("restore_board", {
+  const { data, error } = await supabase.rpc("restore_board", {
     p_board_id: input.boardId,
   });
 
@@ -169,21 +159,12 @@ export const duplicateBoard = withUser(async ({ supabase }, raw) => {
   const input = DuplicateBoardSchema.parse(raw);
   await requireBoardRole(input.boardId, "member");
 
-  // clone_board RPC — types updated in F1 (supabase gen types)
-  type SupabaseWithRpc = {
-    rpc: (
-      name: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: { message: string } | null }>;
-  };
-  const { data, error } = await (supabase as unknown as SupabaseWithRpc).rpc("clone_board", {
+  const { data, error } = await supabase.rpc("clone_board", {
     p_board_id: input.boardId,
   });
   if (error) throw { code: "DB", message: error.message };
 
-  // data is the new board row returned by the RPC.
-  const newBoard = data as { id: string; workspace_id: string };
-  revalidateTag(`boards:${newBoard.workspace_id}`);
+  revalidateTag(`boards:${data.workspace_id}`);
 
-  return { boardId: newBoard.id };
+  return { boardId: data.id };
 });

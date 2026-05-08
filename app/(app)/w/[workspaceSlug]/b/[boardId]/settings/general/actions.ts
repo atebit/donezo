@@ -8,13 +8,11 @@ export const updateBoardDescription = withUser(async ({ supabase }, raw) => {
   const input = UpdateBoardDescriptionSchema.parse(raw);
   await requireBoardRole(input.boardId, "member");
 
-  // board.description added in workspaces_polish migration; not in generated types yet — updated in F1
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from("board")
     .update({ description: input.description, updated_at: new Date().toISOString() })
     .eq("id", input.boardId);
-  if (error) throw { code: "DB", message: (error as { message: string }).message };
+  if (error) throw { code: "DB", message: error.message };
 
   revalidateTag(`board:${input.boardId}`);
 });
