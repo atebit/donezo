@@ -1,23 +1,12 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useWorkspaceMaybe } from "@/hooks/use-workspace";
 import { IconChevronLeft, IconChevronRight, IconSearch } from "@/lib/icons";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { BoardList } from "./BoardList";
 import { NewBoardButton } from "./NewBoardButton";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-
-type SidebarBoard = {
-  id: string;
-  name: string;
-  is_private: boolean;
-  workspace_id: string;
-};
-
-type SidebarBoards = {
-  starred: SidebarBoard[];
-  boards: SidebarBoard[];
-};
 
 type Workspace = {
   id: string;
@@ -27,18 +16,22 @@ type Workspace = {
 
 type WorkspaceSidebarProps = {
   workspaces: Workspace[];
-  boards?: SidebarBoards | undefined;
-  activeBoardId?: string | undefined;
 };
 
-export function WorkspaceSidebar({ workspaces, boards, activeBoardId }: WorkspaceSidebarProps) {
+export function WorkspaceSidebar({ workspaces }: WorkspaceSidebarProps) {
   const collapsed = useSidebarStore((s) => s.collapsed);
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
   const search = useSidebarStore((s) => s.search);
   const setSearch = useSidebarStore((s) => s.setSearch);
-  const workspaceCtx = useWorkspaceMaybe();
 
-  const currentWorkspace = workspaceCtx?.workspace ?? null;
+  const ctx = useWorkspaceMaybe();
+  const currentWorkspace = ctx?.workspace ?? null;
+  const sidebarBoards = ctx?.sidebarBoards ?? undefined;
+
+  // Derive active board id from pathname: /w/<slug>/b/<boardId>(/...)?
+  const pathname = usePathname();
+  const boardSegmentMatch = pathname.match(/\/w\/[^/]+\/b\/([^/]+)/);
+  const activeBoardId = boardSegmentMatch?.[1] ?? undefined;
 
   const width = collapsed ? 30 : 230;
 
@@ -138,8 +131,7 @@ export function WorkspaceSidebar({ workspaces, boards, activeBoardId }: Workspac
             <BoardList
               workspaceSlug={currentWorkspace.slug}
               activeBoardId={activeBoardId}
-              initialBoards={boards}
-              workspaceName={currentWorkspace.name}
+              initialBoards={sidebarBoards}
             />
           ) : (
             <div

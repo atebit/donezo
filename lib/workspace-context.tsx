@@ -7,6 +7,7 @@ export type SidebarBoard = {
   id: string;
   name: string;
   is_private: boolean;
+  workspace_id: string;
 };
 
 export type SidebarBoards = {

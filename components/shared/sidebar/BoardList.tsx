@@ -3,15 +3,11 @@
 import { useOptimistic, useTransition } from "react";
 import { starBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
 import { FavoritesEmpty } from "@/components/shared/empty-states/FavoritesEmpty";
+import type { SidebarBoard } from "@/lib/workspace-context";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { BoardListItem } from "./BoardListItem";
 
-export type SidebarBoard = {
-  id: string;
-  name: string;
-  is_private: boolean;
-  workspace_id: string;
-};
+export type { SidebarBoard };
 
 export type OptimisticBoard = SidebarBoard & { starred: boolean };
 
@@ -24,7 +20,6 @@ type BoardListProps = {
   workspaceSlug: string;
   activeBoardId?: string | undefined;
   initialBoards?: SidebarBoards | undefined;
-  workspaceName?: string | undefined;
 };
 
 type StarAction = { boardId: string; starred: boolean };
@@ -33,12 +28,7 @@ function applyStarAction(boards: OptimisticBoard[], action: StarAction): Optimis
   return boards.map((b) => (b.id === action.boardId ? { ...b, starred: action.starred } : b));
 }
 
-export function BoardList({
-  workspaceSlug,
-  activeBoardId,
-  initialBoards,
-  workspaceName: _workspaceName,
-}: BoardListProps) {
+export function BoardList({ workspaceSlug, activeBoardId, initialBoards }: BoardListProps) {
   const search = useSidebarStore((s) => s.search);
   const [, startTransition] = useTransition();
 
