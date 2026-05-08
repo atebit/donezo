@@ -3,7 +3,6 @@
 import { useOptimistic, useTransition } from "react";
 import { starBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
 import { FavoritesEmpty } from "@/components/shared/empty-states/FavoritesEmpty";
-import { NoBoardsInWorkspace } from "@/components/shared/empty-states/NoBoardsInWorkspace";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { BoardListItem } from "./BoardListItem";
 
@@ -38,7 +37,7 @@ export function BoardList({
   workspaceSlug,
   activeBoardId,
   initialBoards,
-  workspaceName,
+  workspaceName: _workspaceName,
 }: BoardListProps) {
   const search = useSidebarStore((s) => s.search);
   const [, startTransition] = useTransition();
@@ -72,8 +71,10 @@ export function BoardList({
 
   if (optimisticBoards.length === 0) {
     return (
-      <div className="py-2">
-        <NoBoardsInWorkspace workspaceName={workspaceName ?? "This workspace"} />
+      <div className="flex flex-col gap-1">
+        <p style={{ fontSize: 13, color: "var(--color-fg-muted)", padding: "8px" }}>
+          No boards yet
+        </p>
       </div>
     );
   }
