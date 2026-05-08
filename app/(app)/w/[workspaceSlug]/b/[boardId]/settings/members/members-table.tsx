@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { setBoardPrivacy } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/settings/general/actions";
 import {
   resendInvitation,
   revokeInvitation,
@@ -190,7 +191,25 @@ export function BoardMembersTable({
   members,
   invitations,
 }: BoardMembersTableProps) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const canAdmin = currentBoardRole === "admin" || currentBoardRole === "owner";
+
+  function handleMakePrivate() {
+    const ok = window.confirm(
+      "Making this board private will hide it from workspace members who aren't invited. Continue?",
+    );
+    if (!ok) return;
+    startTransition(async () => {
+      const result = await setBoardPrivacy({ boardId, isPrivate: true });
+      if (result.ok) {
+        toast.success("Board is now private.");
+        router.refresh();
+      } else {
+        toast.error(result.error.message);
+      }
+    });
+  }
 
   // Public board notice
   if (!isPrivate) {
@@ -211,15 +230,8 @@ export function BoardMembersTable({
             individually.
           </p>
           {canAdmin && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                // TODO: epic 05 followup — extend InviteModal to accept boardId and use inviteToBoard
-                toast.info("Board invitations — coming next");
-              }}
-            >
-              Make private
+            <Button size="sm" variant="outline" onClick={handleMakePrivate} disabled={pending}>
+              {pending ? "Updating…" : "Make private"}
             </Button>
           )}
         </section>
