@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { inviteToWorkspace } from "@/app/(app)/w/[workspaceSlug]/actions";
+import { inviteToBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,11 +39,12 @@ const ROLES = [
 
 export interface InviteModalProps {
   workspaceId: string;
+  boardId?: string; // when present, invites are scoped to this board
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function InviteModal({ workspaceId, open, onOpenChange }: InviteModalProps) {
+export function InviteModal({ workspaceId, boardId, open, onOpenChange }: InviteModalProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -72,11 +74,9 @@ export function InviteModal({ workspaceId, open, onOpenChange }: InviteModalProp
       const errors: string[] = [];
 
       for (const email of emailList) {
-        const result = await inviteToWorkspace({
-          workspaceId,
-          email,
-          role: values.role,
-        });
+        const result = boardId
+          ? await inviteToBoard({ boardId, email, role: values.role })
+          : await inviteToWorkspace({ workspaceId, email, role: values.role });
         if (!result.ok) {
           errors.push(`${email}: ${result.error.message}`);
         }
