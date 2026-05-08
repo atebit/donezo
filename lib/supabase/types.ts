@@ -398,6 +398,7 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string | null
+          revoked_at: string | null
           role: string
           token: string
           workspace_id: string
@@ -410,6 +411,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string | null
+          revoked_at?: string | null
           role: string
           token: string
           workspace_id: string
@@ -422,6 +424,7 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string | null
+          revoked_at?: string | null
           role?: string
           token?: string
           workspace_id?: string
@@ -515,6 +518,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          last_workspace_id: string | null
           updated_at: string
         }
         Insert: {
@@ -523,6 +527,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          last_workspace_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -531,6 +536,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          last_workspace_id?: string | null
           updated_at?: string
         }
         Relationships: []
