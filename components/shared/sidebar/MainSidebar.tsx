@@ -128,7 +128,7 @@ function NavToolButton({ label, disabled, children }: NavToolButtonProps) {
         background: "transparent",
         border: "none",
         borderRadius: "var(--radius-sm)",
-        color: "rgba(255, 255, 255, 0.6)",
+        color: "var(--color-fg-on-nav)",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.4 : 1,
       }}

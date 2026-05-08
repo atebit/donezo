@@ -13,6 +13,7 @@
   --color-surface-rail: #f6f7fb;
   --color-surface-nav: #292f4c;
   --color-surface-nav-hover: rgba(0, 0, 0, 0.6);
+  --color-fg-on-nav: rgba(255, 255, 255, 0.6);
   --color-surface-info: #f5f6f8;
   --color-surface-row-hover: #f4f5f8;
   --color-surface-hover: #dcdfec;
