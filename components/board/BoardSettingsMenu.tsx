@@ -22,7 +22,7 @@ interface BoardSettingsMenuProps {
 
 export function BoardSettingsMenu({ onOpenDescription, onRename }: BoardSettingsMenuProps) {
   const { board, role } = useBoard();
-  const { workspace } = useWorkspace();
+  const { workspace, role: workspaceRole } = useWorkspace();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -30,7 +30,7 @@ export function BoardSettingsMenu({ onOpenDescription, onRename }: BoardSettings
 
   const roleRank = ROLE_RANK[role];
   const isAdmin = roleRank >= ROLE_RANK.admin;
-  const isOwner = role === "owner";
+  const isWorkspaceOwner = workspaceRole === "owner";
 
   const handleDuplicate = useCallback(() => {
     startTransition(async () => {
@@ -145,7 +145,7 @@ export function BoardSettingsMenu({ onOpenDescription, onRename }: BoardSettings
               )}
 
               {/* Delete — workspace owner only */}
-              {isOwner && (
+              {isWorkspaceOwner && (
                 <Menu.Item
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left text-destructive hover:bg-destructive/10 focus-visible:bg-destructive/10 focus-visible:outline-none cursor-pointer"
                   onClick={() => setDeleteOpen(true)}
