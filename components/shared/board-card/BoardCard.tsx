@@ -70,7 +70,7 @@ export function BoardCard({ board, workspaceSlug, isStarred }: BoardCardProps) {
           border: "none",
           cursor: "pointer",
           padding: 4,
-          color: optimisticStarred ? "var(--color-warning, #f59e0b)" : "var(--color-fg-muted)",
+          color: optimisticStarred ? "var(--color-label-yellow)" : "var(--color-fg-muted)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

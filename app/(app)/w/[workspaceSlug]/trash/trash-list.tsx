@@ -81,11 +81,11 @@ function DeleteDialog({ board, onDeleted }: DeleteDialogProps) {
         style={{
           padding: "5px 12px",
           backgroundColor: "transparent",
-          border: "1px solid var(--color-danger, #e53e3e)",
+          border: "1px solid var(--color-destructive)",
           borderRadius: "var(--radius-sm, 6px)",
           fontSize: 13,
           fontWeight: 500,
-          color: "var(--color-danger, #e53e3e)",
+          color: "var(--color-destructive)",
           cursor: "pointer",
           whiteSpace: "nowrap",
         }}
@@ -198,16 +198,14 @@ function DeleteDialog({ board, onDeleted }: DeleteDialogProps) {
                 onClick={handleDelete}
                 style={{
                   padding: "7px 16px",
-                  backgroundColor: canSubmit
-                    ? "var(--color-danger, #e53e3e)"
-                    : "var(--color-danger-muted, #feb2b2)",
+                  backgroundColor: "var(--color-destructive)",
                   border: "none",
                   borderRadius: "var(--radius-sm, 6px)",
                   fontSize: 14,
                   fontWeight: 500,
                   color: "white",
                   cursor: canSubmit ? "pointer" : "not-allowed",
-                  opacity: pending ? 0.7 : 1,
+                  opacity: canSubmit ? (pending ? 0.7 : 1) : 0.4,
                 }}
               >
                 {pending ? "Deleting…" : "Delete permanently"}
@@ -277,7 +275,7 @@ export function TrashList({ boards, workspaceId: _workspaceId, role }: TrashList
       <thead>
         <tr
           style={{
-            backgroundColor: "var(--color-surface-subtle)",
+            backgroundColor: "var(--color-surface-row-hover)",
             borderBottom: "1px solid var(--color-border-solid)",
           }}
         >

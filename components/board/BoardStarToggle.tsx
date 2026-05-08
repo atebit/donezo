@@ -43,7 +43,7 @@ export function BoardStarToggle() {
         className={cn(
           "transition-colors",
           optimisticStarred
-            ? "fill-amber-400 stroke-amber-400"
+            ? "fill-[color:var(--color-label-yellow)] stroke-[color:var(--color-label-yellow)]"
             : "fill-none stroke-[color:var(--color-fg-muted)]",
         )}
       />
