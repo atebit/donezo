@@ -15,7 +15,7 @@ type UserMenuProps = {
 
 export function UserMenu({ user, variant = "main" }: UserMenuProps) {
   const [isPending, startTransition] = useTransition();
-  const avatarSize = variant === "main" ? 37.4 : 28;
+  const avatarSize: 37.4 | 26 = variant === "main" ? 37.4 : 26;
 
   function handleSignOut() {
     startTransition(async () => {
@@ -33,7 +33,7 @@ export function UserMenu({ user, variant = "main" }: UserMenuProps) {
           src={user.avatarUrl}
           displayName={user.displayName}
           email={user.email}
-          size={avatarSize as 37.4 | 26 | 30 | 24 | 22}
+          size={avatarSize}
           borderColor="white"
         />
       </Menu.Trigger>
