@@ -137,6 +137,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          description: string
           id: string
           is_private: boolean
           name: string
@@ -147,6 +148,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string
           id?: string
           is_private?: boolean
           name: string
@@ -157,6 +159,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string
           id?: string
           is_private?: boolean
           name?: string
@@ -273,6 +276,7 @@ export type Database = {
         Row: {
           board_id: string
           created_at: string
+          icon: string | null
           id: string
           name: string
           position: number
@@ -283,6 +287,7 @@ export type Database = {
         Insert: {
           board_id: string
           created_at?: string
+          icon?: string | null
           id?: string
           name: string
           position: number
@@ -293,6 +298,7 @@ export type Database = {
         Update: {
           board_id?: string
           created_at?: string
+          icon?: string | null
           id?: string
           name?: string
           position?: number
@@ -539,7 +545,15 @@ export type Database = {
           last_workspace_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profile_last_workspace_id_fkey"
+            columns: ["last_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspace"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task: {
         Row: {
@@ -591,6 +605,32 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_starred_board: {
+        Row: {
+          board_id: string
+          starred_at: string
+          user_id: string
+        }
+        Insert: {
+          board_id: string
+          starred_at?: string
+          user_id: string
+        }
+        Update: {
+          board_id?: string
+          starred_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_starred_board_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "board"
             referencedColumns: ["id"]
           },
         ]
@@ -706,12 +746,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      clone_board: {
+        Args: { p_board_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string
+          id: string
+          is_private: boolean
+          name: string
+          updated_at: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "board"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_board: {
         Args: { p_is_private: boolean; p_name: string; p_workspace_id: string }
         Returns: {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          description: string
           id: string
           is_private: boolean
           name: string
@@ -744,6 +805,26 @@ export type Database = {
         }
       }
       greater_role: { Args: { a: string; b: string }; Returns: string }
+      restore_board: {
+        Args: { p_board_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string
+          id: string
+          is_private: boolean
+          name: string
+          updated_at: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "board"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       role_for_board: {
         Args: { p_board_id: string; p_user_id: string }
         Returns: string
