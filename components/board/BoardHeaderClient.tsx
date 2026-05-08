@@ -7,6 +7,7 @@ import { BoardDescriptionModal } from "@/components/board/BoardDescriptionModal"
 import { BoardSettingsMenu } from "@/components/board/BoardSettingsMenu";
 import { BoardStarToggle } from "@/components/board/BoardStarToggle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
+import { InviteModal } from "@/components/shared/InviteModal";
 import { MemberModal } from "@/components/shared/MemberModal";
 import { MemberStack } from "@/components/shared/MemberStack";
 import { useBoard } from "@/hooks/use-board";
@@ -30,6 +31,7 @@ export function BoardHeaderClient({ members, createdByName }: BoardHeaderClientP
   const { board } = useBoard();
   const [membersOpen, setMembersOpen] = useState(false);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const handleRenameCommit = useCallback(
     async (next: string) => {
@@ -47,9 +49,7 @@ export function BoardHeaderClient({ members, createdByName }: BoardHeaderClientP
   }, []);
 
   const handleInvite = useCallback(() => {
-    // TODO: Stage 4 followup — extend InviteModal to accept optional boardId prop
-    // and use inviteToBoard instead of the workspace-only invitation path.
-    toast.info("Board invitations — coming next");
+    setInviteOpen(true);
   }, []);
 
   // Adapt members for MemberStack (subset of fields)
@@ -106,10 +106,10 @@ export function BoardHeaderClient({ members, createdByName }: BoardHeaderClientP
             Members
           </button>
 
-          {/* Invite tool — placeholder (InviteModal is workspace-only) */}
+          {/* Invite tool */}
           <button
             type="button"
-            aria-label="Invite to board (coming soon)"
+            aria-label="Invite people to this board"
             onClick={handleInvite}
             className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-[color:var(--color-fg-muted)] hover:bg-[color:var(--color-surface-hover)] hover:text-[color:var(--color-fg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary)]"
           >
@@ -155,6 +155,13 @@ export function BoardHeaderClient({ members, createdByName }: BoardHeaderClientP
         onOpenChange={setDescriptionOpen}
         createdByName={createdByName}
         memberCount={members.length}
+      />
+
+      <InviteModal
+        workspaceId={board.workspace_id}
+        boardId={board.id}
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
       />
     </>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { setBoardPrivacy } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/settings/general/actions";
 import {
@@ -9,6 +9,7 @@ import {
   revokeInvitation,
 } from "@/app/(app)/w/[workspaceSlug]/settings/members/actions";
 import { Avatar } from "@/components/shared/Avatar";
+import { InviteModal } from "@/components/shared/InviteModal";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/authorization";
 import { removeBoardMember, setBoardMemberRole } from "./actions";
@@ -30,6 +31,7 @@ export interface PendingBoardInvitationRow {
 }
 
 interface BoardMembersTableProps {
+  workspaceId: string;
   boardId: string;
   currentUserId: string;
   currentBoardRole: Role;
@@ -184,6 +186,7 @@ function InvitationActions({ invitationId }: { invitationId: string }) {
 }
 
 export function BoardMembersTable({
+  workspaceId,
   boardId,
   currentUserId,
   currentBoardRole,
@@ -193,6 +196,7 @@ export function BoardMembersTable({
 }: BoardMembersTableProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [inviteOpen, setInviteOpen] = useState(false);
   const canAdmin = currentBoardRole === "admin" || currentBoardRole === "owner";
 
   function handleMakePrivate() {
@@ -255,13 +259,7 @@ export function BoardMembersTable({
             </span>
           </h2>
           {canAdmin && (
-            <Button
-              size="sm"
-              onClick={() => {
-                // TODO: epic 05 followup — extend InviteModal to accept boardId and use inviteToBoard
-                toast.info("Board invitations — coming next");
-              }}
-            >
+            <Button size="sm" onClick={() => setInviteOpen(true)}>
               Invite members
             </Button>
           )}
@@ -392,6 +390,13 @@ export function BoardMembersTable({
           </div>
         </section>
       )}
+
+      <InviteModal
+        workspaceId={workspaceId}
+        boardId={boardId}
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+      />
     </div>
   );
 }

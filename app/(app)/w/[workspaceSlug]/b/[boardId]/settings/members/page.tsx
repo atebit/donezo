@@ -36,6 +36,7 @@ export default async function BoardMembersSettingsPage({
     return (
       <div className="max-w-[720px]">
         <BoardMembersTable
+          workspaceId={board.workspace_id}
           boardId={board.id}
           currentUserId={user.id}
           currentBoardRole={boardRole}
@@ -92,6 +93,7 @@ export default async function BoardMembersSettingsPage({
   return (
     <div className="max-w-[720px]">
       <BoardMembersTable
+        workspaceId={board.workspace_id}
         boardId={board.id}
         currentUserId={user.id}
         currentBoardRole={boardRole}
