@@ -1,17 +1,16 @@
 "use client";
 
-import { Avatar } from "@/components/shared/Avatar";
+import { UserMenu } from "@/components/shared/sidebar/UserMenu";
+import type { CurrentUser } from "@/lib/auth/current-user";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { NotificationBellStub } from "./NotificationBellStub";
 import { SearchStub } from "./SearchStub";
 
 /**
  * Application topbar rendered by SidebarShell (Slice 8) above the main content area.
- * Height: 48px, items left-to-right: breadcrumbs, spacer, search, bell, account menu slot.
- *
- * Account menu slot: placeholder Avatar button until Slice 8 wires in <UserMenu variant="small" />.
+ * Height: 48px, items left-to-right: breadcrumbs, spacer, search, bell, account menu.
  */
-export function Topbar() {
+export function Topbar({ user }: { user: CurrentUser }) {
   return (
     <header
       style={{
@@ -32,16 +31,7 @@ export function Topbar() {
       <div className="flex items-center gap-2">
         <SearchStub />
         <NotificationBellStub />
-
-        {/* Account menu slot
-            TODO: Slice 8 wires UserMenu here — replace this button with <UserMenu variant="small" /> */}
-        <button
-          type="button"
-          aria-label="Account menu"
-          className="flex items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
-        >
-          <Avatar size={26} />
-        </button>
+        <UserMenu user={user} variant="small" />
       </div>
     </header>
   );
