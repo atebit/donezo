@@ -147,7 +147,7 @@ export function BoardSettingsMenu({ onOpenDescription, onRename }: BoardSettings
               {/* Delete — workspace owner only */}
               {isOwner && (
                 <Menu.Item
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left text-red-600 hover:bg-red-50 focus-visible:bg-red-50 focus-visible:outline-none cursor-pointer"
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left text-destructive hover:bg-destructive/10 focus-visible:bg-destructive/10 focus-visible:outline-none cursor-pointer"
                   onClick={() => setDeleteOpen(true)}
                 >
                   <IconDelete size={14} />

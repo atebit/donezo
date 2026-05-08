@@ -60,7 +60,7 @@ export function BoardArchiveConfirmModal({
               type="button"
               disabled={isPending}
               onClick={handleArchive}
-              className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 focus-visible:outline-none disabled:opacity-50"
+              className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-white hover:bg-destructive/90 focus-visible:outline-none disabled:opacity-50"
             >
               {isPending ? "Archiving…" : "Archive"}
             </button>
