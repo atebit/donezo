@@ -30,6 +30,7 @@
  */
 
 import { Checkbox } from "@base-ui/react/checkbox";
+import { useShallow } from "zustand/react/shallow";
 import { useBoardStore } from "@/stores/board-store";
 
 import { AddColumnButton } from "./AddColumnButton";
@@ -51,10 +52,12 @@ const DEFAULT_COLUMN_WIDTH = 140;
 // ---------------------------------------------------------------------------
 
 function BoardLevelCheckbox() {
-  const { selection, tasks } = useBoardStore((s) => ({
-    selection: s.selection,
-    tasks: s.tasks,
-  }));
+  const { selection, tasks } = useBoardStore(
+    useShallow((s) => ({
+      selection: s.selection,
+      tasks: s.tasks,
+    })),
+  );
 
   const totalInScope = tasks.length;
   const selectedInScope = tasks.filter((t) => selection.has(t.id)).length;
@@ -109,7 +112,9 @@ export function StickyHeader() {
   // Read columns and prefs from the board store.
   // applyColumnUpsert always re-sorts by position, so the array is already
   // sorted — but we re-sort defensively here in the selector (cheap + safe).
-  const columns = useBoardStore((s) => [...s.columns].sort((a, b) => a.position - b.position));
+  const columns = useBoardStore(
+    useShallow((s) => [...s.columns].sort((a, b) => a.position - b.position)),
+  );
   const columnPrefsByBoard = useBoardStore((s) => s.columnPrefsByBoard);
   const boardId = useBoardStore((s) => s.boardId);
 

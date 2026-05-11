@@ -5,6 +5,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 import { reorderColumn } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/columns/actions";
 import { reorderGroup } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
 import { moveTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
@@ -67,10 +68,12 @@ interface GroupHeaderRowProps {
 // Reads selection + tasks from the store and computes checked/indeterminate.
 // ---------------------------------------------------------------------------
 function GroupTriStateCheckbox({ group }: { group: Group }) {
-  const { selection, tasks } = useBoardStore((s) => ({
-    selection: s.selection,
-    tasks: s.tasks,
-  }));
+  const { selection, tasks } = useBoardStore(
+    useShallow((s) => ({
+      selection: s.selection,
+      tasks: s.tasks,
+    })),
+  );
 
   const groupTasks = tasks.filter((t) => t.group_id === group.id);
   const totalInScope = groupTasks.length;

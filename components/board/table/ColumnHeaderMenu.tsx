@@ -28,7 +28,7 @@ import { Check, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { type ReactElement, useId, useState, useTransition } from "react";
 import { toast } from "sonner";
-
+import { useShallow } from "zustand/react/shallow";
 import {
   changeColumnType,
   deleteColumn,
@@ -359,14 +359,16 @@ export function ColumnHeaderMenu({ column, editableRef, children }: ColumnHeader
     labelsByColumn,
     applyColumnUpsert,
     applyLabelUpsert,
-  } = useBoardStore((s) => ({
-    columns: s.columns,
-    sortColumnId: s.sortColumnId,
-    sortDirection: s.sortDirection,
-    labelsByColumn: s.labelsByColumn,
-    applyColumnUpsert: s.applyColumnUpsert,
-    applyLabelUpsert: s.applyLabelUpsert,
-  }));
+  } = useBoardStore(
+    useShallow((s) => ({
+      columns: s.columns,
+      sortColumnId: s.sortColumnId,
+      sortDirection: s.sortDirection,
+      labelsByColumn: s.labelsByColumn,
+      applyColumnUpsert: s.applyColumnUpsert,
+      applyLabelUpsert: s.applyLabelUpsert,
+    })),
+  );
 
   const [labelEditorOpen, setLabelEditorOpen] = useState(false);
   const [changeTypeOpen, setChangeTypeOpen] = useState(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { Tooltip } from "@base-ui/react";
+import { useShallow } from "zustand/react/shallow";
 
 import { Avatar } from "@/components/shared/Avatar";
 import { selectPresentUserIds, useBoardStore } from "@/stores/board-store";
@@ -23,7 +24,7 @@ interface PresencePileProps {
  * Epic 08: Realtime & Presence
  */
 export function PresencePile({ members, currentUserId, max = 4 }: PresencePileProps) {
-  const presentIds = useBoardStore(selectPresentUserIds);
+  const presentIds = useBoardStore(useShallow(selectPresentUserIds));
 
   // Exclude the current user from the displayed pile
   const othersPresent = presentIds.filter((id) => id !== currentUserId);

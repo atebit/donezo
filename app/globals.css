@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@source not "../docs";
+@source not "../supabase";
+@source not "../tests";
+
 @custom-variant dark (&:is(.dark *));
 
 /* THEME_TOKENS — canonical Monday-derived palette (epic-01-followup-2 Slice I) */

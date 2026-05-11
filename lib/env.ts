@@ -12,7 +12,19 @@ const EnvSchema = z.object({
 
 export type Env = z.infer<typeof EnvSchema>;
 
-const parsed = EnvSchema.safeParse(process.env);
+// Enumerate explicitly: on the client Next.js only inlines references it can
+// statically detect (e.g. `process.env.NEXT_PUBLIC_FOO`), not the whole
+// `process.env` object. Passing `process.env` directly here yields `{}` in the
+// browser bundle and every required key fails validation.
+const parsed = EnvSchema.safeParse({
+  NODE_ENV: process.env.NODE_ENV,
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  SENTRY_DSN: process.env.SENTRY_DSN,
+});
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
 if (!parsed.success && !isBuildPhase) {

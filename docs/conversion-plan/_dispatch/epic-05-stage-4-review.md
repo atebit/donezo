@@ -151,7 +151,7 @@ The following gaps were surfaced during Stage-4 execution. None blocks Stage 5; 
 
 ### Non-blocking observations
 
-- F3.2 inlines `var(--color-label-yellow)` in `BoardCard` via inline `style.color`. Since the Tailwind arbitrary-property form (`fill-[color:var(...)]`) is used elsewhere (e.g. `BoardStarToggle`), there is a minor inconsistency between the two card surfaces. Not a violation — both reference the same defined token. Worth normalizing in a later polish pass, not now.
+- F3.2 inlines `var(--color-label-yellow)` in `BoardCard` via inline `style.color`. Since the Tailwind arbitrary-property form (`fill-[color:var(--token)]`) is used elsewhere (e.g. `BoardStarToggle`), there is a minor inconsistency between the two card surfaces. Not a violation — both reference the same defined token. Worth normalizing in a later polish pass, not now.
 - The Trash list's table-row hover background (`var(--color-surface-row-hover)`) is reused as the table-header background. Semantically a stretch, but the token does exist and the visual is fine. If a dedicated `--color-surface-table-header` is introduced later, swap then.
 
 **Stage 4 review loop closed. No Followup-4 needed.**

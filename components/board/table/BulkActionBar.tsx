@@ -28,7 +28,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { ArrowRightLeft, Columns3, Copy, Trash2, X } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-
+import { useShallow } from "zustand/react/shallow";
 import {
   bulkDeleteTasks,
   bulkDuplicateTasks,
@@ -220,12 +220,14 @@ function ActionButton({ icon, label, onClick, disabled = false }: ActionButtonPr
 // ---------------------------------------------------------------------------
 
 export function BulkActionBar() {
-  const { selection, tasks, groups, columns } = useBoardStore((s) => ({
-    selection: s.selection,
-    tasks: s.tasks,
-    groups: s.groups,
-    columns: s.columns,
-  }));
+  const { selection, tasks, groups, columns } = useBoardStore(
+    useShallow((s) => ({
+      selection: s.selection,
+      tasks: s.tasks,
+      groups: s.groups,
+      columns: s.columns,
+    })),
+  );
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [movePopoverOpen, setMovePopoverOpen] = useState(false);

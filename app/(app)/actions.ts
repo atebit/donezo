@@ -1,5 +1,5 @@
 "use server";
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { withUser } from "@/lib/actions";
 import { requireWorkspaceRole } from "@/lib/authorization";
 import { SetLastWorkspaceSchema } from "@/lib/validations/profile";
@@ -16,6 +16,7 @@ export const createWorkspace = withUser(async ({ supabase }, raw) => {
     }
     throw { code: "DB", message: error.message };
   }
+  revalidatePath("/", "layout");
   return data;
 });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useShallow } from "zustand/react/shallow";
 import { useBoardStore } from "@/stores/board-store";
 
 /**
@@ -18,7 +19,7 @@ export function useTypingIndicator(args: {
 }): Array<{ user_id: string; at: number }> {
   const { userId, context } = args;
 
-  const entries = useBoardStore((state) => state.typingByContext.get(context) ?? []);
+  const entries = useBoardStore(useShallow((state) => state.typingByContext.get(context) ?? []));
 
   // Filter out the current user so they never see their own typing indicator
   return entries.filter((e) => e.user_id !== userId);
