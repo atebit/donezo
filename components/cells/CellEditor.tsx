@@ -25,12 +25,25 @@
 import { Popover } from "@base-ui/react";
 import { useEffect, useRef, useTransition } from "react";
 import { toast } from "sonner";
-import { setCellValue } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/cells/actions";
 import type { Column, Task } from "@/components/board/table/types";
 import { getCellDef } from "@/lib/cells/registry";
 import type { CellTypeId } from "@/lib/cells/types";
+import { wrappedSetCellValue } from "@/lib/realtime/wrapped-actions";
 import { createClient } from "@/lib/supabase/client";
 import { useBoardStore } from "@/stores/board-store";
+
+// ---------------------------------------------------------------------------
+// isQueuedResult — type-narrowing guard for withOutbox's queued branch.
+// Kept local so it does not add a new export to lib/realtime/outbox.ts.
+// ---------------------------------------------------------------------------
+function isQueuedResult(r: unknown): r is { queued: true } {
+  return (
+    r !== null &&
+    typeof r === "object" &&
+    "queued" in r &&
+    (r as { queued?: unknown }).queued === true
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Derived types — editors never open for these; the orchestrator closes
@@ -126,7 +139,9 @@ function CellEditorInner({ task, column, onClose }: CellEditorProps) {
 
     // 5. Fire server action (in transition for non-blocking UI).
     startTransition(async () => {
-      const result = await setCellValue({ taskId: task.id, columnId: column.id, value });
+      const result = await wrappedSetCellValue({ taskId: task.id, columnId: column.id, value });
+      // Soft success — optimistic update already applied; outbox will flush on reconnect.
+      if (isQueuedResult(result)) return;
       if (result.ok) {
         useBoardStore.getState().applyCellUpsert(result.data);
       } else {
