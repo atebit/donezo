@@ -243,16 +243,17 @@ export const duplicateGroup = withUser(async ({ supabase, userId }, raw) => {
   const oldToNewTaskId = new Map<string, string>();
 
   for (const sourceTask of tasks) {
+    const taskPayload = {
+      group_id: newGroup.id,
+      title: sourceTask.title,
+      position: sourceTask.position,
+      created_by: userId,
+      updated_by: userId,
+    };
     const { data: newTask, error: taskInsertError } = await supabase
       .from("task")
-      .insert({
-        board_id: sourceGroup.board_id,
-        group_id: newGroup.id,
-        title: sourceTask.title,
-        position: sourceTask.position,
-        created_by: userId,
-        updated_by: userId,
-      })
+      // @ts-expect-error: task_board_id_consistency trigger sets board_id from group_id
+      .insert(taskPayload)
       .select("id")
       .single();
 
