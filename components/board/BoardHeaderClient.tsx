@@ -6,6 +6,9 @@ import { renameBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
 import { BoardDescriptionModal } from "@/components/board/BoardDescriptionModal";
 import { BoardSettingsMenu } from "@/components/board/BoardSettingsMenu";
 import { BoardStarToggle } from "@/components/board/BoardStarToggle";
+import { ConnectionStatus } from "@/components/board/ConnectionStatus";
+import { OutboxBanner } from "@/components/board/OutboxBanner";
+import { PresencePile } from "@/components/board/PresencePile";
 import { EditableTitle } from "@/components/shared/EditableTitle";
 import { InviteModal } from "@/components/shared/InviteModal";
 import { MemberModal } from "@/components/shared/MemberModal";
@@ -25,9 +28,14 @@ type Member = {
 interface BoardHeaderClientProps {
   members: Member[];
   createdByName: string | null;
+  currentUserId: string; // new — provided by BoardHeader.tsx server component
 }
 
-export function BoardHeaderClient({ members, createdByName }: BoardHeaderClientProps) {
+export function BoardHeaderClient({
+  members,
+  createdByName,
+  currentUserId,
+}: BoardHeaderClientProps) {
   const { board } = useBoard();
   const [membersOpen, setMembersOpen] = useState(false);
   const [descriptionOpen, setDescriptionOpen] = useState(false);
@@ -128,6 +136,11 @@ export function BoardHeaderClient({ members, createdByName }: BoardHeaderClientP
             Description
           </button>
         </div>
+
+        {/* live presence — green-dotted avatars of users on this board right now (Epic 08) */}
+        <PresencePile members={memberStackItems} currentUserId={currentUserId} />
+        <ConnectionStatus />
+        <OutboxBanner />
 
         {/* Member avatar stack */}
         <MemberStack members={memberStackItems} max={4} size={24} className="ml-2" />

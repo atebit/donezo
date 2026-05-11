@@ -1,4 +1,5 @@
 import { BoardHeaderClient } from "@/components/board/BoardHeaderClient";
+import { requireUser } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function BoardHeader({ boardId }: { boardId: string }) {
   const supabase = await createClient();
+  const currentUser = await requireUser();
 
   // Step 1: fetch board_member rows for this board (limit 50; pagination deferred to epic 06)
   const { data: boardMembers } = await supabase
@@ -73,5 +75,11 @@ export async function BoardHeader({ boardId }: { boardId: string }) {
     createdByName = p?.display_name ?? p?.email ?? null;
   }
 
-  return <BoardHeaderClient members={members} createdByName={createdByName} />;
+  return (
+    <BoardHeaderClient
+      members={members}
+      createdByName={createdByName}
+      currentUserId={currentUser.id}
+    />
+  );
 }
