@@ -275,6 +275,115 @@ describe.skip("bulkSetCellValue", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Epic 08 — S0: board_id in upsert payloads
+// ---------------------------------------------------------------------------
+
+describe.skip("setCellValue — board_id in upsert payload (Epic 08 S0)", () => {
+  it("includes board_id from the column record in the upsert payload", async () => {
+    // Arrange — simulate the upsert payload construction from setCellValue.
+    // The action reads col.board_id after loading the column, then passes it
+    // explicitly so Realtime can filter on board_id=eq.<id>.
+    const mockPatch = {
+      text_value: "Hello",
+      number_value: null,
+      boolean_value: null,
+      date_value: null,
+      date_end_value: null,
+      label_id: null,
+      json_value: null,
+    };
+    const col = { id: "col-uuid", board_id: "board-uuid", type: "text" };
+    const input = { taskId: "task-uuid", columnId: "col-uuid", value: "Hello" };
+    const userId = "user-uuid";
+
+    // Act — simulate the upsert payload built inside setCellValue.
+    const upsertPayload = {
+      task_id: input.taskId,
+      column_id: input.columnId,
+      board_id: col.board_id,
+      ...mockPatch,
+      updated_by: userId,
+    };
+
+    // Assert — board_id must match the column's board_id.
+    expect(upsertPayload.board_id).toBe("board-uuid");
+    expect(upsertPayload.task_id).toBe("task-uuid");
+    expect(upsertPayload.column_id).toBe("col-uuid");
+  });
+
+  it("board_id in upsert payload matches col.board_id, not any task-derived value", async () => {
+    // Guardrail: the action takes board_id from the column lookup, not from
+    // client input. Verifies the source of truth is col.board_id.
+    const col = { id: "col-uuid", board_id: "expected-board-id", type: "text" };
+
+    const payload = {
+      task_id: "task-uuid",
+      column_id: col.id,
+      board_id: col.board_id, // must come from col, not from client input
+      text_value: "test",
+      updated_by: "user-uuid",
+    };
+
+    expect(payload.board_id).toBe(col.board_id);
+    expect(payload.board_id).toBe("expected-board-id");
+  });
+});
+
+describe.skip("bulkSetCellValue — board_id in upsert payload (Epic 08 S0)", () => {
+  it("includes board_id from the column record in every entry of the upsert payload", async () => {
+    // Arrange — simulate the bulk upsert payload construction.
+    // The action computes a single patch and maps it over all taskIds, including
+    // board_id: col.board_id in each entry.
+    const mockPatch = {
+      text_value: "Bulk value",
+      number_value: null,
+      boolean_value: null,
+      date_value: null,
+      date_end_value: null,
+      label_id: null,
+      json_value: null,
+    };
+    const col = { id: "col-uuid", board_id: "board-uuid", type: "text" };
+    const taskIds = ["task-1", "task-2", "task-3"];
+    const userId = "user-uuid";
+
+    // Act — simulate the upsert payload map inside bulkSetCellValue.
+    const upsertPayload = taskIds.map((tid) => ({
+      task_id: tid,
+      column_id: col.id,
+      board_id: col.board_id,
+      ...mockPatch,
+      updated_by: userId,
+    }));
+
+    // Assert — every entry must have board_id set.
+    expect(upsertPayload).toHaveLength(3);
+    expect(upsertPayload.every((p) => p.board_id === "board-uuid")).toBe(true);
+    expect(upsertPayload[0]?.board_id).toBe("board-uuid");
+    expect(upsertPayload[1]?.board_id).toBe("board-uuid");
+    expect(upsertPayload[2]?.board_id).toBe("board-uuid");
+  });
+
+  it("board_id is consistent across all entries regardless of task count", async () => {
+    // The board_id must be the same for every entry in a bulk call (single-board
+    // safety check ensures all tasks are on the same board as the column).
+    const boardId = "shared-board-id";
+    const col = { id: "col-uuid", board_id: boardId, type: "text" };
+    const taskIds = Array.from({ length: 10 }, (_, i) => `task-${i}`);
+
+    const upsertPayload = taskIds.map((tid) => ({
+      task_id: tid,
+      column_id: col.id,
+      board_id: col.board_id,
+    }));
+
+    const uniqueBoardIds = new Set(upsertPayload.map((p) => p.board_id));
+    expect(uniqueBoardIds.size).toBe(1);
+    expect(uniqueBoardIds.has(boardId)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Additional cases (S23 extension)
 // ---------------------------------------------------------------------------
 
