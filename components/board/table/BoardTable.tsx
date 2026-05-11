@@ -19,6 +19,8 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
 
   // Hydrate the store once on mount (StrictMode-safe ref guard prevents
   // double-hydration from the dev-mode double-invocation of effects).
+  // initial.* are bootstrap data; rehydration is keyed on boardId only — see followup-2.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: boardId is the only re-hydration trigger; initial.* is bootstrap data
   useEffect(() => {
     if (!hydratedRef.current) {
       hydratedRef.current = true;
@@ -32,8 +34,9 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
 
     return () => {
       useBoardStore.getState().reset();
+      hydratedRef.current = false;
     };
-  }, [boardId, initial.groups, initial.tasks, initial.cells]);
+  }, [boardId]);
 
   const groups = useBoardStore((s) => s.groups);
   const tasks = useBoardStore((s) => s.tasks);
