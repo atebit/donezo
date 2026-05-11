@@ -213,13 +213,13 @@ export const duplicateColumn = withUser(async ({ supabase, userId }, raw) => {
   if (!newColumn) throw { code: "NOT_FOUND", message: "New column not found after insert." };
 
   // 4. Duplicate labels (if any).
-  let newLabels: Array<{ id: string; name: string; color: string; position: number }> = [];
+  let newLabels: LabelRow[] = [];
 
   if (sourceLabels.length > 0) {
     const { data: insertedLabels, error: labelInsertErr } = await supabase
       .from("label")
       .insert(sourceLabels.map((l) => ({ ...l, column_id: newColumn.id })))
-      .select("id, name, color, position");
+      .select(); // returns all columns including column_id, matching createColumn precedent
 
     if (labelInsertErr) throw { code: "DB", message: labelInsertErr.message };
     newLabels = insertedLabels ?? [];
