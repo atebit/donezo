@@ -213,9 +213,20 @@ export type CellTypeDef<TValue, TConfig = Record<string, never>> = {
   // ------------------------------------------------------------------
 
   /**
-   * Per-destination-type conversion functions. When a column changes from
-   * this type to another, the server action runs `convertTo[newType](value)`
+   * Per-destination-type conversion entries. When a column changes from this
+   * type to another, the server action resolves `convertTo[newType].fn(value)`
    * for each existing cell row. Omitted pairs lose all data (user is warned).
+   *
+   * `lossy: true` marks conversions that may silently discard data (e.g.
+   * text → status, where a free-form string can't map to a label). The
+   * `changeColumnType` server action (S5) checks this flag and requires the
+   * caller to pass `confirmDataLoss: true` before proceeding.
+   *
+   * Backward-compatibility note: the `changeColumnType` action already probes
+   * the runtime shape at call time (`typeof entry === "function"` vs `{ fn, lossy? }`),
+   * so consolidating to the object shape here is forward-compatible with S5.
    */
-  convertTo: Partial<Record<CellTypeId, (value: TValue | null) => unknown>>;
+  convertTo: Partial<
+    Record<CellTypeId, { fn: (value: TValue | null) => unknown; lossy?: boolean }>
+  >;
 };

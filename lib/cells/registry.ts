@@ -9,6 +9,12 @@
  * Keep one key per line so parallel-slice diffs do not conflict.
  */
 
+import { countryType } from "@/components/cells/country/def";
+import { emailType } from "@/components/cells/email/def";
+import { linkType } from "@/components/cells/link/def";
+import { longTextType } from "@/components/cells/long_text/def";
+import { phoneType } from "@/components/cells/phone/def";
+import { textType } from "@/components/cells/text/def";
 import type { CellTypeDef, CellTypeId } from "./types";
 
 /**
@@ -26,8 +32,8 @@ const NOT_IMPLEMENTED = new Proxy({} as CellTypeDef<unknown, unknown>, {
 
 // biome-ignore lint/suspicious/noExplicitAny: registry holds heterogeneous per-type defs; each CellTypeDef uses its own TValue/TConfig — any is intentional here.
 export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
-  text: NOT_IMPLEMENTED,
-  long_text: NOT_IMPLEMENTED,
+  text: textType,
+  long_text: longTextType,
   status: NOT_IMPLEMENTED,
   priority: NOT_IMPLEMENTED,
   person: NOT_IMPLEMENTED,
@@ -37,12 +43,12 @@ export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   currency: NOT_IMPLEMENTED,
   checkbox: NOT_IMPLEMENTED,
   file: NOT_IMPLEMENTED,
-  link: NOT_IMPLEMENTED,
+  link: linkType,
   tags: NOT_IMPLEMENTED,
   rating: NOT_IMPLEMENTED,
-  email: NOT_IMPLEMENTED,
-  phone: NOT_IMPLEMENTED,
-  country: NOT_IMPLEMENTED,
+  email: emailType,
+  phone: phoneType,
+  country: countryType,
   vote: NOT_IMPLEMENTED,
   week: NOT_IMPLEMENTED,
   location: NOT_IMPLEMENTED,
