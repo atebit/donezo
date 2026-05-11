@@ -7,15 +7,11 @@
  * replacing the S8 placeholder button.
  *
  * Items:
- *   1. Rename  — no-op pending S14's imperative focus API on EditableTitle.
- *                // TODO(S14): wire imperative focus via EditableTitle ref.
- *   2. Recolor — opens <ColorPalette> (its own nested Popover); optimistic update.
+ *   1. Rename    — calls focusGroupTitle(group.id) via setTimeout(0) so the focus
+ *                  runs after Base UI Popover's focus-restore (F4.1).
+ *   2. Recolor   — opens <ColorPalette> (its own nested Popover); optimistic update.
  *   3. Duplicate — pessimistic; router.refresh() re-hydrates new group + tasks.
- *   4. Delete  — Base UI Dialog confirm; optimistic; revert on error.
- *
- * Rename path chosen: no-op (menu closes silently). EditableTitle does NOT
- * expose a defaultEditing prop or imperative ref in its current S13-era shape;
- * that API is deferred to S14. See done report for rationale.
+ *   4. Delete    — Base UI Dialog confirm; optimistic; revert on error.
  *
  * Menu open state is controlled so action items can close the popover before
  * opening a dialog (avoids nesting interactive elements from Popover.Close).
@@ -36,6 +32,7 @@ import { MenuList, MenuListItem } from "@/components/ui/menu-list";
 import { useBoardStore } from "@/stores/board-store";
 
 import { ColorPalette } from "./ColorPalette";
+import { useTableKeyboard } from "./table-keyboard-context";
 import type { Group } from "./types";
 
 interface GroupOverflowMenuProps {
@@ -47,6 +44,7 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
   const [, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { focusGroupTitle } = useTableKeyboard();
 
   const taskCount = useBoardStore((s) => s.tasks.filter((t) => t.group_id === group.id).length);
 
@@ -172,14 +170,15 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
           <Popover.Positioner sideOffset={4} align="start">
             <Popover.Popup className="z-[var(--z-popover)]">
               <MenuList>
-                {/* Rename — no-op pending S14 imperative focus API on EditableTitle */}
-                {/* TODO(S14): wire imperative focus via EditableTitle ref         */}
+                {/* Rename — closes the popover then defers focus via setTimeout(0).
+                    The deferral is required because Base UI Popover restores focus
+                    to its trigger when it closes; a synchronous focus() call would
+                    be overridden by that restore. setTimeout(0) sequences our call
+                    after the popover's focus-restore in the microtask queue. */}
                 <MenuListItem
                   onClick={() => {
                     setMenuOpen(false);
-                    // no-op: EditableTitle does not yet expose an imperative
-                    // "enter edit mode" API. S14 will add a focusTitle() ref
-                    // and wire this menu item to call it. Menu closes silently.
+                    setTimeout(() => focusGroupTitle(group.id), 0);
                   }}
                 >
                   Rename

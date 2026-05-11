@@ -27,7 +27,7 @@ import { colorToToken } from "./group-color";
 import { StickyHeader } from "./StickyHeader";
 import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./TableVirtualizer";
 import { TaskRow } from "./TaskRow";
-import { TableKeyboardContext } from "./table-keyboard-context";
+import { TableKeyboardContext, useTableKeyboard } from "./table-keyboard-context";
 import { TableScrollContext } from "./table-scroll-context";
 import type { Group, TableData } from "./types";
 
@@ -104,9 +104,25 @@ function GroupTriStateCheckbox({ group }: { group: Group }) {
 
 function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
   const [, startTransition] = useTransition();
+  const { registerGroupTitleRef } = useTableKeyboard();
 
   const isCollapsed = useBoardStore((s) => s.collapsedGroupIds.has(group.id));
   const colorToken = colorToToken(group.color);
+
+  // Ref to the group title's EditableTitleHandle — the overflow menu Rename item
+  // calls registerGroupTitleRef to notify the controller, which then calls
+  // groupTitleRefs.current.get(groupId)?.focus() to enter edit mode.
+  const editableRef = useRef<EditableTitleHandle | null>(null);
+
+  // Register / unregister with the keyboard controller on mount/unmount so
+  // the controller can always find the current handle regardless of whether
+  // the virtualizer has this group header row mounted.
+  useEffect(() => {
+    registerGroupTitleRef(group.id, editableRef.current);
+    return () => {
+      registerGroupTitleRef(group.id, null);
+    };
+  }, [group.id, registerGroupTitleRef]);
 
   // useSortable makes this group header draggable AND a drop target for other
   // group headers. The `data.kind = "group"` allows DndProviders to route
@@ -190,6 +206,7 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
       {/* Group title — colored in the group accent */}
       <span style={{ color: `var(${colorToken})` }}>
         <EditableTitle
+          ref={editableRef}
           initialValue={group.name}
           variant="h4"
           onCommit={handleRename}
@@ -268,6 +285,32 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
     } else {
       titleCellRefs.current.delete(taskId);
     }
+  }, []);
+
+  // Map from groupId → EditableTitleHandle; populated by GroupHeaderRow on mount.
+  const groupTitleRefs = useRef(new Map<string, EditableTitleHandle>());
+
+  // Stable callback to register / unregister group title refs.
+  const registerGroupTitleRef = useCallback((groupId: string, ref: EditableTitleHandle | null) => {
+    if (ref) {
+      groupTitleRefs.current.set(groupId, ref);
+    } else {
+      groupTitleRefs.current.delete(groupId);
+    }
+  }, []);
+
+  // Imperatively focus (enter edit mode on) a task's EditableTitle by task id.
+  // Called by TaskOverflowMenu's Rename item via setTimeout(0) to sequence after
+  // Base UI Popover's focus-restore.
+  const focusTaskTitle = useCallback((taskId: string) => {
+    titleCellRefs.current.get(taskId)?.focus();
+  }, []);
+
+  // Imperatively focus (enter edit mode on) a group's EditableTitle by group id.
+  // Called by GroupOverflowMenu's Rename item via setTimeout(0) to sequence after
+  // Base UI Popover's focus-restore.
+  const focusGroupTitle = useCallback((groupId: string) => {
+    groupTitleRefs.current.get(groupId)?.focus();
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -629,7 +672,15 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   //   - DndProviders wraps everything with DndContext + sensors.
   // ---------------------------------------------------------------------------
   return (
-    <TableKeyboardContext.Provider value={{ ...keyboardNav, registerTitleCellRef }}>
+    <TableKeyboardContext.Provider
+      value={{
+        ...keyboardNav,
+        registerTitleCellRef,
+        registerGroupTitleRef,
+        focusTaskTitle,
+        focusGroupTitle,
+      }}
+    >
       {/* containerRef is on the outermost div so keydown events from any focused
           row (inside the tree) bubble up to the single listener attached by the
           keyboard nav hook. */}

@@ -5,9 +5,10 @@ import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import type { UseTableKeyboardNavReturn } from "@/hooks/use-table-keyboard-nav";
 
 /**
- * Context value type — extends the keyboard nav hook's return with a method
- * for TaskTitleCell to register its EditableTitleHandle ref so the controller
- * can imperatively trigger edit mode.
+ * Context value type — extends the keyboard nav hook's return with methods
+ * for TaskTitleCell / GroupHeaderRow to register their EditableTitleHandle refs
+ * so the controller can imperatively trigger edit mode (e.g. via overflow-menu
+ * Rename items).
  */
 type TableKeyboardContextValue = UseTableKeyboardNavReturn & {
   /**
@@ -15,6 +16,21 @@ type TableKeyboardContextValue = UseTableKeyboardNavReturn & {
    * to keep the titleCellRefs map up to date.
    */
   registerTitleCellRef: (taskId: string, ref: EditableTitleHandle | null) => void;
+  /**
+   * Called by GroupHeaderRow on mount (ref !== null) and unmount (ref === null)
+   * to keep the groupTitleRefs map up to date.
+   */
+  registerGroupTitleRef: (groupId: string, ref: EditableTitleHandle | null) => void;
+  /**
+   * Imperatively focuses (enters edit mode on) the EditableTitle for the given
+   * task id. Called by TaskOverflowMenu's Rename item.
+   */
+  focusTaskTitle: (taskId: string) => void;
+  /**
+   * Imperatively focuses (enters edit mode on) the EditableTitle for the given
+   * group id. Called by GroupOverflowMenu's Rename item.
+   */
+  focusGroupTitle: (groupId: string) => void;
 };
 
 export const TableKeyboardContext = createContext<TableKeyboardContextValue | null>(null);

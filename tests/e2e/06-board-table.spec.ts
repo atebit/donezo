@@ -255,6 +255,29 @@ test.describe("Epic 06 — Groups & Tasks (Table View)", () => {
     await expect(groupSection.getByRole("button", { name: /expand group/i })).toBeVisible();
   });
 
+  // ── Rename stubs (F4.1) — runner + fixtures wired in epic 15 ─────────────
+  test.skip("group rename via overflow menu enters edit mode", async ({ page }) => {
+    // TODO(epic 15): open group overflow menu → click Rename → assert title is editable
+    // Steps:
+    //   1. Navigate to board.
+    //   2. Open the GroupOverflowMenu on Group A (click the MoreHorizontal trigger).
+    //   3. Click the "Rename" menu item.
+    //   4. Assert the group title <div role="textbox"> receives focus and is in edit mode
+    //      (e.g. aria-readonly is absent or aria-multiline="false" is set).
+    void page;
+  });
+
+  test.skip("task rename via overflow menu enters edit mode", async ({ page }) => {
+    // TODO(epic 15): open task overflow menu → click Rename → assert title is editable
+    // Steps:
+    //   1. Navigate to board.
+    //   2. Hover over a task row to reveal the TaskOverflowMenu trigger.
+    //   3. Click the trigger to open the popover menu.
+    //   4. Click the "Rename" menu item.
+    //   5. Assert the task title <div role="textbox"> receives focus and is in edit mode.
+    void page;
+  });
+
   // ── Step 10: Group overflow menu → recolor → color reflects in row stripe ──
   test("10 — group overflow menu → recolor → color reflected in group row stripe", async ({
     page,
