@@ -63,6 +63,7 @@ export function CursorOverlay({ taskId, columnId }: CursorOverlayProps): ReactEl
       {visible.map((cursor) => (
         <span
           key={cursor.user_id}
+          data-testid="cursor-dot"
           style={{
             display: "inline-block",
             width: DOT_SIZE,

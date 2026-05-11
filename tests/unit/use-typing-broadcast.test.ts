@@ -227,14 +227,20 @@ describe.skip("useTypingBroadcast", () => {
     expect(stubChannel.send).toHaveBeenCalledTimes(1);
   });
 
-  it("unmount calls channel.unsubscribe() and supabase.removeChannel()", () => {
+  it("unmount does NOT call channel.unsubscribe() or supabase.removeChannel() — board channel is owned by useBoardRealtime", () => {
     const { unmount } = renderHook(() =>
       useTypingBroadcast({ boardId: BOARD_ID, userId: USER_ID, context: CONTEXT }),
     );
 
     unmount();
 
-    expect(stubChannel.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
+    expect(stubChannel.unsubscribe).toHaveBeenCalledTimes(0);
+    expect(mockRemoveChannel).toHaveBeenCalledTimes(0);
+  });
+
+  it("hook does NOT call channel.subscribe() on mount — useBoardRealtime owns the subscription", () => {
+    renderHook(() => useTypingBroadcast({ boardId: BOARD_ID, userId: USER_ID, context: CONTEXT }));
+
+    expect(stubChannel.subscribe).toHaveBeenCalledTimes(0);
   });
 });

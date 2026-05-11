@@ -67,7 +67,7 @@ function TableCellInner({ task, column }: TableCellProps) {
 
   return (
     // Relative wrapper required for CursorOverlay's absolute positioning.
-    <div className="relative">
+    <div className="relative" data-task-id={task.id} data-column-id={column.id}>
       <button
         type="button"
         onClick={() => setEditing(true)}
