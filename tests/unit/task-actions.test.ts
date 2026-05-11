@@ -379,6 +379,147 @@ describe.skip("task server actions", () => {
   });
 
   // -------------------------------------------------------------------------
+  // duplicateTask — uses positionBetween(source, nextSibling)
+  // -------------------------------------------------------------------------
+
+  describe("duplicateTask", () => {
+    it("inserts a cloned task whose position is between source and its next sibling", async () => {
+      const sourceTask = {
+        id: "task-uuid-src",
+        board_id: "board-uuid-1",
+        group_id: "group-uuid-1",
+        title: "Source Task",
+        position: 4,
+      };
+      // Next sibling is at position 8, so new position should be midpoint 6.
+      const nextSiblingRows = [{ position: 8 }];
+      const newTaskRow = {
+        id: "task-uuid-dup",
+        board_id: "board-uuid-1",
+        group_id: "group-uuid-1",
+        title: "Source Task",
+        position: 6, // positionBetween(4, 8) = 6
+        created_at: "2026-05-11T00:00:00Z",
+        updated_at: "2026-05-11T00:00:00Z",
+        deleted_at: null,
+        created_by: "user-uuid-actor",
+        updated_by: "user-uuid-actor",
+      };
+
+      let callCount = 0;
+      mockFrom.mockImplementation(() => {
+        callCount++;
+        // Call 1: SELECT source task → maybeSingle resolves to sourceTask.
+        if (callCount === 1) return makeSupabaseChain({ data: sourceTask, error: null });
+        // Call 2: SELECT next sibling (position gt source, limit 1).
+        if (callCount === 2) {
+          const chain = makeSupabaseChain({ data: null, error: null });
+          (chain.limit as ReturnType<typeof vi.fn>).mockResolvedValue({
+            data: nextSiblingRows,
+            error: null,
+          });
+          return chain;
+        }
+        // Call 3: SELECT cells for source task (empty — no cells).
+        if (callCount === 3) {
+          const chain = makeSupabaseChain({ data: [], error: null });
+          (chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [], error: null });
+          return chain;
+        }
+        // Call 4: INSERT cloned task → single resolves to newTaskRow.
+        return makeSupabaseChain({ data: newTaskRow, error: null });
+      });
+
+      const { duplicateTask } = await getActions();
+      const result = await duplicateTask({ taskId: "task-uuid-src" });
+
+      expect(result).toEqual({ ok: true, data: newTaskRow });
+
+      // The cloned task's position must sit between source (4) and sibling (8).
+      if (result.ok) {
+        expect(result.data.position).toBeGreaterThan(sourceTask.position);
+        expect(result.data.position).toBeLessThan(nextSiblingRows[0]?.position ?? 999);
+        expect(result.data.position).toBe(6); // exact midpoint
+      }
+
+      // logActivity called with task.duplicated and correct sourceTaskId.
+      expect(mockLogActivity).toHaveBeenCalledOnce();
+      expect(mockLogActivity).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "task.duplicated",
+          payload: expect.objectContaining({ sourceTaskId: "task-uuid-src" }),
+        }),
+      );
+    });
+
+    it("places the duplicate after the source when there is no next sibling", async () => {
+      const sourceTask = {
+        id: "task-uuid-src",
+        board_id: "board-uuid-1",
+        group_id: "group-uuid-1",
+        title: "Last Task",
+        position: 10,
+      };
+      const newTaskRow = {
+        id: "task-uuid-dup-last",
+        board_id: "board-uuid-1",
+        group_id: "group-uuid-1",
+        title: "Last Task",
+        position: 11, // positionBetween(10, null) = 11
+        created_at: "2026-05-11T00:00:00Z",
+        updated_at: "2026-05-11T00:00:00Z",
+        deleted_at: null,
+        created_by: "user-uuid-actor",
+        updated_by: "user-uuid-actor",
+      };
+
+      let callCount = 0;
+      mockFrom.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) return makeSupabaseChain({ data: sourceTask, error: null });
+        if (callCount === 2) {
+          // No next sibling — query returns empty array.
+          const chain = makeSupabaseChain({ data: null, error: null });
+          (chain.limit as ReturnType<typeof vi.fn>).mockResolvedValue({
+            data: [],
+            error: null,
+          });
+          return chain;
+        }
+        if (callCount === 3) {
+          const chain = makeSupabaseChain({ data: [], error: null });
+          (chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({ data: [], error: null });
+          return chain;
+        }
+        return makeSupabaseChain({ data: newTaskRow, error: null });
+      });
+
+      const { duplicateTask } = await getActions();
+      const result = await duplicateTask({ taskId: "task-uuid-src" });
+
+      expect(result).toEqual({ ok: true, data: newTaskRow });
+
+      if (result.ok) {
+        // positionBetween(10, null) === 11 (prev + 1)
+        expect(result.data.position).toBe(11);
+      }
+    });
+
+    it("returns NOT_FOUND when the source task does not exist", async () => {
+      mockFrom.mockReturnValue(makeSupabaseChain({ data: null, error: null }));
+
+      const { duplicateTask } = await getActions();
+      const result = await duplicateTask({ taskId: "task-uuid-nonexistent" });
+
+      expect(result).toEqual({
+        ok: false,
+        error: { code: "NOT_FOUND", message: "Task not found." },
+      });
+      expect(mockLogActivity).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // bulkMoveTasksToGroup — positions are sequential from max(destination) + 1
   // -------------------------------------------------------------------------
 
