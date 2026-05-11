@@ -21,3 +21,9 @@ export const AcceptInvitationSchema = z.object({
   token: z.string().min(32).max(128),
 });
 export type AcceptInvitationInput = z.infer<typeof AcceptInvitationSchema>;
+
+export const RevokeInvitationSchema = z.object({ invitationId: z.string().uuid() });
+export type RevokeInvitationInput = z.infer<typeof RevokeInvitationSchema>;
+
+export const ResendInvitationSchema = z.object({ invitationId: z.string().uuid() });
+export type ResendInvitationInput = z.infer<typeof ResendInvitationSchema>;

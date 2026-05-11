@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { ROLE_RANK, type Role } from "./board";
+import { ROLE_RANK, type Role } from "./roles";
 
 export async function getWorkspaceRole(workspaceId: string): Promise<Role | null> {
   const supabase = await createClient();
