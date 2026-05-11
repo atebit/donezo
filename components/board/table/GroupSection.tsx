@@ -6,6 +6,8 @@ import { renameGroup } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/ac
 import { EditableTitle } from "@/components/shared/EditableTitle";
 import { useBoardStore } from "@/stores/board-store";
 
+import { AddTaskFooter } from "./AddTaskFooter";
+import { NoTasksInGroupHint } from "./EmptyStates";
 import { colorToToken } from "./group-color";
 import { TaskRow } from "./TaskRow";
 import type { Group, Task } from "./types";
@@ -105,7 +107,15 @@ export function GroupSection({ group, tasks }: GroupSectionProps) {
       </div>
 
       {/* Task rows — hidden when collapsed */}
-      {!isCollapsed && tasks.map((task) => <TaskRow key={task.id} task={task} group={group} />)}
+      {!isCollapsed && (
+        <>
+          {tasks.length === 0 && <NoTasksInGroupHint />}
+          {tasks.map((task) => (
+            <TaskRow key={task.id} task={task} group={group} />
+          ))}
+          <AddTaskFooter group={group} />
+        </>
+      )}
     </section>
   );
 }

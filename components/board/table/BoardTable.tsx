@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useBoardStore } from "@/stores/board-store";
 
+import { AddGroupFooter } from "./AddGroupFooter";
+import { NoGroupsEmptyState } from "./EmptyStates";
 import { GroupSection } from "./GroupSection";
 import type { TableData } from "./types";
 
@@ -13,6 +15,7 @@ interface BoardTableProps {
 
 export function BoardTable({ boardId, initial }: BoardTableProps) {
   const hydratedRef = useRef(false);
+  const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
 
   // Hydrate the store once on mount (StrictMode-safe ref guard prevents
   // double-hydration from the dev-mode double-invocation of effects).
@@ -36,7 +39,16 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   const tasks = useBoardStore((s) => s.tasks);
 
   if (groups.length === 0) {
-    return <div>No groups yet.</div>;
+    return (
+      <>
+        <NoGroupsEmptyState onAddGroup={() => setIsAddGroupOpen(true)} />
+        <AddGroupFooter
+          boardId={boardId}
+          editingOpen={isAddGroupOpen}
+          onEditingOpenChange={setIsAddGroupOpen}
+        />
+      </>
+    );
   }
 
   return (
@@ -48,6 +60,11 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
           tasks={tasks.filter((t) => t.group_id === group.id)}
         />
       ))}
+      <AddGroupFooter
+        boardId={boardId}
+        editingOpen={isAddGroupOpen}
+        onEditingOpenChange={setIsAddGroupOpen}
+      />
     </div>
   );
 }
