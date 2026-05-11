@@ -45,6 +45,7 @@ function makeTask(overrides: Partial<Task> = {}): Task {
 function makeCell(overrides: Partial<Cell> = {}): Cell {
   return {
     task_id: "task-1",
+    board_id: "board-1",
     column_id: "col-1",
     text_value: "hello",
     boolean_value: null,
