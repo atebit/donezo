@@ -601,4 +601,151 @@ describe.skip("column server actions", () => {
       }
     });
   });
+
+  // -------------------------------------------------------------------------
+  // duplicateColumn — labels carry column_id of the NEW column (F1 fix)
+  // -------------------------------------------------------------------------
+
+  describe("duplicateColumn (extended — label column_id verification)", () => {
+    it("returned labels each carry column_id set to the new column's id", async () => {
+      const sourceColumn = {
+        id: "col-uuid-src-ext",
+        board_id: "board-uuid-1",
+        name: "Status copy test",
+        type: "status",
+        position: 3,
+        settings: {},
+      };
+      const sourceLabels = [{ name: "Done", color: "#00c875", position: 1 }];
+      const newColumn = {
+        id: "col-uuid-new-ext",
+        board_id: "board-uuid-1",
+        name: "Status copy test copy",
+        type: "status",
+        position: 3.5,
+        settings: {},
+        created_at: "2026-05-11T00:00:00Z",
+        updated_at: "2026-05-11T00:00:00Z",
+      };
+      const newLabels = [
+        {
+          id: "lbl-copy-1",
+          column_id: "col-uuid-new-ext",
+          name: "Done",
+          color: "#00c875",
+          position: 1,
+        },
+      ];
+
+      let callIdx = 0;
+      mockFrom.mockImplementation(() => {
+        callIdx++;
+        if (callIdx === 1) return makeSupabaseChain({ data: sourceColumn, error: null });
+        if (callIdx === 2) {
+          const chain = makeSupabaseChain({ data: sourceLabels, error: null });
+          (chain.order as ReturnType<typeof vi.fn>).mockResolvedValue({
+            data: sourceLabels,
+            error: null,
+          });
+          return chain;
+        }
+        if (callIdx === 3) return makeSupabaseChain({ data: newColumn, error: null });
+        const chain = makeSupabaseChain({ data: newLabels, error: null });
+        (chain.select as ReturnType<typeof vi.fn>).mockResolvedValue({
+          data: newLabels,
+          error: null,
+        });
+        return chain;
+      });
+
+      const { duplicateColumn } = await getActions();
+      const result = await duplicateColumn({ columnId: "col-uuid-src-ext" });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        // Every returned label must have column_id equal to the new column's id.
+        expect(
+          result.data.labels.every(
+            (l: { column_id: string }) => l.column_id === "col-uuid-new-ext",
+          ),
+        ).toBe(true);
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // deleteColumn — affectedCellCount reflects FK-cascaded deletion
+  // -------------------------------------------------------------------------
+
+  describe("deleteColumn (extended — affectedCellCount precision)", () => {
+    it("affectedCellCount matches the number of cells that existed before delete", async () => {
+      const column = {
+        id: "col-uuid-cascade",
+        board_id: "board-uuid-1",
+        name: "Cascade Delete",
+        type: "text",
+      };
+      const CELL_COUNT = 7;
+
+      let callIdx = 0;
+      mockFrom.mockImplementation(() => {
+        callIdx++;
+        if (callIdx === 1) return makeSupabaseChain({ data: column, error: null });
+        if (callIdx === 2) {
+          const chain = makeSupabaseChain({ data: null, error: null });
+          (chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({
+            count: CELL_COUNT,
+            error: null,
+          });
+          return chain;
+        }
+        const chain = makeSupabaseChain({ data: null, error: null });
+        (chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({ data: null, error: null });
+        return chain;
+      });
+
+      const { deleteColumn } = await getActions();
+      const result = await deleteColumn({ columnId: "col-uuid-cascade" });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        // The action must report how many cells were cascade-deleted.
+        expect(result.data.affectedCellCount).toBe(CELL_COUNT);
+      }
+    });
+
+    it("affectedCellCount is 0 when no cells existed for the column", async () => {
+      const column = {
+        id: "col-uuid-empty",
+        board_id: "board-uuid-1",
+        name: "Empty Column",
+        type: "text",
+      };
+
+      let callIdx = 0;
+      mockFrom.mockImplementation(() => {
+        callIdx++;
+        if (callIdx === 1) return makeSupabaseChain({ data: column, error: null });
+        if (callIdx === 2) {
+          const chain = makeSupabaseChain({ data: null, error: null });
+          (chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({
+            count: 0,
+            error: null,
+          });
+          return chain;
+        }
+        const chain = makeSupabaseChain({ data: null, error: null });
+        (chain.eq as ReturnType<typeof vi.fn>).mockResolvedValue({ data: null, error: null });
+        return chain;
+      });
+
+      const { deleteColumn } = await getActions();
+      const result = await deleteColumn({ columnId: "col-uuid-empty" });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data.affectedCellCount).toBe(0);
+      }
+    });
+  });
 });

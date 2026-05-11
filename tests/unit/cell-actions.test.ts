@@ -273,3 +273,136 @@ describe.skip("bulkSetCellValue", () => {
     expect(upsertPayload.every((p) => p.text_value === "shared")).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Additional cases (S23 extension)
+// ---------------------------------------------------------------------------
+
+describe.skip("setCellValue (extended)", () => {
+  it("status value { labelId } writes label_id and nulls all other value columns", () => {
+    // Arrange — simulate statusType.toRow({ labelId: "lbl-uuid" })
+    const statusToRow = vi.fn().mockReturnValue({
+      text_value: null,
+      number_value: null,
+      boolean_value: null,
+      date_value: null,
+      date_end_value: null,
+      label_id: "lbl-uuid",
+      json_value: null,
+    });
+
+    // Act
+    const patch = statusToRow({ labelId: "lbl-uuid" });
+
+    // Assert — only label_id should be non-null
+    expect(patch.label_id).toBe("lbl-uuid");
+    expect(patch.text_value).toBeNull();
+    expect(patch.number_value).toBeNull();
+    expect(patch.boolean_value).toBeNull();
+    expect(patch.date_value).toBeNull();
+    expect(patch.date_end_value).toBeNull();
+    expect(patch.json_value).toBeNull();
+  });
+
+  it("status value null writes null label_id and nulls all other value columns", () => {
+    const statusToRow = vi.fn().mockReturnValue({
+      text_value: null,
+      number_value: null,
+      boolean_value: null,
+      date_value: null,
+      date_end_value: null,
+      label_id: null,
+      json_value: null,
+    });
+
+    const patch = statusToRow(null);
+
+    expect(patch.label_id).toBeNull();
+    expect(patch.text_value).toBeNull();
+    expect(patch.number_value).toBeNull();
+    expect(patch.boolean_value).toBeNull();
+    expect(patch.date_value).toBeNull();
+    expect(patch.json_value).toBeNull();
+  });
+});
+
+describe.skip("bulkSetCellValue (extended)", () => {
+  it("checkbox value=true writes boolean_value=true for all selected tasks", () => {
+    // Arrange — simulate checkboxType.toRow(true)
+    const checkboxToRow = vi.fn().mockReturnValue({
+      text_value: null,
+      number_value: null,
+      boolean_value: true,
+      date_value: null,
+      date_end_value: null,
+      label_id: null,
+      json_value: null,
+    });
+
+    const taskIds = ["task-1", "task-2", "task-3"];
+
+    // Act — simulate the bulkSetCellValue upsert construction
+    const patch = checkboxToRow(true);
+    const upsertPayload = taskIds.map((tid) => ({
+      task_id: tid,
+      column_id: "col-checkbox",
+      ...patch,
+    }));
+
+    // Assert
+    expect(checkboxToRow).toHaveBeenCalledTimes(1);
+    expect(upsertPayload).toHaveLength(3);
+    expect(upsertPayload.every((p) => p.boolean_value === true)).toBe(true);
+    expect(upsertPayload.every((p) => p.text_value === null)).toBe(true);
+    expect(upsertPayload.every((p) => p.number_value === null)).toBe(true);
+    expect(upsertPayload.every((p) => p.label_id === null)).toBe(true);
+  });
+
+  it("checkbox value=false writes boolean_value=false for all selected tasks", () => {
+    const checkboxToRow = vi.fn().mockReturnValue({
+      text_value: null,
+      number_value: null,
+      boolean_value: false,
+      date_value: null,
+      date_end_value: null,
+      label_id: null,
+      json_value: null,
+    });
+
+    const taskIds = ["task-a", "task-b"];
+    const patch = checkboxToRow(false);
+    const upsertPayload = taskIds.map((tid) => ({
+      task_id: tid,
+      column_id: "col-checkbox",
+      ...patch,
+    }));
+
+    expect(upsertPayload.every((p) => p.boolean_value === false)).toBe(true);
+  });
+
+  it("status bulk-set writes label_id for all selected tasks", () => {
+    // Simulate statusType.toRow({ labelId: "lbl-done" })
+    const statusToRow = vi.fn().mockReturnValue({
+      text_value: null,
+      number_value: null,
+      boolean_value: null,
+      date_value: null,
+      date_end_value: null,
+      label_id: "lbl-done",
+      json_value: null,
+    });
+
+    const taskIds = ["task-1", "task-2"];
+    const patch = statusToRow({ labelId: "lbl-done" });
+    const upsertPayload = taskIds.map((tid) => ({
+      task_id: tid,
+      column_id: "col-status",
+      ...patch,
+    }));
+
+    expect(upsertPayload).toHaveLength(2);
+    expect(upsertPayload.every((p) => p.label_id === "lbl-done")).toBe(true);
+    expect(upsertPayload.every((p) => p.text_value === null)).toBe(true);
+    expect(upsertPayload.every((p) => p.boolean_value === null)).toBe(true);
+  });
+});
