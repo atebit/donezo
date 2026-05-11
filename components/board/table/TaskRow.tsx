@@ -3,6 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
 import { colorToToken } from "./group-color";
 import { TaskDragHandle } from "./TaskDragHandle";
 import { TaskTitleCell } from "./TaskTitleCell";
@@ -45,13 +46,10 @@ export function TaskRow({ task, group }: TaskRowProps) {
       {/* Drag handle — wired to dnd-kit useSortable */}
       <TaskDragHandle attributes={attributes} listeners={listeners} />
 
-      {/* Bulk-select checkbox placeholder — wired in S12 */}
-      <input
-        type="checkbox"
-        disabled
-        aria-label="Select task (wired in S12)"
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)] flex-shrink-0 mx-1"
-      />
+      {/* Bulk-select checkbox */}
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
+        <BulkSelectCheckbox taskId={task.id} />
+      </div>
 
       {/* Task title cell */}
       <div className="w-[var(--size-cell-w-task)] flex-shrink-0 overflow-hidden">

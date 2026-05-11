@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "@base-ui/react/checkbox";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -15,6 +16,7 @@ import { useBoardStore } from "@/stores/board-store";
 
 import { AddGroupFooter } from "./AddGroupFooter";
 import { AddTaskFooter } from "./AddTaskFooter";
+import { BulkActionBar } from "./BulkActionBar";
 import { DndProviders, type DndProvidersProps } from "./DndProviders";
 import { NoGroupsEmptyState } from "./EmptyStates";
 import { GroupDragHandle } from "./GroupDragHandle";
@@ -44,6 +46,60 @@ import type { Group, TableData } from "./types";
 interface GroupHeaderRowProps {
   group: Group;
   taskCount: number;
+}
+
+// ---------------------------------------------------------------------------
+// GroupTriStateCheckbox — tri-state checkbox for a single group.
+// Reads selection + tasks from the store and computes checked/indeterminate.
+// ---------------------------------------------------------------------------
+function GroupTriStateCheckbox({ group }: { group: Group }) {
+  const { selection, tasks } = useBoardStore((s) => ({
+    selection: s.selection,
+    tasks: s.tasks,
+  }));
+
+  const groupTasks = tasks.filter((t) => t.group_id === group.id);
+  const totalInScope = groupTasks.length;
+  const selectedInScope = groupTasks.filter((t) => selection.has(t.id)).length;
+
+  const checked = selectedInScope === totalInScope && totalInScope > 0;
+  const indeterminate = selectedInScope > 0 && selectedInScope < totalInScope;
+
+  return (
+    <Checkbox.Root
+      checked={checked}
+      indeterminate={indeterminate}
+      onCheckedChange={(next) => useBoardStore.getState().selectGroup(group.id, next)}
+      aria-label={`Select all tasks in ${group.name}`}
+      className="w-[var(--size-cell-w-checkbox)] flex-shrink-0 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]"
+    >
+      <span
+        className="w-4 h-4 rounded-[var(--radius-xs)] border border-[color:var(--color-border-strong)] flex items-center justify-center transition-colors duration-[var(--motion-fast)]"
+        style={{
+          backgroundColor: checked || indeterminate ? "var(--color-primary)" : "transparent",
+          borderColor: checked || indeterminate ? "var(--color-primary)" : undefined,
+        }}
+      >
+        <Checkbox.Indicator keepMounted>
+          {indeterminate ? (
+            <svg width="10" height="2" viewBox="0 0 10 2" fill="none" aria-hidden="true">
+              <path d="M1 1H9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
+              <path
+                d="M1 4L3.5 6.5L9 1"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </Checkbox.Indicator>
+      </span>
+    </Checkbox.Root>
+  );
 }
 
 function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
@@ -101,6 +157,9 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
     >
       {/* Drag handle — wired to dnd-kit useSortable */}
       <GroupDragHandle attributes={attributes} listeners={listeners} />
+
+      {/* Tri-state group-level select checkbox */}
+      <GroupTriStateCheckbox group={group} />
 
       {/* Collapse / expand arrow */}
       <button
@@ -526,6 +585,9 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
           </SortableContext>
         </DndProviders>
       </TableScrollContext.Provider>
+      {/* BulkActionBar — floats above the bottom of the scroll container;
+          renders nothing (opacity-0, pointer-events-none) when selection is empty */}
+      <BulkActionBar />
     </div>
   );
 }
