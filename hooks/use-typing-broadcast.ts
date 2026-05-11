@@ -33,9 +33,7 @@ export function useTypingBroadcast(args: {
     const supabase = createClient();
     // Acquires the same-named channel as useBoardRealtime — Supabase deduplicates
     // same-named channels within a single browser client instance.
-    const channel = supabase.channel(boardChannelName(boardId), {
-      config: { broadcast: { self: false } },
-    });
+    const channel = supabase.channel(boardChannelName(boardId));
 
     const sendPayload = () => {
       // Visibility gate: do not emit when the tab is hidden
@@ -58,14 +56,10 @@ export function useTypingBroadcast(args: {
     const throttledSend = throttle(sendPayload, 2000);
     throttledRef.current = throttledSend;
 
-    // Subscribe the channel (Supabase dedup means this is a no-op if already open)
-    channel.subscribe();
-
     return () => {
+      // useBoardRealtime owns channel lifecycle; we only cancel pending sends here.
       throttledRef.current?.cancel();
       throttledRef.current = null;
-      channel.unsubscribe();
-      supabase.removeChannel(channel);
     };
   }, [boardId, userId, context]);
 
