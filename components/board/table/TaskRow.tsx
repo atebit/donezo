@@ -3,11 +3,14 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { useBoardStore } from "@/stores/board-store";
+
 import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
 import { colorToToken } from "./group-color";
 import { TaskDragHandle } from "./TaskDragHandle";
 import { TaskOverflowMenu } from "./TaskOverflowMenu";
 import { TaskTitleCell } from "./TaskTitleCell";
+import { useTableKeyboard } from "./table-keyboard-context";
 import type { Group, Task } from "./types";
 
 interface TaskRowProps {
@@ -17,6 +20,26 @@ interface TaskRowProps {
 
 export function TaskRow({ task, group }: TaskRowProps) {
   const colorToken = colorToToken(group.color);
+  const { focusedRowId, setFocusedRow } = useTableKeyboard();
+
+  // Derive aria-rowindex from visible tasks in store. O(n visible tasks) but
+  // the virtualizer keeps visible count small. 1-based per ARIA spec.
+  const ariaRowIndex = useBoardStore((s) => {
+    const collapsedGroupIds = s.collapsedGroupIds;
+    const groups = s.groups;
+    const visibleTasks = s.tasks
+      .filter((t) => !collapsedGroupIds.has(t.group_id))
+      .sort((a, b) => {
+        const groupA = groups.find((g) => g.id === a.group_id);
+        const groupB = groups.find((g) => g.id === b.group_id);
+        const groupPosDiff = (groupA?.position ?? 0) - (groupB?.position ?? 0);
+        if (groupPosDiff !== 0) return groupPosDiff;
+        return a.position - b.position;
+      });
+    return visibleTasks.findIndex((t) => t.id === task.id) + 1;
+  });
+
+  const isFocused = focusedRowId === task.id;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
@@ -31,11 +54,17 @@ export function TaskRow({ task, group }: TaskRowProps) {
   };
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: virtualised list uses div layout; <tr> cannot be used outside a <table> context; role="row" provides the correct ARIA semantics
     <div
       ref={setNodeRef}
+      role="row"
       style={style}
       className="group flex items-center h-[var(--size-cell-h)] border-b border-[color:var(--color-border-strong)]"
       data-task-id={task.id}
+      data-row-index={ariaRowIndex - 1}
+      aria-rowindex={ariaRowIndex}
+      tabIndex={isFocused ? 0 : -1}
+      onFocus={() => setFocusedRow(task.id)}
     >
       {/* 6px group accent stripe */}
       <div

@@ -3,14 +3,16 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   renameGroup,
   reorderGroup,
 } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
 import { moveTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
+import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
+import { useTableKeyboardNav } from "@/hooks/use-table-keyboard-nav";
 import { positionBetween } from "@/lib/positions";
 import { useBoardStore } from "@/stores/board-store";
 
@@ -25,6 +27,7 @@ import { colorToToken } from "./group-color";
 import { StickyHeader } from "./StickyHeader";
 import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./TableVirtualizer";
 import { TaskRow } from "./TaskRow";
+import { TableKeyboardContext } from "./table-keyboard-context";
 import { TableScrollContext } from "./table-scroll-context";
 import type { Group, TableData } from "./types";
 
@@ -251,6 +254,22 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   // scrollToTaskId() in the context value below.
   const tableRef = useRef<TableVirtualizerHandle>(null);
 
+  // Ref for the outermost container div — the keyboard listener attaches here
+  // so key events from focused rows bubble up naturally.
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Map from taskId → EditableTitleHandle; populated by TaskTitleCell on mount.
+  const titleCellRefs = useRef(new Map<string, EditableTitleHandle>());
+
+  // Stable callback to register / unregister title cell refs.
+  const registerTitleCellRef = useCallback((taskId: string, ref: EditableTitleHandle | null) => {
+    if (ref) {
+      titleCellRefs.current.set(taskId, ref);
+    } else {
+      titleCellRefs.current.delete(taskId);
+    }
+  }, []);
+
   // ---------------------------------------------------------------------------
   // Flattened rows array — rebuilt whenever groups, tasks, or collapse state
   // changes. The virtualizer uses this single array for all row rendering.
@@ -285,6 +304,49 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
 
     return result;
   }, [groups, tasks, collapsedGroupIds]);
+
+  // ---------------------------------------------------------------------------
+  // visibleTaskIds — tasks that are not in a collapsed group, in render order.
+  // Used by the keyboard navigation controller to determine prev/next row.
+  // ---------------------------------------------------------------------------
+  const visibleTaskIds = useMemo(
+    () =>
+      tasks
+        .filter((t) => !collapsedGroupIds.has(t.group_id))
+        .sort((a, b) => {
+          // Sort by group position first, then task position within group.
+          const groupA = groups.find((g) => g.id === a.group_id);
+          const groupB = groups.find((g) => g.id === b.group_id);
+          const groupPosDiff = (groupA?.position ?? 0) - (groupB?.position ?? 0);
+          if (groupPosDiff !== 0) return groupPosDiff;
+          return a.position - b.position;
+        })
+        .map((t) => t.id),
+    [tasks, collapsedGroupIds, groups],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Keyboard navigation controller — arrow key focus, Enter to edit, Esc to
+  // cancel. scrollToTaskId is captured from the closure below (same value that
+  // populates TableScrollContext) to avoid calling useTableScroll() from a
+  // component that IS the provider.
+  // ---------------------------------------------------------------------------
+  const scrollToTaskIdForNav = useCallback(
+    (taskId: string) => {
+      const idx = rows.findIndex((r) => r.kind === "task" && r.task.id === taskId);
+      if (idx >= 0) {
+        tableRef.current?.scrollToIndex(idx, { align: "center" });
+      }
+    },
+    [rows],
+  );
+
+  const keyboardNav = useTableKeyboardNav({
+    containerRef,
+    visibleTaskIds,
+    titleCellRefs,
+    scrollToTaskId: scrollToTaskIdForNav,
+  });
 
   // ---------------------------------------------------------------------------
   // Per-group task id lists for SortableContext — derived from the store.
@@ -567,18 +629,23 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   //   - DndProviders wraps everything with DndContext + sensors.
   // ---------------------------------------------------------------------------
   return (
-    <div className="flex flex-col flex-1 min-h-0">
-      <StickyHeader />
-      <TableScrollContext.Provider value={scrollContextValue}>
-        <DndProviders onGroupReorder={handleGroupReorder} onTaskReorder={handleTaskReorder}>
-          <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
-            <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
-          </SortableContext>
-        </DndProviders>
-      </TableScrollContext.Provider>
-      {/* BulkActionBar — floats above the bottom of the scroll container;
-          renders nothing (opacity-0, pointer-events-none) when selection is empty */}
-      <BulkActionBar />
-    </div>
+    <TableKeyboardContext.Provider value={{ ...keyboardNav, registerTitleCellRef }}>
+      {/* containerRef is on the outermost div so keydown events from any focused
+          row (inside the tree) bubble up to the single listener attached by the
+          keyboard nav hook. */}
+      <div ref={containerRef} className="flex flex-col flex-1 min-h-0">
+        <StickyHeader />
+        <TableScrollContext.Provider value={scrollContextValue}>
+          <DndProviders onGroupReorder={handleGroupReorder} onTaskReorder={handleTaskReorder}>
+            <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
+              <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
+            </SortableContext>
+          </DndProviders>
+        </TableScrollContext.Provider>
+        {/* BulkActionBar — floats above the bottom of the scroll container;
+            renders nothing (opacity-0, pointer-events-none) when selection is empty */}
+        <BulkActionBar />
+      </div>
+    </TableKeyboardContext.Provider>
   );
 }
