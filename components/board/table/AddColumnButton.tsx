@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 
 import { useBoard } from "@/hooks/use-board";
-import { ROLE_RANK } from "@/lib/authorization";
+import { ROLE_RANK } from "@/lib/authorization/roles";
 import { AddColumnModal } from "./AddColumnModal";
 
 /**
