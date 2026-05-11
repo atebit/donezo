@@ -116,3 +116,7 @@ Run these steps after epic 01 merges to `main`. These are human-executed steps â
 ## Custom domain
 
 TBD; deferred per epic 01 decision Q11. Tracked in the conversion plan. Preview deploys use Vercel's generated URLs until a domain is provisioned.
+
+## Realtime & writes
+
+Donezo's writes go through server actions only. Realtime is read-only on the client â€” postgres_changes events feed the Zustand store via idempotent `applyXxxUpsert` methods, gated on `updated_at`. Never write to the database directly from the client. Presence and broadcast (cursors, typing) are non-persistent advisory state; the server does not trust them.
