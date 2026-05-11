@@ -17,6 +17,7 @@ import { currencyType } from "@/components/cells/currency/def";
 import { dateType } from "@/components/cells/date/def";
 import { emailType } from "@/components/cells/email/def";
 import { fileType } from "@/components/cells/file/def";
+import { formulaType } from "@/components/cells/formula/def";
 import { linkType } from "@/components/cells/link/def";
 import { locationType } from "@/components/cells/location/def";
 import { longTextType } from "@/components/cells/long_text/def";
@@ -39,7 +40,7 @@ import type { CellTypeDef, CellTypeId } from "./types";
  * Accessing any property throws a descriptive error at runtime rather
  * than silently returning undefined.
  */
-const NOT_IMPLEMENTED = new Proxy({} as CellTypeDef<unknown, unknown>, {
+const _NOT_IMPLEMENTED = new Proxy({} as CellTypeDef<unknown, unknown>, {
   get(_target, prop) {
     throw new Error(
       `cellRegistry: type not yet implemented (accessing property "${String(prop)}")`,
@@ -72,7 +73,7 @@ export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   updated_by: updatedByType,
   created_by: createdByType,
   created_at_col: createdAtColType,
-  formula: NOT_IMPLEMENTED,
+  formula: formulaType,
 };
 
 /** Look up a cell type definition by its string id. */
