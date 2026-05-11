@@ -1,13 +1,23 @@
 "use client";
 
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { renameGroup } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
+import { toast } from "sonner";
+import {
+  renameGroup,
+  reorderGroup,
+} from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
+import { moveTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
 import { EditableTitle } from "@/components/shared/EditableTitle";
+import { positionBetween } from "@/lib/positions";
 import { useBoardStore } from "@/stores/board-store";
 
 import { AddGroupFooter } from "./AddGroupFooter";
 import { AddTaskFooter } from "./AddTaskFooter";
+import { DndProviders, type DndProvidersProps } from "./DndProviders";
 import { NoGroupsEmptyState } from "./EmptyStates";
+import { GroupDragHandle } from "./GroupDragHandle";
 import { colorToToken } from "./group-color";
 import { StickyHeader } from "./StickyHeader";
 import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./TableVirtualizer";
@@ -17,13 +27,13 @@ import type { Group, TableData } from "./types";
 
 // ---------------------------------------------------------------------------
 // GroupHeaderRow — inline helper that renders the group chrome for the
-// flattened-rows virtualizer layout. Mirrors GroupSection's header JSX but
-// standalone (no task-loop wrapper), so GroupSection.tsx stays unmodified
-// (S11 will reintroduce GroupSection in its DnD wiring pass).
+// flattened-rows virtualizer layout. Now wired to dnd-kit useSortable so the
+// group header acts as both the drag handle host and a droppable target for
+// cross-group task drops.
 //
-// NOTE: GroupSection is now "orphaned" from the virtualized layout — it is no
-// longer consumed by BoardTable. S11 will either reintroduce it as a DnD
-// wrapper or a cleanup pass will remove it. Leave GroupSection.tsx untouched.
+// NOTE: GroupSection is still "orphaned" from the virtualized layout — it is
+// not consumed by BoardTable. Leave GroupSection.tsx untouched (tracked for
+// a future cleanup pass).
 //
 // ARIA: role="row" is intentionally absent here. The full ARIA table tree
 // requires the complete role chain (table → rowgroup → row → cell) plus
@@ -41,6 +51,21 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
 
   const isCollapsed = useBoardStore((s) => s.collapsedGroupIds.has(group.id));
   const colorToken = colorToToken(group.color);
+
+  // useSortable makes this group header draggable AND a drop target for other
+  // group headers. The `data.kind = "group"` allows DndProviders to route
+  // drag-end events correctly.  The `data.groupId` is set to group.id so that
+  // task drops onto a group header can also resolve the destination group.
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: group.id,
+    data: { kind: "group", groupId: group.id },
+  });
+
+  const style: React.CSSProperties = {
+    ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
+    ...(transition ? { transition } : {}),
+    ...(isDragging ? { zIndex: 3, opacity: 0.85 } : {}),
+  };
 
   const handleRename = (nextValue: string) => {
     if (!nextValue) return;
@@ -69,15 +94,20 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className="group sticky top-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] flex items-center h-10 gap-1"
       data-group-id={group.id}
     >
+      {/* Drag handle — wired to dnd-kit useSortable */}
+      <GroupDragHandle attributes={attributes} listeners={listeners} />
+
       {/* Collapse / expand arrow */}
       <button
         type="button"
         aria-label={isCollapsed ? "Expand group" : "Collapse group"}
         onClick={() => useBoardStore.getState().toggleGroupCollapse(group.id)}
-        className="flex-shrink-0 flex items-center justify-center w-6 h-6 ml-[13px] transition-transform duration-[var(--motion-base)]"
+        className="flex-shrink-0 flex items-center justify-center w-6 h-6 transition-transform duration-[var(--motion-base)]"
         style={{ transform: isCollapsed ? "rotate(-90deg)" : "rotate(0deg)" }}
       >
         <svg
@@ -140,10 +170,11 @@ interface BoardTableProps {
 export function BoardTable({ boardId, initial }: BoardTableProps) {
   const hydratedRef = useRef(false);
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
+  const [, startTransition] = useTransition();
 
   // Hydrate the store once on mount (StrictMode-safe ref guard prevents
   // double-hydration from the dev-mode double-invocation of effects).
-  // initial.* are bootstrap data; rehydration is keyed on boardId only — see followup-2.
+  // initial.* are bootstrap data; rehydration is keyed on boardId only.
   // biome-ignore lint/correctness/useExhaustiveDependencies: boardId is the only re-hydration trigger; initial.* is bootstrap data
   useEffect(() => {
     if (!hydratedRef.current) {
@@ -206,6 +237,23 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   }, [groups, tasks, collapsedGroupIds]);
 
   // ---------------------------------------------------------------------------
+  // Per-group task id lists for SortableContext — derived from the store.
+  // Used to give each group's SortableContext the full ordered item list even
+  // when some tasks are off-screen (dnd-kit tracks items, not DOM nodes).
+  // ---------------------------------------------------------------------------
+  const taskIdsByGroup = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const group of groups) {
+      const ids = tasks
+        .filter((t) => t.group_id === group.id)
+        .sort((a, b) => a.position - b.position)
+        .map((t) => t.id);
+      map.set(group.id, ids);
+    }
+    return map;
+  }, [groups, tasks]);
+
+  // ---------------------------------------------------------------------------
   // TableScrollContext value — scrollToTaskId maps a task id to its row index
   // and delegates to the virtualizer's scrollToIndex. Stable per rows identity.
   // ---------------------------------------------------------------------------
@@ -222,16 +270,199 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   );
 
   // ---------------------------------------------------------------------------
+  // onGroupReorder — called by DndProviders when a group drag ends.
+  //
+  // groupId:  the dragged group's id
+  // overId:   the group that was under the cursor at drop time
+  //
+  // Algorithm:
+  //   1. Find the dragged group's current index and the over group's index.
+  //   2. Simulate the reorder (move dragged group to over's position).
+  //   3. Compute new position via positionBetween(prev.position, next.position).
+  //   4. Optimistic update → server action → revert on error.
+  // ---------------------------------------------------------------------------
+  const handleGroupReorder: DndProvidersProps["onGroupReorder"] = (groupId, overId) => {
+    const currentGroups = useBoardStore.getState().groups;
+
+    const activeIdx = currentGroups.findIndex((g) => g.id === groupId);
+    const overIdx = currentGroups.findIndex((g) => g.id === overId);
+
+    if (activeIdx === -1 || overIdx === -1) return;
+    if (activeIdx === overIdx) return;
+
+    const originalGroup = currentGroups[activeIdx];
+    if (!originalGroup) return;
+
+    // Build the reordered array (simulated move).
+    const reordered = [...currentGroups];
+    const [moved] = reordered.splice(activeIdx, 1);
+    if (!moved) return;
+    reordered.splice(overIdx, 0, moved);
+
+    // Find the destination index in the reordered array.
+    const destIdx = reordered.findIndex((g) => g.id === groupId);
+    const prevGroup = reordered[destIdx - 1] ?? null;
+    const nextGroup = reordered[destIdx + 1] ?? null;
+
+    let newPos: number;
+    try {
+      newPos = positionBetween(prevGroup?.position ?? null, nextGroup?.position ?? null);
+    } catch {
+      toast.error("Unable to reorder: positions need compaction. Try again later.");
+      return;
+    }
+
+    const optimistic = { ...originalGroup, position: newPos, updated_at: new Date().toISOString() };
+    useBoardStore.getState().applyGroupUpsert(optimistic);
+
+    startTransition(async () => {
+      const result = await reorderGroup({ groupId, position: newPos });
+      if (result.ok) {
+        useBoardStore.getState().applyGroupUpsert(result.data);
+      } else {
+        // Revert optimistic update.
+        useBoardStore.getState().applyGroupUpsert({
+          ...originalGroup,
+          updated_at: new Date().toISOString(),
+        });
+        toast.error("Failed to reorder group. Please try again.");
+      }
+    });
+  };
+
+  // ---------------------------------------------------------------------------
+  // onTaskReorder — called by DndProviders when a task drag ends.
+  //
+  // taskId:       dragged task id
+  // activeGroupId: origin group id
+  // overId:        id of the item under cursor (task id OR group header id)
+  // overKind:      "task" | "group"
+  // overGroupId:   destination group id
+  //
+  // Algorithm (same group):
+  //   Remove active from its sorted position, insert at over's position.
+  //   positionBetween(prevTask.position, nextTask.position).
+  //
+  // Algorithm (cross-group):
+  //   Destination group tasks (without active) → find insertion point by
+  //   over task id (or end of group if overKind === "group").
+  //   positionBetween(prevTask.position, nextTask.position).
+  // ---------------------------------------------------------------------------
+  const handleTaskReorder: DndProvidersProps["onTaskReorder"] = ({
+    taskId,
+    overId,
+    overKind,
+    overGroupId,
+  }) => {
+    const state = useBoardStore.getState();
+    const allTasks = state.tasks;
+
+    const originalTask = allTasks.find((t) => t.id === taskId);
+    if (!originalTask) return;
+
+    // Get destination group's tasks (sorted), with the dragged task excluded
+    // so we can compute clean insertion positions.
+    const destGroupTasks = allTasks
+      .filter((t) => t.group_id === overGroupId && t.id !== taskId)
+      .sort((a, b) => a.position - b.position);
+
+    let newPos: number;
+
+    if (overKind === "group") {
+      // Dropped onto the group header — append at the end of the destination group.
+      const lastTask = destGroupTasks[destGroupTasks.length - 1] ?? null;
+      try {
+        newPos = positionBetween(lastTask?.position ?? null, null);
+      } catch {
+        toast.error("Unable to move task: positions need compaction. Try again later.");
+        return;
+      }
+    } else {
+      // Dropped onto a task in the destination group.
+      const overIdx = destGroupTasks.findIndex((t) => t.id === overId);
+
+      if (overIdx === -1) {
+        // over task not found in dest group (can happen on cross-group drops
+        // to collapsed groups) — append at end.
+        const lastTask = destGroupTasks[destGroupTasks.length - 1] ?? null;
+        try {
+          newPos = positionBetween(lastTask?.position ?? null, null);
+        } catch {
+          toast.error("Unable to move task: positions need compaction. Try again later.");
+          return;
+        }
+      } else {
+        // Determine whether to insert before or after the over task.
+        // For same-group moves: if moving down, insert after over; if moving
+        // up, insert before over. Since destGroupTasks already excludes the
+        // active task, we simply use the overIdx as the insertion point.
+        const prevTask = destGroupTasks[overIdx - 1] ?? null;
+        const nextTask = destGroupTasks[overIdx] ?? null;
+
+        // When moving within the same group, we want to insert at overIdx
+        // position. prevTask is the item before that slot, nextTask is the
+        // item at that slot (which shifts down).
+        //
+        // For cross-group: we insert before the over task (overIdx slot).
+        try {
+          newPos = positionBetween(prevTask?.position ?? null, nextTask?.position ?? null);
+        } catch {
+          toast.error("Unable to move task: positions need compaction. Try again later.");
+          return;
+        }
+      }
+    }
+
+    // Optimistic update — update group_id and position.
+    // NEVER write board_id (guardrail #20 — trigger handles it).
+    const optimistic = {
+      ...originalTask,
+      group_id: overGroupId,
+      position: newPos,
+      updated_at: new Date().toISOString(),
+    };
+    useBoardStore.getState().applyTaskUpsert(optimistic);
+
+    startTransition(async () => {
+      const result = await moveTask({
+        taskId,
+        groupId: overGroupId,
+        position: newPos,
+      });
+      if (result.ok) {
+        useBoardStore.getState().applyTaskUpsert(result.data);
+      } else {
+        // Revert optimistic update.
+        useBoardStore.getState().applyTaskUpsert({
+          ...originalTask,
+          updated_at: new Date().toISOString(),
+        });
+        toast.error("Failed to move task. Please try again.");
+      }
+    });
+  };
+
+  // ---------------------------------------------------------------------------
   // renderRow — switch on row kind, render the appropriate component.
   // task count for group-header is derived inline to avoid a separate memoized
   // map — this is O(n tasks) per render but only runs during JS reconciliation,
   // not during scroll (rows is stable between scrolls).
+  //
+  // Each group's tasks are wrapped in a SortableContext so dnd-kit can resolve
+  // within-group AND cross-group drop positions. The full task id list (not
+  // just visible/virtualized ones) is passed so dnd-kit can track off-screen
+  // items even when their DOM nodes are unmounted.
   // ---------------------------------------------------------------------------
   const renderRow = (entry: RowEntry): React.ReactNode => {
     switch (entry.kind) {
       case "group-header": {
         const taskCount = tasks.filter((t) => t.group_id === entry.group.id).length;
-        return <GroupHeaderRow group={entry.group} taskCount={taskCount} />;
+        const taskIds = taskIdsByGroup.get(entry.group.id) ?? [];
+        return (
+          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+            <GroupHeaderRow group={entry.group} taskCount={taskCount} />
+          </SortableContext>
+        );
       }
       case "task":
         return <TaskRow task={entry.task} group={entry.group} />;
@@ -265,6 +496,12 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   }
 
   // ---------------------------------------------------------------------------
+  // Group id list for the outer SortableContext — keeps the full sorted group
+  // order so dnd-kit can animate all group headers even when some are off-screen.
+  // ---------------------------------------------------------------------------
+  const groupIds = groups.map((g) => g.id);
+
+  // ---------------------------------------------------------------------------
   // Virtualized table layout.
   //
   // Height strategy: `flex flex-col flex-1 min-h-0` propagates the available
@@ -272,12 +509,22 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   // hidden ancestor chain) down through the flex column. The TableVirtualizer's
   // scroll container is `flex-1 min-h-0 overflow-auto`, which clips to the
   // remaining height below StickyHeader and drives the virtualizer.
+  //
+  // DnD strategy:
+  //   - Outer SortableContext over all group ids enables group-level dragging.
+  //   - Per-group SortableContext (rendered inside each group-header row slot)
+  //     covers that group's tasks for within-group AND cross-group drops.
+  //   - DndProviders wraps everything with DndContext + sensors.
   // ---------------------------------------------------------------------------
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <StickyHeader />
       <TableScrollContext.Provider value={scrollContextValue}>
-        <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
+        <DndProviders onGroupReorder={handleGroupReorder} onTaskReorder={handleTaskReorder}>
+          <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
+            <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
+          </SortableContext>
+        </DndProviders>
       </TableScrollContext.Provider>
     </div>
   );

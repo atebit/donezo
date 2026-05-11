@@ -1,6 +1,10 @@
 "use client";
 
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 import { colorToToken } from "./group-color";
+import { TaskDragHandle } from "./TaskDragHandle";
 import { TaskTitleCell } from "./TaskTitleCell";
 import type { Group, Task } from "./types";
 
@@ -12,8 +16,22 @@ interface TaskRowProps {
 export function TaskRow({ task, group }: TaskRowProps) {
   const colorToken = colorToToken(group.color);
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+    data: { kind: "task", groupId: group.id },
+  });
+
+  const style: React.CSSProperties = {
+    ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
+    ...(transition ? { transition } : {}),
+    // Lift dragged row above siblings so it doesn't clip under sticky headers.
+    ...(isDragging ? { zIndex: 1, opacity: 0.85 } : {}),
+  };
+
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className="group flex items-center h-[var(--size-cell-h)] border-b border-[color:var(--color-border-strong)]"
       data-task-id={task.id}
     >
@@ -24,15 +42,8 @@ export function TaskRow({ task, group }: TaskRowProps) {
         aria-hidden="true"
       />
 
-      {/* Drag handle placeholder — wired in S11 */}
-      <button
-        type="button"
-        aria-label="Drag (wired in S11)"
-        tabIndex={-1}
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)] flex-shrink-0 px-1 cursor-grab text-[color:var(--color-fg-muted)]"
-      >
-        ⋮⋮
-      </button>
+      {/* Drag handle — wired to dnd-kit useSortable */}
+      <TaskDragHandle attributes={attributes} listeners={listeners} />
 
       {/* Bulk-select checkbox placeholder — wired in S12 */}
       <input
