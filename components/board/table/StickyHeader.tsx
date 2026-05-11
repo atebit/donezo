@@ -162,7 +162,7 @@ export function StickyHeader() {
       {titleColumn && (
         <div className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)]">
           <ColumnResize columnId={titleColumn.id} currentWidth={getColumnWidth(titleColumn)}>
-            <ColumnHeader column={titleColumn} />
+            <ColumnHeader column={titleColumn} draggable={false} />
           </ColumnResize>
         </div>
       )}

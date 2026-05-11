@@ -32,13 +32,24 @@ import type { CellTypeId } from "@/lib/cells/types";
 import { useBoardStore } from "@/stores/board-store";
 
 import { ColumnHeaderMenu } from "./ColumnHeaderMenu";
+import { useColumnSortable } from "./ColumnReorder";
 import type { Column } from "./types";
 
 interface ColumnHeaderProps {
   column: Column;
+  /**
+   * Whether this column header participates in drag-and-drop reorder.
+   * Defaults to true. Pass `draggable={false}` for the sticky-left title
+   * column which must not be draggable.
+   */
+  draggable?: boolean;
 }
 
-export function ColumnHeader({ column }: ColumnHeaderProps) {
+export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
+  // Hook called unconditionally (Rules of Hooks) — outputs are only wired to
+  // the DOM when draggable === true.
+  const sortable = useColumnSortable(column.id);
+
   const [, startTransition] = useTransition();
   const editableRef = useRef<EditableTitleHandle>(null);
 
@@ -71,8 +82,19 @@ export function ColumnHeader({ column }: ColumnHeaderProps) {
 
   return (
     <div
+      ref={draggable ? sortable.setNodeRef : undefined}
+      style={
+        draggable
+          ? {
+              width: "var(--size-cell-w)",
+              ...(sortable.style ?? {}),
+              ...(sortable.isDragging ? { opacity: 0.85, zIndex: 2 } : {}),
+            }
+          : { width: "var(--size-cell-w)" }
+      }
+      {...(draggable ? sortable.attributes : {})}
+      {...(draggable ? sortable.listeners : {})}
       className="relative flex h-10 items-center gap-1 border-r border-[color:var(--color-border-strong)] px-2 select-none group"
-      style={{ width: "var(--size-cell-w)" }}
       data-column-id={column.id}
     >
       {/* Type icon */}

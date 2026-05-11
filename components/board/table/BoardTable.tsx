@@ -764,13 +764,17 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
           row (inside the tree) bubble up to the single listener attached by the
           keyboard nav hook. */}
       <div ref={containerRef} className="flex flex-col flex-1 min-h-0">
-        <StickyHeader />
         <TableScrollContext.Provider value={scrollContextValue}>
           <DndProviders
             onGroupReorder={handleGroupReorder}
             onTaskReorder={handleTaskReorder}
             onColumnReorder={handleColumnReorder}
           >
+            {/* StickyHeader is INSIDE DndProviders so the ColumnReorder
+                SortableContext inside StickyHeader has a parent DndContext.
+                DndProviders renders <DndContext> with no DOM wrapper, so
+                sticky positioning (sticky top-0) is unaffected. */}
+            <StickyHeader />
             <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
               <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
             </SortableContext>
