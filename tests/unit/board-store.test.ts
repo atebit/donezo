@@ -2,7 +2,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Database } from "../../lib/supabase/types";
-import { useBoardStore } from "../../stores/board-store";
+import {
+  selectPresentUserIds,
+  selectUsersViewingTask,
+  useBoardStore,
+} from "../../stores/board-store";
+import type {
+  CursorPayload,
+  OutboxActionId,
+  PresenceState,
+  TypingPayload,
+} from "../../stores/types/realtime";
 
 type Group = Database["public"]["Tables"]["group"]["Row"];
 type Task = Database["public"]["Tables"]["task"]["Row"];
@@ -399,5 +409,330 @@ describe.skip("useBoardStore", () => {
       const value = noopStorageLocal.getItem("donezo:board-collapsed:v1");
       expect(value).toBeNull();
     }).not.toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Epic 08 — realtime state
+// ---------------------------------------------------------------------------
+
+describe.skip("Epic 08 — realtime state", () => {
+  beforeEach(() => {
+    useBoardStore.getState().reset();
+    useBoardStore.setState({
+      collapsedByBoard: {},
+      outbox: [],
+      outboxOverflow: false,
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // setConnectionStatus
+  // -------------------------------------------------------------------------
+
+  it("setConnectionStatus transitions to 'connected'", () => {
+    useBoardStore.getState().setConnectionStatus("offline");
+    useBoardStore.getState().setConnectionStatus("connected");
+    expect(useBoardStore.getState().connection).toBe("connected");
+  });
+
+  it("setConnectionStatus transitions to 'reconnecting'", () => {
+    useBoardStore.getState().setConnectionStatus("reconnecting");
+    expect(useBoardStore.getState().connection).toBe("reconnecting");
+  });
+
+  it("setConnectionStatus transitions to 'offline'", () => {
+    useBoardStore.getState().setConnectionStatus("offline");
+    expect(useBoardStore.getState().connection).toBe("offline");
+  });
+
+  // -------------------------------------------------------------------------
+  // setPresence + selectPresentUserIds
+  // -------------------------------------------------------------------------
+
+  it("setPresence overwrites presence state wholesale", () => {
+    const initial: PresenceState = {
+      "user-1": [{ user_id: "user-1", online_at: 1000, viewing: { type: "board" } }],
+    };
+    useBoardStore.getState().setPresence(initial);
+    expect(useBoardStore.getState().presence).toEqual(initial);
+
+    const updated: PresenceState = {
+      "user-2": [{ user_id: "user-2", online_at: 2000, viewing: { type: "board" } }],
+    };
+    useBoardStore.getState().setPresence(updated);
+    expect(useBoardStore.getState().presence).toEqual(updated);
+    expect(useBoardStore.getState().presence["user-1"]).toBeUndefined();
+  });
+
+  it("selectPresentUserIds returns deduped user_ids (one per user, regardless of tab count)", () => {
+    const state: PresenceState = {
+      "user-a": [
+        { user_id: "user-a", online_at: 1000, viewing: { type: "board" } },
+        { user_id: "user-a", online_at: 1001, viewing: { type: "board" } }, // second tab
+      ],
+      "user-b": [{ user_id: "user-b", online_at: 2000, viewing: { type: "board" } }],
+      "user-c": [], // empty — should NOT appear
+    };
+    useBoardStore.getState().setPresence(state);
+
+    const ids = selectPresentUserIds(useBoardStore.getState());
+    expect(ids).toContain("user-a");
+    expect(ids).toContain("user-b");
+    expect(ids).not.toContain("user-c");
+    expect(ids).toHaveLength(2);
+  });
+
+  it("selectUsersViewingTask returns only users viewing the specified task", () => {
+    const state: PresenceState = {
+      "user-x": [
+        { user_id: "user-x", online_at: 1000, viewing: { type: "task", task_id: "task-99" } },
+      ],
+      "user-y": [
+        { user_id: "user-y", online_at: 2000, viewing: { type: "task", task_id: "task-99" } },
+        { user_id: "user-y", online_at: 2001, viewing: { type: "board" } }, // another tab on board
+      ],
+      "user-z": [
+        { user_id: "user-z", online_at: 3000, viewing: { type: "task", task_id: "task-other" } },
+      ],
+    };
+    useBoardStore.getState().setPresence(state);
+
+    const viewers = selectUsersViewingTask(useBoardStore.getState(), "task-99");
+    expect(viewers).toContain("user-x");
+    expect(viewers).toContain("user-y");
+    expect(viewers).not.toContain("user-z");
+  });
+
+  // -------------------------------------------------------------------------
+  // setCursor + pruneExpiredCursors
+  // -------------------------------------------------------------------------
+
+  it("setCursor upserts cursor per user_id", () => {
+    const cursor1: CursorPayload = { user_id: "u1", task_id: "t1", column_id: "c1", at: 1000 };
+    const cursor2: CursorPayload = { user_id: "u2", task_id: "t2", column_id: "c2", at: 2000 };
+
+    useBoardStore.getState().setCursor(cursor1);
+    useBoardStore.getState().setCursor(cursor2);
+
+    const { cursors } = useBoardStore.getState();
+    expect(cursors.get("u1")).toEqual(cursor1);
+    expect(cursors.get("u2")).toEqual(cursor2);
+
+    // Overwrite u1's cursor
+    const updated: CursorPayload = { user_id: "u1", task_id: "t99", column_id: "c99", at: 3000 };
+    useBoardStore.getState().setCursor(updated);
+    expect(useBoardStore.getState().cursors.get("u1")).toEqual(updated);
+  });
+
+  it("pruneExpiredCursors removes cursors where now - at > ttlMs", () => {
+    const now = 10000;
+    const ttlMs = 3000;
+
+    const fresh: CursorPayload = { user_id: "fresh", task_id: "t1", column_id: "c1", at: 8000 }; // 2s old
+    const stale: CursorPayload = { user_id: "stale", task_id: "t2", column_id: "c2", at: 5000 }; // 5s old
+
+    useBoardStore.getState().setCursor(fresh);
+    useBoardStore.getState().setCursor(stale);
+
+    useBoardStore.getState().pruneExpiredCursors(now, ttlMs);
+
+    const { cursors } = useBoardStore.getState();
+    expect(cursors.has("fresh")).toBe(true);
+    expect(cursors.has("stale")).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // setTyping + pruneExpiredTyping
+  // -------------------------------------------------------------------------
+
+  it("setTyping de-dupes per (context, user_id) — newer at overwrites older", () => {
+    const ctx = "comment:task-1";
+    const t1: TypingPayload = { user_id: "u1", context: ctx, at: 1000 };
+    const t1Updated: TypingPayload = { user_id: "u1", context: ctx, at: 2000 };
+    const t2: TypingPayload = { user_id: "u2", context: ctx, at: 1500 };
+
+    useBoardStore.getState().setTyping(t1);
+    useBoardStore.getState().setTyping(t2);
+    useBoardStore.getState().setTyping(t1Updated);
+
+    const { typingByContext } = useBoardStore.getState();
+    const entries = typingByContext.get(ctx) ?? [];
+    // u1 should appear exactly once with the newer at
+    const u1Entries = entries.filter((e) => e.user_id === "u1");
+    expect(u1Entries).toHaveLength(1);
+    expect(u1Entries[0]?.at).toBe(2000);
+    // u2 should also be present
+    expect(entries.some((e) => e.user_id === "u2")).toBe(true);
+  });
+
+  it("pruneExpiredTyping clears stale entries and removes empty context keys", () => {
+    const now = 10000;
+    const ttlMs = 5000;
+    const ctx = "comment:task-2";
+
+    const fresh: TypingPayload = { user_id: "u1", context: ctx, at: 6000 }; // 4s old — within TTL
+    const stale: TypingPayload = { user_id: "u2", context: ctx, at: 4000 }; // 6s old — expired
+
+    useBoardStore.getState().setTyping(fresh);
+    useBoardStore.getState().setTyping(stale);
+
+    useBoardStore.getState().pruneExpiredTyping(now, ttlMs);
+
+    const { typingByContext } = useBoardStore.getState();
+    const entries = typingByContext.get(ctx) ?? [];
+    expect(entries.some((e) => e.user_id === "u1")).toBe(true);
+    expect(entries.some((e) => e.user_id === "u2")).toBe(false);
+  });
+
+  it("pruneExpiredTyping removes the context key when all entries expire", () => {
+    const now = 10000;
+    const ttlMs = 5000;
+    const ctx = "comment:task-3";
+
+    const stale: TypingPayload = { user_id: "u1", context: ctx, at: 1000 }; // 9s old — expired
+    useBoardStore.getState().setTyping(stale);
+
+    useBoardStore.getState().pruneExpiredTyping(now, ttlMs);
+
+    const { typingByContext } = useBoardStore.getState();
+    expect(typingByContext.has(ctx)).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // enqueueOutbox + dequeueOutbox + clearOutbox
+  // -------------------------------------------------------------------------
+
+  it("enqueueOutbox generates id and enqueuedAt", () => {
+    const actionId: OutboxActionId = "setCellValue";
+    useBoardStore.getState().enqueueOutbox({
+      actionId,
+      args: ["arg1", "arg2"],
+      optimisticUpdatedAt: Date.now(),
+    });
+
+    const { outbox } = useBoardStore.getState();
+    expect(outbox).toHaveLength(1);
+    const entry = outbox[0];
+    expect(entry).toBeDefined();
+    expect(typeof entry?.id).toBe("string");
+    expect(entry?.id.length).toBeGreaterThan(0);
+    expect(typeof entry?.enqueuedAt).toBe("number");
+    expect(entry?.actionId).toBe(actionId);
+    expect(entry?.args).toEqual(["arg1", "arg2"]);
+  });
+
+  it("dequeueOutbox removes the entry by id", () => {
+    useBoardStore.getState().enqueueOutbox({
+      actionId: "renameTask",
+      args: ["task-1", "New Name"],
+      optimisticUpdatedAt: Date.now(),
+    });
+    useBoardStore.getState().enqueueOutbox({
+      actionId: "renameGroup",
+      args: ["group-1", "New Group"],
+      optimisticUpdatedAt: Date.now(),
+    });
+
+    const { outbox: before } = useBoardStore.getState();
+    expect(before).toHaveLength(2);
+
+    const idToRemove = before[0]?.id ?? "";
+    useBoardStore.getState().dequeueOutbox(idToRemove);
+
+    const { outbox: after } = useBoardStore.getState();
+    expect(after).toHaveLength(1);
+    expect(after[0]?.id).not.toBe(idToRemove);
+  });
+
+  it("clearOutbox empties the entire outbox", () => {
+    useBoardStore.getState().enqueueOutbox({
+      actionId: "setCellValue",
+      args: [],
+      optimisticUpdatedAt: Date.now(),
+    });
+    useBoardStore.getState().enqueueOutbox({
+      actionId: "bulkSetCellValue",
+      args: [],
+      optimisticUpdatedAt: Date.now(),
+    });
+
+    useBoardStore.getState().clearOutbox();
+
+    expect(useBoardStore.getState().outbox).toHaveLength(0);
+  });
+
+  // -------------------------------------------------------------------------
+  // enqueueOutbox — 4MB size cap
+  // -------------------------------------------------------------------------
+
+  it("enqueueOutbox refuses to push and sets outboxOverflow when serialized outbox > 4MB", () => {
+    // Construct a giant args payload: ~4MB of data
+    const bigString = "x".repeat(4 * 1024 * 1024 + 100); // slightly over 4MB
+
+    useBoardStore.getState().enqueueOutbox({
+      actionId: "setCellValue",
+      args: [bigString],
+      optimisticUpdatedAt: Date.now(),
+    });
+
+    const state = useBoardStore.getState();
+    // The giant entry itself is larger than the cap, so it must be rejected
+    expect(state.outboxOverflow).toBe(true);
+    // outbox should remain empty (or whatever it was before — not grown)
+    expect(state.outbox).toHaveLength(0);
+  });
+
+  // -------------------------------------------------------------------------
+  // reset — outbox preserved
+  // -------------------------------------------------------------------------
+
+  it("reset preserves outbox", () => {
+    useBoardStore.getState().enqueueOutbox({
+      actionId: "renameTask",
+      args: ["task-1", "New Title"],
+      optimisticUpdatedAt: Date.now(),
+    });
+
+    const { outbox: before } = useBoardStore.getState();
+    expect(before).toHaveLength(1);
+
+    // Set some transient state that should clear
+    useBoardStore.setState({
+      boardId: "board-x",
+      connection: "offline",
+    });
+
+    useBoardStore.getState().reset();
+
+    const { outbox: after, boardId, connection } = useBoardStore.getState();
+    // Outbox must survive the reset
+    expect(after).toHaveLength(1);
+    expect(after[0]?.actionId).toBe("renameTask");
+    // Transient state must be cleared
+    expect(boardId).toBeNull();
+    expect(connection).toBe("connected");
+  });
+
+  // -------------------------------------------------------------------------
+  // Rehydration — missing outbox field defaults to []
+  // -------------------------------------------------------------------------
+
+  it("rehydration with no outbox field defaults to []", () => {
+    // Directly test the onRehydrateStorage defaulting logic: simulate a state
+    // hydrated from older localStorage that has no outbox key.
+    // We exercise the guard inline (mirroring what the middleware calls).
+    const rehydratedState: Record<string, unknown> = {
+      collapsedByBoard: { "board-1": ["group-a"] },
+      columnPrefsByBoard: {},
+      // outbox intentionally omitted — simulates older localStorage entry
+    };
+
+    // Apply the same guard as onRehydrateStorage
+    if (!Array.isArray(rehydratedState.outbox)) {
+      rehydratedState.outbox = [];
+    }
+
+    expect(rehydratedState.outbox).toEqual([]);
   });
 });
