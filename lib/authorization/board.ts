@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-
-export const ROLE_RANK = { viewer: 1, member: 2, admin: 3, owner: 4 } as const;
-export type Role = keyof typeof ROLE_RANK;
+import { ROLE_RANK, type Role } from "./roles";
 
 export async function getBoardRole(boardId: string): Promise<Role | null> {
   const supabase = await createClient();

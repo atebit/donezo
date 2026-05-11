@@ -10,7 +10,7 @@ import { BoardArchiveConfirmModal } from "@/components/board/BoardArchiveConfirm
 import { BoardDeleteConfirmModal } from "@/components/board/BoardDeleteConfirmModal";
 import { useBoard } from "@/hooks/use-board";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { ROLE_RANK } from "@/lib/authorization";
+import { ROLE_RANK } from "@/lib/authorization/roles";
 import { IconArchive, IconCopy, IconDelete, IconLock, IconMore, IconSettings } from "@/lib/icons";
 
 interface BoardSettingsMenuProps {
