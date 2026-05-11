@@ -1,9 +1,18 @@
 "use client";
 
-import { type KeyboardEvent, useCallback, useRef, useState } from "react";
+import {
+  forwardRef,
+  type KeyboardEvent,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+
+export type EditableTitleHandle = { focus: () => void };
 
 type EditableTitleProps = {
   initialValue: string;
@@ -22,18 +31,21 @@ const variantStyles: Record<NonNullable<EditableTitleProps["variant"]>, string> 
   body: "text-sm",
 };
 
-function EditableTitle({
-  initialValue,
-  onCommit,
-  className,
-  ariaLabel,
-  variant = "body",
-  placeholder,
-  readOnly = false,
-  onEditingChange,
-}: EditableTitleProps) {
+const EditableTitle = forwardRef<EditableTitleHandle, EditableTitleProps>(function EditableTitle(
+  {
+    initialValue,
+    onCommit,
+    className,
+    ariaLabel,
+    variant = "body",
+    placeholder,
+    readOnly = false,
+    onEditingChange,
+  },
+  ref,
+) {
   const [isEditing, setIsEditing] = useState(false);
-  const elementRef = useRef<HTMLQuoteElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
 
   const setEditing = useCallback(
     (value: boolean) => {
@@ -42,6 +54,19 @@ function EditableTitle({
     },
     [onEditingChange],
   );
+
+  // Expose imperative focus() API so parent components (e.g. overflow menu
+  // Rename items) can programmatically enter edit mode without prop drilling.
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      setEditing(true);
+      // Defer focus until after the contentEditable element re-renders
+      // in editing mode (next tick).
+      setTimeout(() => {
+        elementRef.current?.focus();
+      }, 0);
+    },
+  }));
 
   const getCurrentText = useCallback(() => {
     return elementRef.current?.textContent ?? "";
@@ -81,7 +106,7 @@ function EditableTitle({
   }, [readOnly, isEditing, setEditing]);
 
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLQuoteElement>) => {
+    (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         e.preventDefault();
         elementRef.current?.blur();
@@ -99,20 +124,19 @@ function EditableTitle({
     void commit();
   }, [isEditing, commit]);
 
-  // Compute ARIA role / level for non-editing display and editing modes.
-  const role = isEditing ? "textbox" : variant === "h1" || variant === "h4" ? "heading" : undefined;
-  const ariaLevel =
-    !isEditing && variant === "h1" ? 1 : !isEditing && variant === "h4" ? 2 : undefined;
-
   return (
-    // biome-ignore lint/a11y/useAriaPropsSupportedByRole: role is set dynamically to "heading" when aria-level is present
-    <blockquote
+    // biome-ignore lint/a11y/useSemanticElements: contentEditable div is the correct pattern for inline-editable titles; <input>/<textarea> cannot render inline in a table cell
+    <div
       ref={elementRef}
+      role="textbox"
       contentEditable={readOnly ? "false" : "true"}
       suppressContentEditableWarning
-      role={role}
-      aria-level={ariaLevel}
-      aria-label={isEditing && ariaLabel ? ariaLabel : undefined}
+      tabIndex={readOnly ? -1 : 0}
+      // Display mode: aria-readonly="true" so screen readers announce the
+      // element as writable. Edit mode: aria-multiline="false" for single-line.
+      aria-readonly={!isEditing ? true : undefined}
+      aria-multiline={isEditing ? false : undefined}
+      aria-label={ariaLabel}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       onBlur={handleBlur}
@@ -130,9 +154,9 @@ function EditableTitle({
       )}
     >
       {initialValue}
-    </blockquote>
+    </div>
   );
-}
+});
 
 export type { EditableTitleProps };
 export { EditableTitle };
