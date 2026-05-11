@@ -32,12 +32,11 @@ export type TypingPayload = {
 // ----- Outbox -----
 // Queueable actions: upsert-style only. Inserts/deletes do NOT queue and must
 // error immediately when offline (handled by S8's wrapper, not by the store).
-export type OutboxActionId =
-  | "setCellValue"
-  | "bulkSetCellValue"
-  | "renameGroup"
-  | "renameTask"
-  | "updateTaskFields"; // any future task-field upsert
+// S8 deviation: `updateTaskFields` removed from this union because tasks/actions.ts
+// does not export a function by that name as of Epic 08. The registry in
+// lib/realtime/outbox-registry.ts covers the four existing upsert-style actions.
+// Add `updateTaskFields` (or a more specific name) here when a future epic ships it.
+export type OutboxActionId = "setCellValue" | "bulkSetCellValue" | "renameGroup" | "renameTask";
 
 export type OutboxEntry = {
   id: string; // uuid v4 generated client-side ONLY for de-duplication of the outbox itself; NOT a DB id
