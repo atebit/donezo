@@ -4,8 +4,7 @@
  * GroupOverflowMenu — overflow action menu for a group header row.
  *
  * Mounted inside the inline <GroupHeaderRow> helper in BoardTable.tsx,
- * replacing the S8 placeholder button. GroupSection.tsx is orphaned and
- * left untouched per the S13 scope contract.
+ * replacing the S8 placeholder button.
  *
  * Items:
  *   1. Rename  — no-op pending S14's imperative focus API on EditableTitle.

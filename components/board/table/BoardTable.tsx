@@ -34,10 +34,6 @@ import type { Group, TableData } from "./types";
 // group header acts as both the drag handle host and a droppable target for
 // cross-group task drops.
 //
-// NOTE: GroupSection is still "orphaned" from the virtualized layout — it is
-// not consumed by BoardTable. Leave GroupSection.tsx untouched (tracked for
-// a future cleanup pass).
-//
 // ARIA: role="row" is intentionally absent here. The full ARIA table tree
 // requires the complete role chain (table → rowgroup → row → cell) plus
 // focusability, which is deferred to epic 14. Data attributes are in place for
