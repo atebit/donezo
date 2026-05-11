@@ -6,15 +6,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { reorderColumn } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/columns/actions";
-import {
-  renameGroup,
-  reorderGroup,
-} from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
+import { reorderGroup } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
 import { moveTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
 import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
+import { useBoard } from "@/hooks/use-board";
+import { useBoardRealtime } from "@/hooks/use-board-realtime";
 import { useTableKeyboardNav } from "@/hooks/use-table-keyboard-nav";
 import { positionBetween } from "@/lib/positions";
+import { flushOutbox } from "@/lib/realtime/outbox";
+import { wrappedRenameGroup } from "@/lib/realtime/wrapped-actions";
 import { useBoardStore } from "@/stores/board-store";
 
 import { AddGroupFooter } from "./AddGroupFooter";
@@ -32,6 +33,17 @@ import { TaskRow } from "./TaskRow";
 import { TableKeyboardContext, useTableKeyboard } from "./table-keyboard-context";
 import { TableScrollContext } from "./table-scroll-context";
 import type { Group, TableData } from "./types";
+
+// isQueuedResult — type-narrowing guard for withOutbox's queued branch.
+// Kept local so it does not add a new export to lib/realtime/outbox.ts.
+function isQueuedResult(r: unknown): r is { queued: true } {
+  return (
+    r !== null &&
+    typeof r === "object" &&
+    "queued" in r &&
+    (r as { queued?: unknown }).queued === true
+  );
+}
 
 // ---------------------------------------------------------------------------
 // GroupHeaderRow — inline helper that renders the group chrome for the
@@ -152,7 +164,9 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
     });
 
     startTransition(async () => {
-      const result = await renameGroup({ groupId: group.id, name: nextValue });
+      const result = await wrappedRenameGroup({ groupId: group.id, name: nextValue });
+      // Soft success — optimistic update already applied; outbox will flush on reconnect.
+      if (isQueuedResult(result)) return;
       if (!result.ok) {
         // Revert to the original group row.
         useBoardStore.getState().applyGroupUpsert({
@@ -243,6 +257,46 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   const hydratedRef = useRef(false);
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [, startTransition] = useTransition();
+
+  // ---------------------------------------------------------------------------
+  // Epic 08 — Realtime hook mount + outbox flush trigger
+  //
+  // userId is sourced from BoardContext (wired in layout.tsx via BoardProvider).
+  // This avoids re-plumbing through page.tsx; the layout already calls
+  // requireUser() and passes the id down through BoardProvider.
+  // ---------------------------------------------------------------------------
+  const { userId } = useBoard();
+
+  // Mount the board-scoped Realtime subscription (postgres_changes + presence +
+  // broadcast). This hook owns channel lifecycle; cleanup on unmount.
+  useBoardRealtime(boardId, userId);
+
+  // Flush any queued outbox entries on reconnect or when the browser comes
+  // back online. Two triggers:
+  //   1. window 'online' event — the browser regained network access.
+  //   2. Zustand store `connection` field transitions to 'connected' — the
+  //      Supabase channel re-established (may happen after router.refresh()).
+  //
+  // Note: Zustand v5 removed the two-argument subscribe(selector, listener) API.
+  // We use the full-state subscribe and track prev connection manually.
+  useEffect(() => {
+    const onOnline = () => {
+      void flushOutbox();
+    };
+    window.addEventListener("online", onOnline);
+
+    // Zustand v5: subscribe(listener) receives (state, prevState).
+    const unsub = useBoardStore.subscribe((state, prevState) => {
+      if (prevState.connection !== "connected" && state.connection === "connected") {
+        void flushOutbox();
+      }
+    });
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      unsub();
+    };
+  }, []);
 
   // Hydrate the store once on mount (StrictMode-safe ref guard prevents
   // double-hydration from the dev-mode double-invocation of effects).

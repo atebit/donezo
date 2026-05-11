@@ -4,6 +4,13 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Database } from "@/lib/supabase/types";
+import type {
+  ConnectionStatus,
+  CursorPayload,
+  OutboxEntry,
+  PresenceState,
+  TypingPayload,
+} from "@/stores/types/realtime";
 
 type Group = Database["public"]["Tables"]["group"]["Row"];
 type Task = Database["public"]["Tables"]["task"]["Row"];
@@ -11,7 +18,7 @@ type Cell = Database["public"]["Tables"]["cell"]["Row"];
 type Column = Database["public"]["Tables"]["column"]["Row"];
 type Label = Database["public"]["Tables"]["label"]["Row"];
 
-type BoardState = {
+export type BoardState = {
   boardId: string | null;
   groups: Group[];
   tasks: Task[];
@@ -76,6 +83,37 @@ type BoardState = {
   setDraggingTask: (taskId: string | null) => void;
   setDraggingGroup: (groupId: string | null) => void;
   setEditingTask: (taskId: string | null) => void;
+
+  // Epic 08 — Realtime + outbox state
+  // Transient fields
+  connection: ConnectionStatus;
+  presence: PresenceState;
+  cursors: Map<string, CursorPayload>; // key: user_id; one cursor per user
+  typingByContext: Map<string, TypingPayload[]>; // key: context string
+  outboxOverflow: boolean;
+
+  // Persisted field
+  outbox: OutboxEntry[];
+
+  // connection
+  setConnectionStatus: (status: ConnectionStatus) => void;
+
+  // presence
+  setPresence: (state: PresenceState) => void;
+
+  // cursors
+  setCursor: (payload: CursorPayload) => void;
+  clearCursor: (userId: string) => void;
+  pruneExpiredCursors: (now: number, ttlMs: number) => void; // remove cursors where now - at > ttlMs
+
+  // typing
+  setTyping: (payload: TypingPayload) => void;
+  pruneExpiredTyping: (now: number, ttlMs: number) => void; // typically ttlMs = 5000
+
+  // outbox
+  enqueueOutbox: (entry: Omit<OutboxEntry, "id" | "enqueuedAt">) => void; // generates id + enqueuedAt
+  dequeueOutbox: (entryId: string) => void;
+  clearOutbox: () => void;
 };
 
 /** SSR-safe noop storage — used when `window` is not available. */
@@ -101,6 +139,13 @@ const transientInitial = {
   collapsedGroupIds: new Set<string>(),
   editingTaskId: null,
   tempIdMap: new Map<string, string>(),
+
+  // Epic 08 — Realtime + outbox state (transient portion)
+  connection: "connected" as ConnectionStatus,
+  presence: {} as PresenceState,
+  cursors: new Map<string, CursorPayload>(), // key: user_id; one cursor per user
+  typingByContext: new Map<string, TypingPayload[]>(), // key: context string
+  outboxOverflow: false,
 };
 
 export const useBoardStore = create<BoardState>()(
@@ -112,6 +157,8 @@ export const useBoardStore = create<BoardState>()(
         string,
         Record<string, { width?: number; hidden?: boolean }>
       >,
+      // Epic 08 — persisted outbox (additive; older entries hydrate with outbox: [])
+      outbox: [] as OutboxEntry[],
 
       // ------------------------------------------------------------------
       // hydrate — called once on mount with server-fetched data.
@@ -162,15 +209,17 @@ export const useBoardStore = create<BoardState>()(
       },
 
       // ------------------------------------------------------------------
-      // reset — clears transient state but PRESERVES collapsedByBoard
-      // AND columnPrefsByBoard (both are persisted slices)
+      // reset — clears transient state but PRESERVES collapsedByBoard,
+      // columnPrefsByBoard, AND outbox (all persisted slices).
+      // Navigating boards must not drop a queued offline mutation.
       // ------------------------------------------------------------------
       reset() {
-        const { collapsedByBoard, columnPrefsByBoard } = get();
+        const { collapsedByBoard, columnPrefsByBoard, outbox } = get();
         set({
           ...transientInitial,
           collapsedByBoard,
           columnPrefsByBoard,
+          outbox,
         });
       },
 
@@ -546,22 +595,162 @@ export const useBoardStore = create<BoardState>()(
       setEditingTask(taskId) {
         set({ editingTaskId: taskId });
       },
+
+      // ================================================================
+      // Epic 08 — Realtime + outbox state
+      // ================================================================
+
+      // ------------------------------------------------------------------
+      // setConnectionStatus — updates the connection status field.
+      // ------------------------------------------------------------------
+      setConnectionStatus(status) {
+        set({ connection: status });
+      },
+
+      // ------------------------------------------------------------------
+      // setPresence — overwrites the entire presence state wholesale.
+      // Supabase already gives the canonical snapshot; no merge needed.
+      // ------------------------------------------------------------------
+      setPresence(state) {
+        set({ presence: state });
+      },
+
+      // ------------------------------------------------------------------
+      // setCursor — upserts the cursor for a given user_id (one cursor
+      // per user; overwrites any existing position for that user).
+      // ------------------------------------------------------------------
+      setCursor(payload) {
+        const { cursors } = get();
+        const next = new Map(cursors);
+        next.set(payload.user_id, payload);
+        set({ cursors: next });
+      },
+
+      // ------------------------------------------------------------------
+      // clearCursor — removes the cursor entry for a given user_id.
+      // ------------------------------------------------------------------
+      clearCursor(userId) {
+        const { cursors } = get();
+        const next = new Map(cursors);
+        next.delete(userId);
+        set({ cursors: next });
+      },
+
+      // ------------------------------------------------------------------
+      // pruneExpiredCursors — removes cursors where now - at > ttlMs.
+      // Called periodically by the hook to garbage-collect stale cursors.
+      // ------------------------------------------------------------------
+      pruneExpiredCursors(now, ttlMs) {
+        const { cursors } = get();
+        const next = new Map(cursors);
+        for (const [userId, cursor] of next) {
+          if (now - cursor.at > ttlMs) {
+            next.delete(userId);
+          }
+        }
+        set({ cursors: next });
+      },
+
+      // ------------------------------------------------------------------
+      // setTyping — appends or updates a typing entry for (context, user_id).
+      // De-dupes by user_id: newer `at` overwrites older for same user.
+      // ------------------------------------------------------------------
+      setTyping(payload) {
+        const { typingByContext } = get();
+        const existing = typingByContext.get(payload.context) ?? [];
+
+        // De-dupe: replace existing entry for this user_id if present
+        const withoutUser = existing.filter((e) => e.user_id !== payload.user_id);
+        const next = new Map(typingByContext);
+        next.set(payload.context, [...withoutUser, payload]);
+        set({ typingByContext: next });
+      },
+
+      // ------------------------------------------------------------------
+      // pruneExpiredTyping — removes typing entries where now - at > ttlMs
+      // (typically ttlMs = 5000). Cleans up empty context keys.
+      // ------------------------------------------------------------------
+      pruneExpiredTyping(now, ttlMs) {
+        const { typingByContext } = get();
+        const next = new Map(typingByContext);
+        for (const [context, entries] of next) {
+          const fresh = entries.filter((e) => now - e.at <= ttlMs);
+          if (fresh.length === 0) {
+            next.delete(context);
+          } else {
+            next.set(context, fresh);
+          }
+        }
+        set({ typingByContext: next });
+      },
+
+      // ------------------------------------------------------------------
+      // enqueueOutbox — generates id + enqueuedAt and pushes an entry.
+      // 4MB serialized size cap: if exceeded, sets outboxOverflow = true
+      // and does NOT enqueue (S8 owns the toast; this slice sets the flag).
+      // ------------------------------------------------------------------
+      enqueueOutbox(entry) {
+        const { outbox } = get();
+
+        // Check serialized size before pushing (4MB conservative cap)
+        const OUTBOX_SIZE_CAP = 4 * 1024 * 1024; // 4MB in chars
+        const currentSize = JSON.stringify(outbox).length;
+        if (currentSize >= OUTBOX_SIZE_CAP) {
+          set({ outboxOverflow: true });
+          return;
+        }
+
+        const newEntry: OutboxEntry = {
+          ...entry,
+          id: crypto.randomUUID(),
+          enqueuedAt: Date.now(),
+        };
+
+        // Also guard after adding the entry
+        const candidate = [...outbox, newEntry];
+        if (JSON.stringify(candidate).length > OUTBOX_SIZE_CAP) {
+          set({ outboxOverflow: true });
+          return;
+        }
+
+        set({ outbox: candidate });
+      },
+
+      // ------------------------------------------------------------------
+      // dequeueOutbox — removes the entry with the given id.
+      // ------------------------------------------------------------------
+      dequeueOutbox(entryId) {
+        const { outbox } = get();
+        set({ outbox: outbox.filter((e) => e.id !== entryId) });
+      },
+
+      // ------------------------------------------------------------------
+      // clearOutbox — empties the entire outbox (e.g. after successful flush).
+      // ------------------------------------------------------------------
+      clearOutbox() {
+        set({ outbox: [] });
+      },
     }),
     {
       name: "donezo:board-collapsed:v1",
       storage: createJSONStorage(() =>
         typeof window === "undefined" ? noopStorage : localStorage,
       ),
-      // NOTE: storage key name is historical (was collapse-only); now persists
-      // both collapse state and column prefs. Don't rename — would orphan
-      // existing localStorage entries.
+      // Persisted slices: collapsedByBoard, columnPrefsByBoard, outbox.
+      // Storage key name is historical (was collapse-only); not renamed to preserve
+      // existing entries. outbox added in Epic 08 — older entries hydrate with outbox: [].
       partialize: (state) => ({
         collapsedByBoard: state.collapsedByBoard,
         columnPrefsByBoard: state.columnPrefsByBoard,
+        outbox: state.outbox,
       }),
       // On rehydration, re-derive collapsedGroupIds for the active board (if any).
       // columnPrefsByBoard is consumed lazily — no re-derivation needed.
+      // outbox defaults to [] if missing (older clients that pre-date Epic 08).
       onRehydrateStorage: () => (state) => {
+        if (state && !Array.isArray(state.outbox)) {
+          state.outbox = [];
+        }
         if (!state?.boardId) return;
         const ids = state.collapsedByBoard[state.boardId] ?? [];
         state.collapsedGroupIds = new Set(ids);
@@ -569,3 +758,24 @@ export const useBoardStore = create<BoardState>()(
     },
   ),
 );
+
+// ============================================================================
+// Selector helpers (Epic 08 — Realtime)
+// ============================================================================
+
+/** Returns the deduped list of user_ids currently present (one entry per user, regardless of tab count). */
+export function selectPresentUserIds(state: BoardState): string[] {
+  return Object.keys(state.presence).filter((uid) => (state.presence[uid] ?? []).length > 0);
+}
+
+// epic 09 will consume
+/** Returns deduped user_ids currently viewing a specific task (any tab). */
+export function selectUsersViewingTask(state: BoardState, taskId: string): string[] {
+  const out: string[] = [];
+  for (const [uid, entries] of Object.entries(state.presence)) {
+    if (entries.some((e) => e.viewing.type === "task" && e.viewing.task_id === taskId)) {
+      out.push(uid);
+    }
+  }
+  return out;
+}

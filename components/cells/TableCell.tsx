@@ -15,10 +15,17 @@
  * compatibility allows extra props; each Cell component declares them as
  * optional in its own interface. We cast the component ref to accept
  * `Record<string, unknown>` at the one JSX call site to avoid spreading `as any`.
+ *
+ * Epic 08 S6: on mouseenter/focus, broadcasts the current user's cursor to
+ * other board participants via useCursorBroadcast. CursorOverlay renders other
+ * users' cursor dots inside the cell's top-right corner.
  */
 
 import { memo, useState } from "react";
+import { CursorOverlay } from "@/components/board/CursorOverlay";
 import type { Column, Task } from "@/components/board/table/types";
+import { useBoard } from "@/hooks/use-board";
+import { useCursorBroadcast } from "@/hooks/use-cursor-broadcast";
 import { getCellDef } from "@/lib/cells/registry";
 import type { CellTypeId } from "@/lib/cells/types";
 import { useBoardStore } from "@/stores/board-store";
@@ -41,6 +48,13 @@ function TableCellInner({ task, column }: TableCellProps) {
   const value = def.fromRow(cellRow as any);
   const config = (column.settings ?? {}) as never;
 
+  // Epic 08 S6: cursor broadcast.
+  // boardId is read from the store (hydrated at board mount time).
+  const boardId = useBoardStore((s) => s.boardId);
+  // userId comes from BoardContext — populated by the layout server component.
+  const { userId } = useBoard();
+  const { emit } = useCursorBroadcast(boardId ?? "", userId);
+
   if (editing) {
     return <CellEditor task={task} column={column} onClose={() => setEditing(false)} />;
   }
@@ -52,25 +66,32 @@ function TableCellInner({ task, column }: TableCellProps) {
   const CellComponent = def.Cell as React.ComponentType<any>;
 
   return (
-    <button
-      type="button"
-      onClick={() => setEditing(true)}
-      className="cursor-pointer w-full text-left p-0 border-0 bg-transparent"
-      aria-label={`Edit ${column.name ?? column.type} cell`}
-    >
-      {/*
-        columnId — StatusCell / PriorityCell use this for label lookup
-        members  — PersonCell / UpdatedByCell / CreatedByCell use this for avatar resolution;
-                   undefined here → cells fall back to count-badge or initials display
-      */}
-      <CellComponent
-        value={value}
-        config={config}
-        row={task}
-        columnId={column.id}
-        members={undefined}
-      />
-    </button>
+    // Relative wrapper required for CursorOverlay's absolute positioning.
+    <div className="relative" data-task-id={task.id} data-column-id={column.id}>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        onMouseEnter={() => emit(task.id, column.id)}
+        onFocus={() => emit(task.id, column.id)}
+        className="cursor-pointer w-full text-left p-0 border-0 bg-transparent"
+        aria-label={`Edit ${column.name ?? column.type} cell`}
+      >
+        {/*
+          columnId — StatusCell / PriorityCell use this for label lookup
+          members  — PersonCell / UpdatedByCell / CreatedByCell use this for avatar resolution;
+                     undefined here → cells fall back to count-badge or initials display
+        */}
+        <CellComponent
+          value={value}
+          config={config}
+          row={task}
+          columnId={column.id}
+          members={undefined}
+        />
+      </button>
+      {/* Cursor overlay — renders other users' colored dots in cell top-right */}
+      <CursorOverlay taskId={task.id} columnId={column.id} />
+    </div>
   );
 }
 

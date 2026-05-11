@@ -29,7 +29,6 @@ import { ArrowRightLeft, Columns3, Copy, Trash2, X } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { bulkSetCellValue } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/cells/actions";
 import {
   bulkDeleteTasks,
   bulkDuplicateTasks,
@@ -38,7 +37,19 @@ import {
 import { CELL_TYPE_ICONS } from "@/lib/cells/icons";
 import { getCellDef } from "@/lib/cells/registry";
 import type { CellRow, CellTypeId } from "@/lib/cells/types";
+import { wrappedBulkSetCellValue } from "@/lib/realtime/wrapped-actions";
 import { useBoardStore } from "@/stores/board-store";
+
+// isQueuedResult — type-narrowing guard for withOutbox's queued branch.
+// Kept local so it does not add a new export to lib/realtime/outbox.ts.
+function isQueuedResult(r: unknown): r is { queued: true } {
+  return (
+    r !== null &&
+    typeof r === "object" &&
+    "queued" in r &&
+    (r as { queued?: unknown }).queued === true
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Bulk-settable column types (Q10)
@@ -385,11 +396,14 @@ export function BulkActionBar() {
     resetApplyState();
 
     startTransition(async () => {
-      const result = await bulkSetCellValue({
+      const result = await wrappedBulkSetCellValue({
         taskIds,
         columnId: col.id,
         value,
       });
+
+      // Soft success — optimistic update already applied; outbox will flush on reconnect.
+      if (isQueuedResult(result)) return;
 
       if (result.ok) {
         // Reconcile with server-returned cells

@@ -3,8 +3,19 @@
 import { useEffect, useRef, useTransition } from "react";
 import { toast } from "sonner";
 
-import { renameTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
+// isQueuedResult — type-narrowing guard for withOutbox's queued branch.
+// Kept local so it does not add a new export to lib/realtime/outbox.ts.
+function isQueuedResult(r: unknown): r is { queued: true } {
+  return (
+    r !== null &&
+    typeof r === "object" &&
+    "queued" in r &&
+    (r as { queued?: unknown }).queued === true
+  );
+}
+
 import { EditableTitle, type EditableTitleHandle } from "@/components/shared/EditableTitle";
+import { wrappedRenameTask } from "@/lib/realtime/wrapped-actions";
 import { useBoardStore } from "@/stores/board-store";
 
 import { useTableKeyboard } from "./table-keyboard-context";
@@ -49,7 +60,9 @@ export function TaskTitleCell({ task }: TaskTitleCellProps) {
       .applyTaskUpsert({ ...task, title: next, updated_at: new Date().toISOString() });
 
     startTransition(async () => {
-      const result = await renameTask({ taskId: task.id, title: next });
+      const result = await wrappedRenameTask({ taskId: task.id, title: next });
+      // Soft success — optimistic update already applied; outbox will flush on reconnect.
+      if (isQueuedResult(result)) return;
       if (!result.ok) {
         // Revert to the original task row.
         useBoardStore.getState().applyTaskUpsert({ ...task, updated_at: new Date().toISOString() });

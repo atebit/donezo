@@ -268,6 +268,7 @@ export const duplicateGroup = withUser(async ({ supabase, userId }, raw) => {
     const newTaskId = oldToNewTaskId.get(sourceCell.task_id);
     if (!newTaskId) continue; // should not happen
 
+    // @ts-expect-error: cell_board_id_consistency trigger sets board_id from task_id
     const { error: cellInsertError } = await supabase.from("cell").insert({
       task_id: newTaskId,
       column_id: sourceCell.column_id,

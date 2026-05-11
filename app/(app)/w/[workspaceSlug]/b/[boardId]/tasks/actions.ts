@@ -202,6 +202,7 @@ export const duplicateTask = withUser(async ({ supabase, userId }, raw) => {
 
   // 5. INSERT cloned cells (per-cell loop — non-atomic, acceptable for v1).
   for (const sourceCell of cells) {
+    // @ts-expect-error: cell_board_id_consistency trigger sets board_id from task_id
     const { error: cellInsertError } = await supabase.from("cell").insert({
       task_id: newTask.id,
       column_id: sourceCell.column_id,
@@ -477,6 +478,7 @@ export const bulkDuplicateTasks = withUser(async ({ supabase, userId }, raw) => 
 
     // INSERT cloned cells.
     for (const sourceCell of cells) {
+      // @ts-expect-error: cell_board_id_consistency trigger sets board_id from task_id
       const { error: cellInsertError } = await supabase.from("cell").insert({
         task_id: newTask.id,
         column_id: sourceCell.column_id,

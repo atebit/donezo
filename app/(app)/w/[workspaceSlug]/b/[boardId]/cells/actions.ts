@@ -23,8 +23,15 @@
  *   time, but we only call it inside the action handler, at invocation time.
  *   Stage 3 real defs will be wired before these actions are invoked in production.
  *
- * Guardrail #20 — no board_id write:
- *   We never write `task.board_id`. The cell table only references `task_id`.
+ * Guardrail #20 — no task.board_id write:
+ *   We never write `task.board_id`. task.board_id is kept in sync by the
+ *   task_board_id_consistency trigger (initial schema, lines 398–408).
+ *
+ * Epic 08 — S0: cell.board_id denormalization:
+ *   Both upsert paths now include `board_id: col.board_id` in the payload so
+ *   Realtime postgres_changes can filter on board_id=eq.<id>. The
+ *   cell_board_id_consistency trigger overwrites this on the server, providing
+ *   defense-in-depth against any action that omits the field.
  */
 
 import { withUser } from "@/lib/actions";
@@ -74,12 +81,16 @@ export const setCellValue = withUser(async ({ supabase, userId }, raw) => {
   const patch = cellDef.toRow(input.value);
 
   // 5. Upsert the cell row.
+  //    board_id is included explicitly for Realtime postgres_changes filtering
+  //    (Epic 08 — S0). The cell_board_id_consistency trigger will overwrite it
+  //    on the server, but writing it from the action is faster and self-documenting.
   const { data, error } = await supabase
     .from("cell")
     .upsert(
       {
         task_id: input.taskId,
         column_id: input.columnId,
+        board_id: col.board_id,
         ...patch,
         updated_by: userId,
       },
@@ -169,9 +180,13 @@ export const bulkSetCellValue = withUser(async ({ supabase, userId }, raw) => {
   const patch = cellDef.toRow(input.value);
 
   // Step 6: Build the upsert payload for all taskIds.
+  //    board_id is included explicitly for Realtime postgres_changes filtering
+  //    (Epic 08 — S0). The cell_board_id_consistency trigger will overwrite it
+  //    on the server, but writing it from the action is faster and self-documenting.
   const upsertPayload = input.taskIds.map((tid) => ({
     task_id: tid,
     column_id: input.columnId,
+    board_id: col.board_id,
     ...patch,
     updated_by: userId,
   }));

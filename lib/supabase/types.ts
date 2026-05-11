@@ -207,6 +207,7 @@ export type Database = {
       }
       cell: {
         Row: {
+          board_id: string
           boolean_value: boolean | null
           column_id: string
           created_at: string
@@ -221,6 +222,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          board_id: string
           boolean_value?: boolean | null
           column_id: string
           created_at?: string
@@ -235,6 +237,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          board_id?: string
           boolean_value?: boolean | null
           column_id?: string
           created_at?: string
@@ -249,6 +252,13 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cell_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "board"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cell_column_id_fkey"
             columns: ["column_id"]
@@ -319,6 +329,7 @@ export type Database = {
       comment: {
         Row: {
           author_id: string | null
+          board_id: string
           body: Json
           body_text: string
           created_at: string
@@ -328,6 +339,7 @@ export type Database = {
         }
         Insert: {
           author_id?: string | null
+          board_id: string
           body: Json
           body_text?: string
           created_at?: string
@@ -337,6 +349,7 @@ export type Database = {
         }
         Update: {
           author_id?: string | null
+          board_id?: string
           body?: Json
           body_text?: string
           created_at?: string
@@ -345,6 +358,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "comment_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "board"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "comment_task_id_fkey"
             columns: ["task_id"]
