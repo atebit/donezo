@@ -17,7 +17,9 @@ import { linkType } from "@/components/cells/link/def";
 import { longTextType } from "@/components/cells/long_text/def";
 import { numberType } from "@/components/cells/number/def";
 import { phoneType } from "@/components/cells/phone/def";
+import { priorityType } from "@/components/cells/priority/def";
 import { ratingType } from "@/components/cells/rating/def";
+import { statusType } from "@/components/cells/status/def";
 import { textType } from "@/components/cells/text/def";
 import type { CellTypeDef, CellTypeId } from "./types";
 
@@ -38,8 +40,8 @@ const NOT_IMPLEMENTED = new Proxy({} as CellTypeDef<unknown, unknown>, {
 export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   text: textType,
   long_text: longTextType,
-  status: NOT_IMPLEMENTED,
-  priority: NOT_IMPLEMENTED,
+  status: statusType,
+  priority: priorityType,
   person: NOT_IMPLEMENTED,
   date: NOT_IMPLEMENTED,
   timeline: NOT_IMPLEMENTED,
