@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { BoardHeader } from "@/components/board/BoardHeader";
 import { BoardViewTabs } from "@/components/board/BoardViewTabs";
+import { requireUser } from "@/lib/auth/current-user";
 import { getBoardRole } from "@/lib/authorization";
 import { BoardProvider } from "@/lib/board-context";
 import { createClient } from "@/lib/supabase/server";
@@ -14,6 +15,9 @@ export default async function BoardLayout({
 }) {
   const { boardId } = await params;
   const supabase = await createClient();
+  // requireUser is used by BoardHeader too; calling here ensures userId is available
+  // for BoardProvider (consumed by useCursorBroadcast via useBoard — Epic 08 S6).
+  const currentUser = await requireUser();
 
   const { data: board } = await supabase
     .from("board")
@@ -36,7 +40,7 @@ export default async function BoardLayout({
   const isStarred = Boolean(starred);
 
   return (
-    <BoardProvider board={board} role={role} isStarred={isStarred}>
+    <BoardProvider board={board} role={role} isStarred={isStarred} userId={currentUser.id}>
       <div className="flex flex-col h-full min-h-0">
         <BoardHeader boardId={board.id} />
         <BoardViewTabs />
