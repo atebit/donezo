@@ -230,17 +230,15 @@ export function BulkActionBar() {
 
       {/* Floating bar — aria-live region announces selection changes to screen readers */}
       <div
-        className="sticky bottom-4 z-[var(--z-sticky)] flex justify-center pointer-events-none"
+        className="fixed bottom-[35px] left-1/2 h-[63px] w-[60%] z-[var(--z-popover)] pointer-events-none transition-[opacity,transform] duration-[var(--motion-fast)]"
         aria-live="polite"
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transform: isVisible ? "translate(-50%, 0)" : "translate(-50%, 100%)",
+          pointerEvents: isVisible ? "auto" : "none",
+        }}
       >
-        <div
-          className="pointer-events-auto flex items-stretch rounded-[5px] bg-[color:var(--color-surface)] shadow-[var(--shadow-bulk-bar)] overflow-hidden transition-all duration-[var(--motion-fast)]"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? "translateY(0)" : "translateY(100%)",
-            pointerEvents: isVisible ? "auto" : "none",
-          }}
-        >
+        <div className="pointer-events-auto flex items-stretch h-full rounded-[5px] bg-[color:var(--color-surface)] shadow-[var(--shadow-bulk-bar)] overflow-hidden">
           {/* Count tile */}
           <div className="w-[63px] bg-[color:var(--color-primary)] text-white flex items-center justify-center px-2 text-sm font-medium flex-shrink-0">
             {count} task{count === 1 ? "" : "s"} selected
