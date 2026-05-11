@@ -25,7 +25,21 @@ export type ActivityType =
   | "task.moved"
   | "task.bulk_deleted"
   | "task.bulk_duplicated"
-  | "task.bulk_moved";
+  | "task.bulk_moved"
+  | "column.created"
+  | "column.renamed"
+  | "column.reordered"
+  | "column.duplicated"
+  | "column.type_changed"
+  | "column.deleted"
+  | "column.settings_updated"
+  | "label.created"
+  | "label.renamed"
+  | "label.recolored"
+  | "label.reordered"
+  | "label.deleted"
+  | "cell.changed"
+  | "cell.bulk_changed";
 
 export type LogActivityArgs = {
   boardId: string;
