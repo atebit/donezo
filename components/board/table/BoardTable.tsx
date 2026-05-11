@@ -20,6 +20,7 @@ import { BulkActionBar } from "./BulkActionBar";
 import { DndProviders, type DndProvidersProps } from "./DndProviders";
 import { NoGroupsEmptyState } from "./EmptyStates";
 import { GroupDragHandle } from "./GroupDragHandle";
+import { GroupOverflowMenu } from "./GroupOverflowMenu";
 import { colorToToken } from "./group-color";
 import { StickyHeader } from "./StickyHeader";
 import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./TableVirtualizer";
@@ -205,14 +206,8 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
         {taskCount}
       </span>
 
-      {/* Overflow menu placeholder — wired in S13 */}
-      <button
-        type="button"
-        aria-label="Group menu (wired in S13)"
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)] ml-1 flex-shrink-0 text-[color:var(--color-fg-muted)]"
-      >
-        ⋯
-      </button>
+      {/* Group overflow menu — S13 */}
+      <GroupOverflowMenu group={group} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
 import { colorToToken } from "./group-color";
 import { TaskDragHandle } from "./TaskDragHandle";
+import { TaskOverflowMenu } from "./TaskOverflowMenu";
 import { TaskTitleCell } from "./TaskTitleCell";
 import type { Group, Task } from "./types";
 
@@ -54,6 +55,11 @@ export function TaskRow({ task, group }: TaskRowProps) {
       {/* Task title cell */}
       <div className="w-[var(--size-cell-w-task)] flex-shrink-0 overflow-hidden">
         <TaskTitleCell task={task} />
+      </div>
+
+      {/* Overflow menu — hover-revealed, aligned to the right */}
+      <div className="ml-auto pr-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
+        <TaskOverflowMenu task={task} group={group} />
       </div>
     </div>
   );

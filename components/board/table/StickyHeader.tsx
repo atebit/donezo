@@ -27,6 +27,8 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { useBoardStore } from "@/stores/board-store";
 
+import { AddColumnButton } from "./AddColumnButton";
+
 function BoardLevelCheckbox() {
   const { selection, tasks } = useBoardStore((s) => ({
     selection: s.selection,
@@ -89,8 +91,11 @@ export function StickyHeader() {
         Name
       </div>
 
-      {/* Placeholder slot for <AddColumnButton /> — wired in S13 */}
+      {/* Spacer pushes AddColumnButton to the far right */}
       <div className="flex-1" aria-hidden="true" />
+
+      {/* Add column button — disabled, "Coming in epic 07" tooltip */}
+      <AddColumnButton />
     </div>
   );
 }
