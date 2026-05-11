@@ -37,9 +37,11 @@ export default async function BoardLayout({
 
   return (
     <BoardProvider board={board} role={role} isStarred={isStarred}>
-      <BoardHeader boardId={board.id} />
-      <BoardViewTabs />
-      {children}
+      <div className="flex flex-col h-full min-h-0">
+        <BoardHeader boardId={board.id} />
+        <BoardViewTabs />
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">{children}</div>
+      </div>
     </BoardProvider>
   );
 }
