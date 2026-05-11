@@ -23,6 +23,7 @@ import { BulkActionBar } from "./BulkActionBar";
 import { DndProviders, type DndProvidersProps } from "./DndProviders";
 import { NoGroupsEmptyState } from "./EmptyStates";
 import { GroupDragHandle } from "./GroupDragHandle";
+import { GroupFooter } from "./GroupFooter";
 import { GroupOverflowMenu } from "./GroupOverflowMenu";
 import { colorToToken } from "./group-color";
 import { StickyHeader } from "./StickyHeader";
@@ -340,6 +341,8 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
           result.push({ kind: "task", task, group });
         }
 
+        // S21 — per-group aggregation footer between tasks and add-task row.
+        result.push({ kind: "group-footer", group });
         result.push({ kind: "add-task-footer", group });
       }
     }
@@ -695,6 +698,8 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
       }
       case "task":
         return <TaskRow task={entry.task} group={entry.group} />;
+      case "group-footer": // S21 — per-group aggregation footer
+        return <GroupFooter group={entry.group} />;
       case "add-task-footer":
         return <AddTaskFooter group={entry.group} />;
       case "add-group-footer":
