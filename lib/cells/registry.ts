@@ -9,11 +9,15 @@
  * Keep one key per line so parallel-slice diffs do not conflict.
  */
 
+import { checkboxType } from "@/components/cells/checkbox/def";
 import { countryType } from "@/components/cells/country/def";
+import { currencyType } from "@/components/cells/currency/def";
 import { emailType } from "@/components/cells/email/def";
 import { linkType } from "@/components/cells/link/def";
 import { longTextType } from "@/components/cells/long_text/def";
+import { numberType } from "@/components/cells/number/def";
 import { phoneType } from "@/components/cells/phone/def";
+import { ratingType } from "@/components/cells/rating/def";
 import { textType } from "@/components/cells/text/def";
 import type { CellTypeDef, CellTypeId } from "./types";
 
@@ -39,13 +43,13 @@ export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   person: NOT_IMPLEMENTED,
   date: NOT_IMPLEMENTED,
   timeline: NOT_IMPLEMENTED,
-  number: NOT_IMPLEMENTED,
-  currency: NOT_IMPLEMENTED,
-  checkbox: NOT_IMPLEMENTED,
+  number: numberType,
+  currency: currencyType,
+  checkbox: checkboxType,
   file: NOT_IMPLEMENTED,
   link: linkType,
   tags: NOT_IMPLEMENTED,
-  rating: NOT_IMPLEMENTED,
+  rating: ratingType,
   email: emailType,
   phone: phoneType,
   country: countryType,
