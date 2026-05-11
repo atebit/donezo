@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useBoardStore } from "@/stores/board-store";
+
+import { GroupSection } from "./GroupSection";
 import type { TableData } from "./types";
 
 interface BoardTableProps {
@@ -40,16 +42,11 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   return (
     <div>
       {groups.map((group) => (
-        <div key={group.id} data-group-id={group.id}>
-          <div>{group.name}</div>
-          {tasks
-            .filter((t) => t.group_id === group.id)
-            .map((task) => (
-              <div key={task.id} data-task-id={task.id}>
-                {task.title || "(Untitled)"}
-              </div>
-            ))}
-        </div>
+        <GroupSection
+          key={group.id}
+          group={group}
+          tasks={tasks.filter((t) => t.group_id === group.id)}
+        />
       ))}
     </div>
   );
