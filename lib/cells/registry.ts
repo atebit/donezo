@@ -12,15 +12,19 @@
 import { checkboxType } from "@/components/cells/checkbox/def";
 import { countryType } from "@/components/cells/country/def";
 import { currencyType } from "@/components/cells/currency/def";
+import { dateType } from "@/components/cells/date/def";
 import { emailType } from "@/components/cells/email/def";
 import { linkType } from "@/components/cells/link/def";
 import { longTextType } from "@/components/cells/long_text/def";
 import { numberType } from "@/components/cells/number/def";
+import { personType } from "@/components/cells/person/def";
 import { phoneType } from "@/components/cells/phone/def";
 import { priorityType } from "@/components/cells/priority/def";
 import { ratingType } from "@/components/cells/rating/def";
 import { statusType } from "@/components/cells/status/def";
 import { textType } from "@/components/cells/text/def";
+import { timelineType } from "@/components/cells/timeline/def";
+import { weekType } from "@/components/cells/week/def";
 import type { CellTypeDef, CellTypeId } from "./types";
 
 /**
@@ -42,9 +46,9 @@ export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   long_text: longTextType,
   status: statusType,
   priority: priorityType,
-  person: NOT_IMPLEMENTED,
-  date: NOT_IMPLEMENTED,
-  timeline: NOT_IMPLEMENTED,
+  person: personType,
+  date: dateType,
+  timeline: timelineType,
   number: numberType,
   currency: currencyType,
   checkbox: checkboxType,
@@ -56,7 +60,7 @@ export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   phone: phoneType,
   country: countryType,
   vote: NOT_IMPLEMENTED,
-  week: NOT_IMPLEMENTED,
+  week: weekType,
   location: NOT_IMPLEMENTED,
   updated_by: NOT_IMPLEMENTED,
   created_by: NOT_IMPLEMENTED,
