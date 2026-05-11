@@ -39,6 +39,7 @@ export function PresencePile({ members, currentUserId, max = 4 }: PresencePilePr
     // biome-ignore lint/a11y/useSemanticElements: span role="group" is correct for a presentational avatar stack
     <span
       role="group"
+      data-testid="presence-pile"
       className="inline-flex items-center"
       aria-label={`${othersPresent.length} user${othersPresent.length !== 1 ? "s" : ""} viewing this board`}
     >
@@ -55,6 +56,7 @@ export function PresencePile({ members, currentUserId, max = 4 }: PresencePilePr
               <Tooltip.Trigger
                 render={
                   <span
+                    data-testid="presence-avatar"
                     style={index === 0 ? undefined : { marginLeft: -8 }}
                     className="relative inline-flex shrink-0"
                   />
