@@ -14,6 +14,7 @@ import { countryType } from "@/components/cells/country/def";
 import { currencyType } from "@/components/cells/currency/def";
 import { dateType } from "@/components/cells/date/def";
 import { emailType } from "@/components/cells/email/def";
+import { fileType } from "@/components/cells/file/def";
 import { linkType } from "@/components/cells/link/def";
 import { longTextType } from "@/components/cells/long_text/def";
 import { numberType } from "@/components/cells/number/def";
@@ -22,8 +23,10 @@ import { phoneType } from "@/components/cells/phone/def";
 import { priorityType } from "@/components/cells/priority/def";
 import { ratingType } from "@/components/cells/rating/def";
 import { statusType } from "@/components/cells/status/def";
+import { tagsType } from "@/components/cells/tags/def";
 import { textType } from "@/components/cells/text/def";
 import { timelineType } from "@/components/cells/timeline/def";
+import { voteType } from "@/components/cells/vote/def";
 import { weekType } from "@/components/cells/week/def";
 import type { CellTypeDef, CellTypeId } from "./types";
 
@@ -52,14 +55,14 @@ export const cellRegistry: Record<CellTypeId, CellTypeDef<any, any>> = {
   number: numberType,
   currency: currencyType,
   checkbox: checkboxType,
-  file: NOT_IMPLEMENTED,
+  file: fileType,
   link: linkType,
-  tags: NOT_IMPLEMENTED,
+  tags: tagsType,
   rating: ratingType,
   email: emailType,
   phone: phoneType,
   country: countryType,
-  vote: NOT_IMPLEMENTED,
+  vote: voteType,
   week: weekType,
   location: NOT_IMPLEMENTED,
   updated_by: NOT_IMPLEMENTED,
