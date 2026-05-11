@@ -59,6 +59,7 @@
   --color-label-purple: #a25ddc;
   --color-label-pending: #579bfc;
   --color-label-critical: #333333;
+  --color-label-black: #333333; /* status/priority label color (S0) */
 
   /* Group accents (12) */
   --color-group-1: #a25ddc;
@@ -116,6 +117,7 @@
   --motion-medium: 300ms;
   --motion-slow: 400ms;
   --motion-drawer: 600ms;
+  --motion-fold-delay: 0.2s; /* status fold-reveal animation start delay */
 
   /* Easing */
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);

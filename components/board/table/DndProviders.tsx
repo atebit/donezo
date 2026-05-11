@@ -44,13 +44,24 @@ export interface DndProvidersProps {
     overKind: "task" | "group";
     overGroupId: string;
   }) => void;
+  /**
+   * Called when a column header is dropped into a new position.
+   * columnId: the dragged column's id; overId: the column id it was dropped onto.
+   * Optional — column DnD is wired in S20 (BoardTable provides this).
+   */
+  onColumnReorder?: (columnId: string, overId: string) => void;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function DndProviders({ children, onGroupReorder, onTaskReorder }: DndProvidersProps) {
+export function DndProviders({
+  children,
+  onGroupReorder,
+  onTaskReorder,
+  onColumnReorder,
+}: DndProvidersProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -65,8 +76,14 @@ export function DndProviders({ children, onGroupReorder, onTaskReorder }: DndPro
     // Same position — skip.
     if (active.id === over.id) return;
 
-    const activeKind = active.data.current?.kind as "group" | "task" | undefined;
-    const overKind = over.data.current?.kind as "group" | "task" | undefined;
+    const activeKind = active.data.current?.kind as "group" | "task" | "column" | undefined;
+    const overKind = over.data.current?.kind as "group" | "task" | "column" | undefined;
+
+    if (activeKind === "column") {
+      // Column reorder: delegate with the raw over id.
+      onColumnReorder?.(String(active.id), String(over.id));
+      return;
+    }
 
     if (activeKind === "group") {
       // Group reorder: delegate with the raw over id.
@@ -75,16 +92,18 @@ export function DndProviders({ children, onGroupReorder, onTaskReorder }: DndPro
     }
 
     if (activeKind === "task") {
+      // A task can only be dropped onto another task or a group header —
+      // not onto a column header. Guard ensures overKind is narrowed correctly.
+      if (overKind !== "task" && overKind !== "group") return;
+
       const activeGroupId = active.data.current?.groupId as string | undefined;
       const overGroupId =
         overKind === "task"
           ? (over.data.current?.groupId as string | undefined)
-          : overKind === "group"
-            ? // Dropped onto a group header — destination group is the header's group id
-              (over.data.current?.groupId as string | undefined)
-            : undefined;
+          : // overKind === "group": dropped onto a group header — destination group is the header's group id
+            (over.data.current?.groupId as string | undefined);
 
-      if (!activeGroupId || !overGroupId || !overKind) return;
+      if (!activeGroupId || !overGroupId) return;
 
       onTaskReorder({
         taskId: String(active.id),
