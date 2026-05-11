@@ -5,6 +5,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { reorderColumn } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/columns/actions";
 import {
   renameGroup,
   reorderGroup,
@@ -486,6 +487,79 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   };
 
   // ---------------------------------------------------------------------------
+  // onColumnReorder — called by DndProviders when a column header drag ends.
+  //
+  // columnId: the dragged column's id
+  // overId:   the column id it was dropped onto
+  //
+  // Algorithm:
+  //   1. Find active column and over column in sorted visible columns.
+  //   2. Determine direction (left vs right) to decide insert-before or insert-after.
+  //   3. Compute new position via positionBetween.
+  //   4. Optimistic update → server action → revert on error.
+  //
+  // Note: we read columns from the store directly (not a selector) because
+  // this callback runs on drag-end (outside React render).
+  // ---------------------------------------------------------------------------
+  const handleColumnReorder: DndProvidersProps["onColumnReorder"] = (columnId, overId) => {
+    const state = useBoardStore.getState();
+    const currentColumns = state.columns;
+    const currentBoardId = state.boardId;
+
+    // Build visible columns list (same filter as StickyHeader / TaskRow).
+    const boardPrefs = currentBoardId ? (state.columnPrefsByBoard[currentBoardId] ?? {}) : {};
+    const visibleColumns = currentColumns.filter((c) => !boardPrefs[c.id]?.hidden);
+
+    const activeCol = visibleColumns.find((c) => c.id === columnId);
+    const overCol = visibleColumns.find((c) => c.id === overId);
+
+    if (!activeCol || !overCol || activeCol.id === overCol.id) return;
+
+    // visibleColumns from store are already sorted by position (applyColumnUpsert re-sorts).
+    const sortedColumns = [...visibleColumns].sort((a, b) => a.position - b.position);
+    const overIdx = sortedColumns.findIndex((c) => c.id === overCol.id);
+
+    const prev = sortedColumns[overIdx - 1] ?? null;
+    const next = sortedColumns[overIdx + 1] ?? null;
+
+    let newPosition: number;
+    try {
+      if (activeCol.position < overCol.position) {
+        // Moving right: place after the over column.
+        newPosition = positionBetween(overCol.position, next?.position ?? null);
+      } else {
+        // Moving left: place before the over column.
+        newPosition = positionBetween(prev?.position ?? null, overCol.position);
+      }
+    } catch {
+      toast.error("Unable to reorder column: positions need compaction. Try again later.");
+      return;
+    }
+
+    // Optimistic update.
+    const optimistic = {
+      ...activeCol,
+      position: newPosition,
+      updated_at: new Date().toISOString(),
+    };
+    useBoardStore.getState().applyColumnUpsert(optimistic);
+
+    startTransition(async () => {
+      const result = await reorderColumn({ columnId: activeCol.id, position: newPosition });
+      if (result.ok) {
+        useBoardStore.getState().applyColumnUpsert(result.data);
+      } else {
+        // Revert optimistic update.
+        useBoardStore.getState().applyColumnUpsert({
+          ...activeCol,
+          updated_at: new Date().toISOString(),
+        });
+        toast.error("Failed to reorder column. Please try again.");
+      }
+    });
+  };
+
+  // ---------------------------------------------------------------------------
   // onTaskReorder — called by DndProviders when a task drag ends.
   //
   // taskId:       dragged task id
@@ -687,7 +761,11 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
       <div ref={containerRef} className="flex flex-col flex-1 min-h-0">
         <StickyHeader />
         <TableScrollContext.Provider value={scrollContextValue}>
-          <DndProviders onGroupReorder={handleGroupReorder} onTaskReorder={handleTaskReorder}>
+          <DndProviders
+            onGroupReorder={handleGroupReorder}
+            onTaskReorder={handleTaskReorder}
+            onColumnReorder={handleColumnReorder}
+          >
             <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
               <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
             </SortableContext>

@@ -3,6 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { TableCell } from "@/components/cells/TableCell";
 import { useBoardStore } from "@/stores/board-store";
 
 import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
@@ -11,7 +12,7 @@ import { TaskDragHandle } from "./TaskDragHandle";
 import { TaskOverflowMenu } from "./TaskOverflowMenu";
 import { TaskTitleCell } from "./TaskTitleCell";
 import { useTableKeyboard } from "./table-keyboard-context";
-import type { Group, Task } from "./types";
+import type { Column, Group, Task } from "./types";
 
 interface TaskRowProps {
   task: Task;
@@ -21,6 +22,30 @@ interface TaskRowProps {
 export function TaskRow({ task, group }: TaskRowProps) {
   const colorToken = colorToToken(group.color);
   const { focusedRowId, setFocusedRow } = useTableKeyboard();
+
+  // ---------------------------------------------------------------------------
+  // Visible non-title columns — mirrors the identification logic in StickyHeader
+  // (S19) so rows and headers stay in sync.
+  // ---------------------------------------------------------------------------
+  const columns = useBoardStore((s) => s.columns);
+  const columnPrefsByBoard = useBoardStore((s) => s.columnPrefsByBoard);
+  const boardId = useBoardStore((s) => s.boardId);
+  const boardPrefs = boardId ? (columnPrefsByBoard[boardId] ?? {}) : {};
+  const visibleColumns = columns.filter((c) => !boardPrefs[c.id]?.hidden);
+
+  // Title column = first text-type column by position; same fallback as S19.
+  const textColumns = visibleColumns.filter((c) => c.type === "text");
+  const titleColumn: Column | undefined =
+    textColumns.length > 0
+      ? textColumns.reduce<Column | undefined>(
+          (min, c) => (min === undefined || c.position < min.position ? c : min),
+          undefined,
+        )
+      : visibleColumns[0];
+
+  const otherColumns = titleColumn
+    ? visibleColumns.filter((c) => c.id !== titleColumn.id)
+    : visibleColumns;
 
   // Derive aria-rowindex from visible tasks in store. O(n visible tasks) but
   // the virtualizer keeps visible count small. 1-based per ARIA spec.
@@ -85,6 +110,17 @@ export function TaskRow({ task, group }: TaskRowProps) {
       <div className="w-[var(--size-cell-w-task)] flex-shrink-0 overflow-hidden">
         <TaskTitleCell task={task} />
       </div>
+
+      {/* Per-column data cells — one per visible non-title column, in position order */}
+      {otherColumns.map((col) => (
+        <div
+          key={col.id}
+          className="flex-shrink-0 overflow-hidden border-l border-[color:var(--color-border-strong)]"
+          style={{ width: boardPrefs[col.id]?.width ?? 140 }}
+        >
+          <TableCell task={task} column={col} />
+        </div>
+      ))}
 
       {/* Overflow menu — hover-revealed, aligned to the right */}
       <div className="ml-auto pr-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
