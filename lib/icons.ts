@@ -27,6 +27,7 @@ export {
   Columns3 as IconViewKanban,
   Copy as IconCopy,
   FilePlus as IconFileAdd,
+  History as IconHistory,
   Home as IconHome,
   LayoutGrid as IconLayout,
   Link2 as IconLink,

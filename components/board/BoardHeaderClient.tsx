@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { renameBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
+import { BoardActivityTrigger } from "@/components/activity/BoardActivityTrigger";
 import { BoardDescriptionModal } from "@/components/board/BoardDescriptionModal";
 import { BoardSettingsMenu } from "@/components/board/BoardSettingsMenu";
 import { BoardStarToggle } from "@/components/board/BoardStarToggle";
@@ -144,6 +145,9 @@ export function BoardHeaderClient({
 
         {/* Member avatar stack */}
         <MemberStack members={memberStackItems} max={4} size={24} className="ml-2" />
+
+        {/* Board activity trigger — Epic 09 */}
+        <BoardActivityTrigger />
 
         {/* Spacer */}
         <div className="flex-1" />
