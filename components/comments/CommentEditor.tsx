@@ -13,7 +13,7 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { MentionPopover } from "@/components/comments/MentionPopover";
-import { buildBaseExtensions } from "@/components/rich-text/extensions";
+import { buildBaseExtensions, buildImageUploadExtensions } from "@/components/rich-text/extensions";
 import type { MentionItem, MentionSuggestionBridge } from "@/components/rich-text/MentionExtension";
 import { buildMentionExtension } from "@/components/rich-text/MentionExtension";
 import type { TiptapDoc } from "@/lib/comments/types";
@@ -29,6 +29,13 @@ export interface CommentEditorProps {
   readOnly?: boolean;
   autoFocus?: boolean;
   className?: string;
+  /**
+   * When provided, enables image paste/drop upload for the comment composer.
+   * Epic 10: pass the task id so uploaded images get the correct FK.
+   * Per the autonomous decisions, `commentId` is always undefined here —
+   * the deferred flip of comment_id after createComment is a follow-up item.
+   */
+  taskId?: string | undefined;
 }
 
 export interface CommentEditorHandle {
@@ -51,6 +58,7 @@ export const CommentEditor = forwardRef<CommentEditorHandle, CommentEditorProps>
       readOnly = false,
       autoFocus = false,
       className,
+      taskId,
     },
     ref,
   ) {
@@ -64,6 +72,17 @@ export const CommentEditor = forwardRef<CommentEditorHandle, CommentEditorProps>
       // Members array identity: re-build when the array ref changes.
       // In practice this is stable across renders for a mounted CommentEditor.
       [mentionableMembers],
+    );
+
+    // Build image upload extension when taskId is provided (e.g. from TaskDrawer).
+    // commentId is undefined per autonomous decision Q14 / deferred flip note.
+    const imageExtensions = useMemo(
+      // commentId is omitted (not passed as undefined) because exactOptionalPropertyTypes is enabled.
+      // Per autonomous decision Q14 / deferred flip note, comment_id stays null in v1.
+      () => (taskId ? buildImageUploadExtensions({ taskId }) : []),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      // taskId should be stable for the lifetime of the editor mount (drawer stays open for one task).
+      [taskId],
     );
 
     // Expose imperative handle
@@ -120,6 +139,7 @@ export const CommentEditor = forwardRef<CommentEditorHandle, CommentEditorProps>
           readOnly={readOnly}
           autoFocus={autoFocus}
           mentionExtension={mentionExtension}
+          imageExtensions={imageExtensions}
           editorRef={editorRef}
         />
         {/* MentionPopover is controlled imperatively via bridgeRef */}
@@ -140,6 +160,8 @@ interface CommentEditorInnerProps {
   readOnly: boolean;
   autoFocus: boolean;
   mentionExtension: ReturnType<typeof buildMentionExtension>;
+  /** Image upload extensions — only present when taskId was provided. */
+  imageExtensions: ReturnType<typeof buildImageUploadExtensions>;
   editorRef: React.MutableRefObject<import("@tiptap/react").Editor | null>;
 }
 
@@ -150,6 +172,7 @@ function CommentEditorInner({
   readOnly,
   autoFocus,
   mentionExtension,
+  imageExtensions,
   editorRef,
 }: CommentEditorInnerProps) {
   const onChangeRef = useRef(onChange);
@@ -163,7 +186,7 @@ function CommentEditorInner({
   }, [onSubmit]);
 
   const editor = useEditor({
-    extensions: [...buildBaseExtensions("Write an update…"), mentionExtension],
+    extensions: [...buildBaseExtensions("Write an update…"), mentionExtension, ...imageExtensions],
     ...(initialDoc ? { content: initialDoc as unknown as Record<string, unknown> } : {}),
     editable: !readOnly,
     autofocus: autoFocus,

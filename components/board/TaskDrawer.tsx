@@ -10,7 +10,7 @@
  * Tabs:
  *   - Updates (default): CommentComposer + CommentList (via UpdatesTab)
  *   - Activity: ActivityList scope=task (via ActivityTab)
- *   - Files: Epic 10 placeholder (via FilesTab)
+ *   - Files: Attachment upload + list (via FilesTab, Epic 10)
  *
  * Presence: useTaskDrawerPresence tracks this user as "viewing task" on the
  * board channel (same channel as useBoardRealtime — Supabase deduplication).
@@ -152,7 +152,14 @@ export function TaskDrawer({
           {activeTab === "activity" && (
             <ActivityTab taskId={taskId} profiles={profilesForActivity} />
           )}
-          {activeTab === "files" && <FilesTab />}
+          {activeTab === "files" && (
+            <FilesTab
+              taskId={taskId}
+              boardId={task.board_id}
+              currentUserId={currentUserId}
+              boardRole={boardRole}
+            />
+          )}
         </div>
       </div>
     </div>
