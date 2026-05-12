@@ -44,8 +44,8 @@ interface FileEditorProps {
   config: Record<string, never>;
   onChange: (next: FileCellValue | null) => void;
   onClose: () => void;
-  /** The task row from the CellEditor orchestrator — provides taskId. */
-  row?: { id: string } | undefined;
+  /** REQUIRED — the task row from the CellEditor orchestrator. Provides taskId for upload context. */
+  row: { id: string };
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ function AttachmentEditorRow({
 // ---------------------------------------------------------------------------
 
 export function Editor({ value, onChange, onClose: _onClose, row }: FileEditorProps): ReactNode {
-  const taskId = row?.id ?? "";
+  const taskId = row.id;
 
   // Read current attachments from the board store for this task.
   // This is more up-to-date than reading from `value.attachmentIds` after a delete.

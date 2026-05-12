@@ -60,7 +60,8 @@ export const fileType: CellTypeDef<FileCellValue, Record<string, never>> = {
   editorMode: "popover",
 
   Cell,
-  Editor,
+  // biome-ignore lint/suspicious/noExplicitAny: FileEditorProps requires `row` which is not in the base CellTypeDef.Editor signature; the CellEditor orchestrator passes it via the `as any` boundary cast.
+  Editor: Editor as any,
 
   fromRow: (row) => {
     const raw = row?.json_value;

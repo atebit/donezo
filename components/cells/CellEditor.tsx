@@ -176,6 +176,10 @@ function CellEditorInner({ task, column, onClose }: CellEditorProps) {
     columnId: column.id, // StatusEditor, PriorityEditor use this for label lookup
     members: undefined, // No member roster in BoardContext; cells fall back gracefully
     currentUserId: currentUserIdRef.current, // VoteEditor uses this to toggle vote
+    // Epic 10 — file editor needs the task row to derive taskId for upload context.
+    // Other editors ignore this prop (structural compatibility via the `as any` cast below).
+    row: task,
+    task,
   };
 
   // ── Render based on editorMode ───────────────────────────────────────────
