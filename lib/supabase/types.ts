@@ -411,13 +411,6 @@ export type Database = {
             referencedRelation: "comment"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "comment_reaction_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       group: {
@@ -871,6 +864,10 @@ export type Database = {
         }
       }
       greater_role: { Args: { a: string; b: string }; Returns: string }
+      is_workspace_member: {
+        Args: { p_user_id: string; p_workspace_id: string }
+        Returns: boolean
+      }
       restore_board: {
         Args: { p_board_id: string }
         Returns: {
@@ -893,6 +890,10 @@ export type Database = {
       }
       role_for_board: {
         Args: { p_board_id: string; p_user_id: string }
+        Returns: string
+      }
+      role_for_workspace: {
+        Args: { p_user_id: string; p_workspace_id: string }
         Returns: string
       }
       role_rank: { Args: { r: string }; Returns: number }
