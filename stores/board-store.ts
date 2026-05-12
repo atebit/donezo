@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Database } from "@/lib/supabase/types";
+import type { ActivityRow, CommentReactionRow, CommentRow } from "@/stores/types/comments";
 import type {
   ConnectionStatus,
   CursorPayload,
@@ -95,6 +96,29 @@ export type BoardState = {
   // Persisted field
   outbox: OutboxEntry[];
 
+  // ============================================================================
+  // Epic 09 — Comments + reactions + activity
+  // All maps are transient — never persisted.
+  // ============================================================================
+  commentsByTask: Map<string, CommentRow[]>; // sorted oldest-first
+  reactionsByComment: Map<string, CommentReactionRow[]>;
+  activityByTask: Map<string, ActivityRow[]>; // newest-first
+
+  // Comments — idempotency on (id, updated_at). Same row, older updated_at → ignored.
+  applyCommentUpsert: (comment: CommentRow) => void;
+  applyCommentUpsertReplaceTemp: (tempId: string, real: CommentRow) => void;
+  applyCommentDelete: (commentId: string) => void;
+  hydrateCommentsForTask: (taskId: string, comments: CommentRow[]) => void;
+
+  // Reactions — idempotency on PK tuple (comment_id, user_id, emoji). No updated_at.
+  applyReactionInsert: (reaction: CommentReactionRow) => void;
+  applyReactionDelete: (commentId: string, userId: string, emoji: string) => void;
+  hydrateReactionsForComments: (reactions: CommentReactionRow[]) => void;
+
+  // Activity — idempotency on id.
+  applyActivityInsert: (activity: ActivityRow) => void;
+  hydrateActivityForTask: (taskId: string, events: ActivityRow[]) => void;
+
   // connection
   setConnectionStatus: (status: ConnectionStatus) => void;
 
@@ -146,6 +170,11 @@ const transientInitial = {
   cursors: new Map<string, CursorPayload>(), // key: user_id; one cursor per user
   typingByContext: new Map<string, TypingPayload[]>(), // key: context string
   outboxOverflow: false,
+
+  // Epic 09 — Comments + reactions + activity (transient)
+  commentsByTask: new Map<string, CommentRow[]>(),
+  reactionsByComment: new Map<string, CommentReactionRow[]>(),
+  activityByTask: new Map<string, ActivityRow[]>(),
 };
 
 export const useBoardStore = create<BoardState>()(
@@ -212,6 +241,7 @@ export const useBoardStore = create<BoardState>()(
       // reset — clears transient state but PRESERVES collapsedByBoard,
       // columnPrefsByBoard, AND outbox (all persisted slices).
       // Navigating boards must not drop a queued offline mutation.
+      // Epic 09: also clears commentsByTask, reactionsByComment, activityByTask.
       // ------------------------------------------------------------------
       reset() {
         const { collapsedByBoard, columnPrefsByBoard, outbox } = get();
@@ -730,6 +760,227 @@ export const useBoardStore = create<BoardState>()(
       clearOutbox() {
         set({ outbox: [] });
       },
+
+      // ================================================================
+      // Epic 09 — Comments + reactions + activity
+      // ================================================================
+
+      // ------------------------------------------------------------------
+      // applyCommentUpsert — idempotent on (id, updated_at).
+      // Same id + same or older updated_at → no-op (stale Realtime echo).
+      // Keeps each task's list sorted oldest-first (by created_at, then id).
+      // ------------------------------------------------------------------
+      applyCommentUpsert(comment) {
+        const { commentsByTask } = get();
+        const existing = commentsByTask.get(comment.task_id) ?? [];
+        const idx = existing.findIndex((c) => c.id === comment.id);
+
+        let next: CommentRow[];
+        if (idx === -1) {
+          // New comment — append and sort oldest-first
+          next = [...existing, comment].sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime() ||
+              a.id.localeCompare(b.id),
+          );
+        } else {
+          const existingComment = existing[idx];
+          if (existingComment && existingComment.updated_at >= comment.updated_at) {
+            // Stale Realtime echo — skip
+            return;
+          }
+          next = [...existing];
+          next[idx] = comment;
+          // Re-sort after update (created_at won't change, but be safe)
+          next.sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime() ||
+              a.id.localeCompare(b.id),
+          );
+        }
+
+        const nextMap = new Map(commentsByTask);
+        nextMap.set(comment.task_id, next);
+        set({ commentsByTask: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyCommentUpsertReplaceTemp — swaps the optimistic comment that
+      // was inserted with a temp id for the real server-confirmed row.
+      // Preserves position in the task's comment list.
+      // ------------------------------------------------------------------
+      applyCommentUpsertReplaceTemp(tempId, real) {
+        const { commentsByTask } = get();
+        // We need to find which task's list contains the temp entry
+        for (const [taskId, comments] of commentsByTask) {
+          const idx = comments.findIndex((c) => c.id === tempId);
+          if (idx !== -1) {
+            const next = [...comments];
+            next[idx] = real;
+            // Re-sort to guarantee order after the swap
+            next.sort(
+              (a, b) =>
+                new Date(a.created_at).getTime() - new Date(b.created_at).getTime() ||
+                a.id.localeCompare(b.id),
+            );
+            const nextMap = new Map(commentsByTask);
+            nextMap.set(taskId, next);
+            set({ commentsByTask: nextMap });
+            return;
+          }
+        }
+        // Temp not found — treat as a regular upsert
+        get().applyCommentUpsert(real);
+      },
+
+      // ------------------------------------------------------------------
+      // applyCommentDelete — hard delete (Q2): removes the comment from
+      // its task's list. Also clears any reactions for this comment.
+      // ------------------------------------------------------------------
+      applyCommentDelete(commentId) {
+        const { commentsByTask, reactionsByComment } = get();
+
+        const nextComments = new Map(commentsByTask);
+        for (const [taskId, comments] of nextComments) {
+          const filtered = comments.filter((c) => c.id !== commentId);
+          if (filtered.length !== comments.length) {
+            nextComments.set(taskId, filtered);
+            break; // comment ids are unique across tasks
+          }
+        }
+
+        // Clean up reactions for the deleted comment
+        const nextReactions = new Map(reactionsByComment);
+        nextReactions.delete(commentId);
+
+        set({ commentsByTask: nextComments, reactionsByComment: nextReactions });
+      },
+
+      // ------------------------------------------------------------------
+      // hydrateCommentsForTask — replaces the entire comment list for a
+      // given task. Used when loading the task drawer for the first time.
+      // ------------------------------------------------------------------
+      hydrateCommentsForTask(taskId, comments) {
+        const { commentsByTask } = get();
+        const sorted = [...comments].sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime() ||
+            a.id.localeCompare(b.id),
+        );
+        const nextMap = new Map(commentsByTask);
+        nextMap.set(taskId, sorted);
+        set({ commentsByTask: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyReactionInsert — idempotent on PK tuple (comment_id, user_id, emoji).
+      // Reactions have no updated_at; same PK = no-op.
+      // ------------------------------------------------------------------
+      applyReactionInsert(reaction) {
+        const { reactionsByComment } = get();
+        const existing = reactionsByComment.get(reaction.comment_id) ?? [];
+
+        // Idempotency check: same PK tuple already present → no-op
+        const alreadyExists = existing.some(
+          (r) =>
+            r.comment_id === reaction.comment_id &&
+            r.user_id === reaction.user_id &&
+            r.emoji === reaction.emoji,
+        );
+        if (alreadyExists) return;
+
+        const nextMap = new Map(reactionsByComment);
+        nextMap.set(reaction.comment_id, [...existing, reaction]);
+        set({ reactionsByComment: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyReactionDelete — removes the reaction matching the PK tuple
+      // (comment_id, user_id, emoji). No-op if not found.
+      // ------------------------------------------------------------------
+      applyReactionDelete(commentId, userId, emoji) {
+        const { reactionsByComment } = get();
+        const existing = reactionsByComment.get(commentId);
+        if (!existing) return;
+
+        const filtered = existing.filter((r) => !(r.user_id === userId && r.emoji === emoji));
+        if (filtered.length === existing.length) return; // nothing removed — no-op
+
+        const nextMap = new Map(reactionsByComment);
+        nextMap.set(commentId, filtered);
+        set({ reactionsByComment: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // hydrateReactionsForComments — bulk-populates reactions for a set
+      // of comments. Groups by comment_id; replaces any existing entries.
+      // ------------------------------------------------------------------
+      hydrateReactionsForComments(reactions) {
+        const { reactionsByComment } = get();
+        const nextMap = new Map(reactionsByComment);
+
+        // Group by comment_id
+        const grouped = new Map<string, CommentReactionRow[]>();
+        for (const reaction of reactions) {
+          const list = grouped.get(reaction.comment_id) ?? [];
+          list.push(reaction);
+          grouped.set(reaction.comment_id, list);
+        }
+
+        // Merge: replace each comment's reactions with the fresh set
+        for (const [commentId, list] of grouped) {
+          nextMap.set(commentId, list);
+        }
+
+        set({ reactionsByComment: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyActivityInsert — idempotent on id. Activity is append-only.
+      // Keeps each task's list sorted newest-first (by created_at desc).
+      // ------------------------------------------------------------------
+      applyActivityInsert(activity) {
+        const { activityByTask } = get();
+        const taskId = activity.task_id;
+        if (!taskId) {
+          // Board-level activity with no task_id — store under a sentinel key
+          const key = `board:${activity.board_id}`;
+          const existing = activityByTask.get(key) ?? [];
+          if (existing.some((a) => a.id === activity.id)) return; // idempotent
+          const next = [activity, ...existing].sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          );
+          const nextMap = new Map(activityByTask);
+          nextMap.set(key, next);
+          set({ activityByTask: nextMap });
+          return;
+        }
+
+        const existing = activityByTask.get(taskId) ?? [];
+        if (existing.some((a) => a.id === activity.id)) return; // idempotent
+
+        // Prepend and sort newest-first
+        const next = [activity, ...existing].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+        const nextMap = new Map(activityByTask);
+        nextMap.set(taskId, next);
+        set({ activityByTask: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // hydrateActivityForTask — replaces the entire activity list for a
+      // given task. Used when loading the Activity tab in the task drawer.
+      // ------------------------------------------------------------------
+      hydrateActivityForTask(taskId, events) {
+        const { activityByTask } = get();
+        const sorted = [...events].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+        const nextMap = new Map(activityByTask);
+        nextMap.set(taskId, sorted);
+        set({ activityByTask: nextMap });
+      },
     }),
     {
       name: "donezo:board-collapsed:v1",
@@ -768,7 +1019,6 @@ export function selectPresentUserIds(state: BoardState): string[] {
   return Object.keys(state.presence).filter((uid) => (state.presence[uid] ?? []).length > 0);
 }
 
-// epic 09 will consume
 /** Returns deduped user_ids currently viewing a specific task (any tab). */
 export function selectUsersViewingTask(state: BoardState, taskId: string): string[] {
   const out: string[] = [];
@@ -778,4 +1028,44 @@ export function selectUsersViewingTask(state: BoardState, taskId: string): strin
     }
   }
   return out;
+}
+
+// ============================================================================
+// Selectors — Epic 09: Comments + reactions + activity
+// ============================================================================
+
+/** All comments for a task, oldest-first. (Flat — no threading per Q1.) */
+export function selectCommentsForTask(state: BoardState, taskId: string): CommentRow[] {
+  return state.commentsByTask.get(taskId) ?? [];
+}
+
+/** Grouped reactions for a comment with counts + selfReacted flag. */
+export function selectGroupedReactions(
+  state: BoardState,
+  commentId: string,
+  currentUserId: string,
+): Array<{ emoji: string; count: number; selfReacted: boolean }> {
+  const reactions = state.reactionsByComment.get(commentId) ?? [];
+
+  // Group by emoji
+  const grouped = new Map<string, { count: number; selfReacted: boolean }>();
+  for (const reaction of reactions) {
+    const entry = grouped.get(reaction.emoji) ?? { count: 0, selfReacted: false };
+    entry.count += 1;
+    if (reaction.user_id === currentUserId) {
+      entry.selfReacted = true;
+    }
+    grouped.set(reaction.emoji, entry);
+  }
+
+  return Array.from(grouped.entries()).map(([emoji, { count, selfReacted }]) => ({
+    emoji,
+    count,
+    selfReacted,
+  }));
+}
+
+/** Activity events for a task, newest-first. */
+export function selectTaskActivity(state: BoardState, taskId: string): ActivityRow[] {
+  return state.activityByTask.get(taskId) ?? [];
 }
