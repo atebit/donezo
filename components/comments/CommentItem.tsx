@@ -27,9 +27,9 @@ import { MenuList, MenuListItem } from "@/components/ui/menu-list";
 import type { TiptapDoc } from "@/lib/comments/types";
 import { cn } from "@/lib/utils";
 import type { CommentRow } from "@/stores/types/comments";
-import { CommentEditor, type MemberOption } from "./CommentEditor";
-import type { CommentComposerHandle } from "./CommentComposer";
 import { CommentBody } from "./CommentBody";
+import type { CommentComposerHandle } from "./CommentComposer";
+import { CommentEditor, type MemberOption } from "./CommentEditor";
 import { CommentReactions } from "./CommentReactions";
 
 // Re-export for back-compat consumers (e.g. CommentList, tests).

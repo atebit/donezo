@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { BoardActivityModal } from "@/components/activity/BoardActivityModal";
-import type {
-  ActivityRenderCtx,
-  ColumnRow,
-  ProfileRow,
-} from "@/components/activity/renderers";
+import type { ActivityRenderCtx, ColumnRow, ProfileRow } from "@/components/activity/renderers";
 import { IconHistory } from "@/lib/icons";
 import { useBoardStore } from "@/stores/board-store";
 
