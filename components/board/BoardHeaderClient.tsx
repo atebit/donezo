@@ -94,16 +94,6 @@ export function BoardHeaderClient({
 
         {/* Tool row */}
         <div className="flex items-center gap-1">
-          {/* Activity — placeholder; epic 12 */}
-          <button
-            type="button"
-            aria-label="Activity feed (coming soon)"
-            disabled
-            className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-[color:var(--color-fg-muted)] opacity-50 cursor-not-allowed"
-          >
-            Activity
-          </button>
-
           {/* Members tool */}
           <button
             type="button"
