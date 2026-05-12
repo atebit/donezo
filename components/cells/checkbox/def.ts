@@ -59,6 +59,9 @@ export const checkboxType: CellTypeDef<boolean, Record<string, never>> = {
     return "—";
   },
 
+  // Returns "true" or "false" (lowercase) so search for "true" matches checked cells.
+  toSearchString: (value) => (value == null ? "" : value ? "true" : "false"),
+
   compare: (a, b) => {
     // null < false < true
     if (a == null && b == null) return 0;

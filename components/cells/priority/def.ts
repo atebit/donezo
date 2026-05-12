@@ -88,6 +88,15 @@ export const priorityType: CellTypeDef<StatusCellValue, Record<string, never>> =
     return "—";
   },
 
+  // v1: same label-resolution pattern as status. Config is Record<string, never>
+  // in the type but the store may pass `{ labels: [...] }` at runtime.
+  toSearchString: (value, config) => {
+    if (!value?.labelId) return "";
+    const cfg = config as unknown as { labels?: Array<{ id: string; title: string }> };
+    const lbl = cfg?.labels?.find((l) => l.id === value.labelId);
+    return lbl?.title ?? "";
+  },
+
   compare: (a, b) => {
     // Null sorts last; equal label IDs are stable (0).
     if (a == null && b == null) return 0;

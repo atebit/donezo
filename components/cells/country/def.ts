@@ -64,6 +64,8 @@ export const countryType: CellTypeDef<string, Record<string, never>> = {
     return "—";
   },
 
+  toSearchString: (value) => value ?? "",
+
   compare: (a, b) => {
     // Compare by full country name for a natural sort experience.
     const nameA = a ? (findCountryByCode(a)?.name ?? a) : "";

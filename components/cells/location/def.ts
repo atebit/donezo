@@ -78,6 +78,9 @@ export const locationType: CellTypeDef<LocationValue, Record<string, never>> = {
     return "—";
   },
 
+  // v1: no useful searchable text for a location in-board. Return "" for now.
+  toSearchString: () => "",
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return -1;

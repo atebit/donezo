@@ -94,6 +94,9 @@ export const fileType: CellTypeDef<FileCellValue, Record<string, never>> = {
     return "—";
   },
 
+  // v1: file names are searched via the attachment table in v2. Return "" for now.
+  toSearchString: () => "",
+
   compare: (a, b) => {
     const aLen = a?.attachmentIds.length ?? 0;
     const bLen = b?.attachmentIds.length ?? 0;

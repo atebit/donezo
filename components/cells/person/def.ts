@@ -99,6 +99,11 @@ export const personType: CellTypeDef<PersonCellValue, Record<string, never>> = {
     return "—";
   },
 
+  // v1 fallback: person values are arrays of user_ids. Resolving to display
+  // names requires the member roster which isn't accessible from a pure function.
+  // v1.5 will pass a resolveUser ctx into toSearchString.
+  toSearchString: () => "",
+
   compare: (a, b) => {
     const aLen = a?.userIds.length ?? 0;
     const bLen = b?.userIds.length ?? 0;

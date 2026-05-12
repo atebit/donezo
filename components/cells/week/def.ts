@@ -88,6 +88,9 @@ export const weekType: CellTypeDef<WeekCellValue, Record<string, never>> = {
     return "—";
   },
 
+  // v1: no obvious searchable text representation for a week number.
+  toSearchString: () => "",
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return 1;

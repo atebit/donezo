@@ -83,6 +83,11 @@ export const linkType: CellTypeDef<LinkValue, Record<string, never>> = {
     return "—";
   },
 
+  toSearchString: (value) => {
+    if (value == null) return "";
+    return [value.label, value.url].filter(Boolean).join(" ");
+  },
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return -1;
