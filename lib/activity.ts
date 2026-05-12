@@ -39,7 +39,22 @@ export type ActivityType =
   | "label.reordered"
   | "label.deleted"
   | "cell.changed"
-  | "cell.bulk_changed";
+  | "cell.bulk_changed"
+  /**
+   * Comment activity types (Epic 09).
+   *
+   * Payload shapes:
+   *   comment.posted:   { commentId: string; bodyTextPreview: string } — first 140 chars of plain text.
+   *   comment.edited:   { commentId: string }
+   *   comment.deleted:  { commentId: string }
+   *   comment.reacted:  { commentId: string; emoji: string }
+   *   comment.unreacted: { commentId: string; emoji: string }
+   */
+  | "comment.posted"
+  | "comment.edited"
+  | "comment.deleted"
+  | "comment.reacted"
+  | "comment.unreacted";
 
 export type LogActivityArgs = {
   boardId: string;
