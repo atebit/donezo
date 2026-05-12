@@ -52,8 +52,8 @@ export default async function InterceptedTaskPage({
 
   if (!board) notFound();
 
-  // Parallel fetches: comments + activity + workspace members
-  const [commentsRes, activityRes, membersRes] = await Promise.all([
+  // Parallel fetches: comments + activity + workspace members + attachments
+  const [commentsRes, activityRes, membersRes, attachmentsRes] = await Promise.all([
     supabase
       .from("comment")
       .select("*")
@@ -70,10 +70,17 @@ export default async function InterceptedTaskPage({
       .from("workspace_member")
       .select("user_id, profile:user_id(display_name, email, avatar_url)")
       .eq("workspace_id", board.workspace_id),
+    supabase
+      .from("attachment")
+      .select("*")
+      .eq("task_id", taskId)
+      .eq("is_uploaded", true)
+      .order("created_at", { ascending: true }),
   ]);
 
   const comments = commentsRes.data ?? [];
   const activity = activityRes.data ?? [];
+  const attachments = attachmentsRes.data ?? [];
 
   // Second round-trip for reactions — needs comment ids (spec F.4 risk note 6)
   const commentIds = comments.map((c) => c.id);
@@ -101,6 +108,7 @@ export default async function InterceptedTaskPage({
       comments={comments}
       reactions={reactions}
       activity={activity}
+      attachments={attachments}
       mentionableMembers={mentionableMembers}
       currentUserId={currentUser.id}
       boardRole={boardRole}

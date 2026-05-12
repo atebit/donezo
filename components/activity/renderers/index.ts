@@ -10,6 +10,7 @@
 import type { ReactNode } from "react";
 import type { Database } from "@/lib/supabase/types";
 import type { ActivityRow } from "@/stores/types/comments";
+import { attachmentRenderers } from "./attachmentRenderers";
 import { cellRenderers } from "./cell";
 import { columnRenderers } from "./column";
 import { commentRenderers } from "./comment";
@@ -47,4 +48,5 @@ export const activityRenderers: Record<string, ActivityRenderer> = {
   ...cellRenderers,
   ...commentRenderers,
   ...labelRenderers,
+  ...attachmentRenderers,
 };

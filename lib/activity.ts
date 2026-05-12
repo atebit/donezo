@@ -54,7 +54,16 @@ export type ActivityType =
   | "comment.edited"
   | "comment.deleted"
   | "comment.reacted"
-  | "comment.unreacted";
+  | "comment.unreacted"
+  /**
+   * Attachment activity types (Epic 10).
+   *
+   * Payload shapes:
+   *   attachment.uploaded: { attachmentId: string; filename: string; mimeType: string; sizeBytes: number; viaCommentId?: string }
+   *   attachment.deleted:  { attachmentId: string; filename: string }
+   */
+  | "attachment.uploaded"
+  | "attachment.deleted";
 
 export type LogActivityArgs = {
   boardId: string;

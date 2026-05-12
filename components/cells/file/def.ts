@@ -5,10 +5,14 @@
  * TConfig : {}  (no per-column config)
  * Storage : cell.json_value
  *
- * File upload / attachment management is deferred to epic 10.
- * The Editor is a visual placeholder with a tooltip explaining the deferral.
- * The Cell renders a count badge (Paperclip icon + count).
+ * Editor: popover — renders inside Base UI Popover shell provided by CellEditor orchestrator.
+ *   - Top: FileDropzone for adding new attachments.
+ *   - Below: list of existing attachments with download + delete.
+ *   - onChange appends / removes attachment ids; CellEditor fires wrappedSetCellValue.
  *
+ * Cell: renders up to 3 thumbnails + overflow "+N" chip. Empty state: Paperclip + "—".
+ *
+ * aggregations: "sum" = total attachment count across all cells in the column.
  * convertTo: {} — file values can't be converted to other types.
  */
 
@@ -53,10 +57,11 @@ export const fileType: CellTypeDef<FileCellValue, Record<string, never>> = {
   icon: Paperclip,
   defaultConfig: {},
   defaultValue: null,
-  editorMode: "inline",
+  editorMode: "popover",
 
   Cell,
-  Editor,
+  // biome-ignore lint/suspicious/noExplicitAny: FileEditorProps requires `row` which is not in the base CellTypeDef.Editor signature; the CellEditor orchestrator passes it via the `as any` boundary cast.
+  Editor: Editor as any,
 
   fromRow: (row) => {
     const raw = row?.json_value;

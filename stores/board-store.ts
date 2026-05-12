@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Database } from "@/lib/supabase/types";
+import type { AttachmentRow } from "@/stores/types/attachments";
 import type { ActivityRow, CommentReactionRow, CommentRow } from "@/stores/types/comments";
 import type {
   ConnectionStatus,
@@ -119,6 +120,19 @@ export type BoardState = {
   applyActivityInsert: (activity: ActivityRow) => void;
   hydrateActivityForTask: (taskId: string, events: ActivityRow[]) => void;
 
+  // ============================================================================
+  // Epic 10 — Attachments state
+  // All maps are transient — never persisted.
+  // ============================================================================
+  attachmentsByTask: Map<string, AttachmentRow[]>; // sorted oldest-first
+
+  // Hydrate all attachments for the entire board (called on board-page mount).
+  hydrateAttachmentsForBoard: (rows: AttachmentRow[]) => void;
+  // Upsert a single attachment row. Idempotent on id; skips rows where is_uploaded=false.
+  applyAttachmentUpsert: (row: AttachmentRow) => void;
+  // Remove an attachment by id. No-op if unknown.
+  applyAttachmentDelete: (attachmentId: string) => void;
+
   // connection
   setConnectionStatus: (status: ConnectionStatus) => void;
 
@@ -175,6 +189,9 @@ const transientInitial = {
   commentsByTask: new Map<string, CommentRow[]>(),
   reactionsByComment: new Map<string, CommentReactionRow[]>(),
   activityByTask: new Map<string, ActivityRow[]>(),
+
+  // Epic 10 — Attachments (transient)
+  attachmentsByTask: new Map<string, AttachmentRow[]>(),
 };
 
 export const useBoardStore = create<BoardState>()(
@@ -242,6 +259,7 @@ export const useBoardStore = create<BoardState>()(
       // columnPrefsByBoard, AND outbox (all persisted slices).
       // Navigating boards must not drop a queued offline mutation.
       // Epic 09: also clears commentsByTask, reactionsByComment, activityByTask.
+      // Epic 10: also clears attachmentsByTask.
       // ------------------------------------------------------------------
       reset() {
         const { collapsedByBoard, columnPrefsByBoard, outbox } = get();
@@ -981,6 +999,96 @@ export const useBoardStore = create<BoardState>()(
         nextMap.set(taskId, sorted);
         set({ activityByTask: nextMap });
       },
+
+      // ================================================================
+      // Epic 10 — Attachments state
+      // ================================================================
+
+      // ------------------------------------------------------------------
+      // hydrateAttachmentsForBoard — bulk-populates attachmentsByTask for
+      // all tasks on the board. Replaces existing entries. Only keeps rows
+      // where is_uploaded=true (callers should pre-filter, but we guard
+      // here too for safety). Sorted oldest-first within each task.
+      // ------------------------------------------------------------------
+      hydrateAttachmentsForBoard(rows) {
+        const { attachmentsByTask } = get();
+        const nextMap = new Map(attachmentsByTask);
+
+        // Group by task_id
+        const grouped = new Map<string, AttachmentRow[]>();
+        for (const row of rows) {
+          if (!row.is_uploaded) continue; // guard: skip non-uploaded
+          const list = grouped.get(row.task_id) ?? [];
+          list.push(row);
+          grouped.set(row.task_id, list);
+        }
+
+        // Sort each group oldest-first and set in the map
+        for (const [taskId, list] of grouped) {
+          list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          nextMap.set(taskId, list);
+        }
+
+        set({ attachmentsByTask: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyAttachmentUpsert — idempotent on id.
+      // Skips rows where is_uploaded=false (catches the two-stage upload
+      // window where the row exists but the file isn't committed yet).
+      // On UPDATE that flips is_uploaded true → the insert path handles it.
+      // Produces a new outer Map + new inner array per touched task so that
+      // Zustand change detection (reference equality) fires correctly.
+      // ------------------------------------------------------------------
+      applyAttachmentUpsert(row) {
+        if (!row.is_uploaded) return; // skip non-uploaded rows
+
+        const { attachmentsByTask } = get();
+        const existing = attachmentsByTask.get(row.task_id) ?? [];
+        const idx = existing.findIndex((a) => a.id === row.id);
+
+        let next: AttachmentRow[];
+        if (idx === -1) {
+          // New attachment — append and sort oldest-first
+          next = [...existing, row].sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+          );
+        } else {
+          const existingRow = existing[idx];
+          // Idempotent: same id + same created_at → no-op
+          if (existingRow && existingRow.created_at === row.created_at) {
+            return;
+          }
+          next = [...existing];
+          next[idx] = row;
+          // Re-sort after update
+          next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        }
+
+        const nextMap = new Map(attachmentsByTask);
+        nextMap.set(row.task_id, next);
+        set({ attachmentsByTask: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyAttachmentDelete — removes an attachment by id.
+      // No-op if the id is not found in any task's list.
+      // Produces a new outer Map + new inner array per touched task.
+      // ------------------------------------------------------------------
+      applyAttachmentDelete(attachmentId) {
+        const { attachmentsByTask } = get();
+        const nextMap = new Map(attachmentsByTask);
+
+        for (const [taskId, attachments] of nextMap) {
+          const filtered = attachments.filter((a) => a.id !== attachmentId);
+          if (filtered.length !== attachments.length) {
+            nextMap.set(taskId, filtered);
+            break; // attachment ids are unique across tasks
+          }
+        }
+
+        set({ attachmentsByTask: nextMap });
+      },
     }),
     {
       name: "donezo:board-collapsed:v1",
@@ -1068,4 +1176,29 @@ export function selectGroupedReactions(
 /** Activity events for a task, newest-first. */
 export function selectTaskActivity(state: BoardState, taskId: string): ActivityRow[] {
   return state.activityByTask.get(taskId) ?? [];
+}
+
+// ============================================================================
+// Selectors — Epic 10: Attachments
+// ============================================================================
+
+/**
+ * Stable empty array returned when a task has no attachments.
+ *
+ * STABILITY CONTRACT: callers must NOT wrap this selector in useShallow — the
+ * stable EMPTY_ARRAY reference is the mechanism that prevents infinite render
+ * loops when the task has no attachments. Map.get() returns undefined for
+ * missing tasks, and we return the same EMPTY_ARRAY reference every time,
+ * so React bailout (Object.is equality) fires correctly.
+ *
+ * When attachments exist for the task, the inner array reference changes only
+ * when the slice's action (applyAttachmentUpsert / applyAttachmentDelete /
+ * hydrateAttachmentsForBoard) produces a new array — all three do so
+ * unconditionally, satisfying Zustand v5 change detection.
+ */
+const EMPTY_ATTACHMENTS: AttachmentRow[] = [];
+
+/** All attachments for a task, sorted oldest-first. Stable empty-array reference when none. */
+export function selectAttachmentsForTask(state: BoardState, taskId: string): AttachmentRow[] {
+  return state.attachmentsByTask.get(taskId) ?? EMPTY_ATTACHMENTS;
 }

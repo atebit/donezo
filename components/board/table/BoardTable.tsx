@@ -314,6 +314,8 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
         tasks: initial.tasks,
         cells: initial.cells,
       });
+      // Epic 10 — hydrate board-level attachments (idempotent, filters non-uploaded)
+      useBoardStore.getState().hydrateAttachmentsForBoard(initial.attachments ?? []);
     }
 
     return () => {
