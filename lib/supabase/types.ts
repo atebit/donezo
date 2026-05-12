@@ -86,36 +86,55 @@ export type Database = {
       }
       attachment: {
         Row: {
+          board_id: string
           comment_id: string | null
           created_at: string
+          filename: string
           id: string
+          is_uploaded: boolean
           mime_type: string
+          scan_status: string
           size_bytes: number
           storage_path: string
           task_id: string
           uploader_id: string | null
         }
         Insert: {
+          board_id: string
           comment_id?: string | null
           created_at?: string
+          filename: string
           id?: string
+          is_uploaded?: boolean
           mime_type: string
+          scan_status?: string
           size_bytes: number
           storage_path: string
           task_id: string
           uploader_id?: string | null
         }
         Update: {
+          board_id?: string
           comment_id?: string | null
           created_at?: string
+          filename?: string
           id?: string
+          is_uploaded?: boolean
           mime_type?: string
+          scan_status?: string
           size_bytes?: number
           storage_path?: string
           task_id?: string
           uploader_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "attachment_board_id_fkey"
+            columns: ["board_id"]
+            isOneToOne: false
+            referencedRelation: "board"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "attachment_comment_id_fkey"
             columns: ["comment_id"]
@@ -868,6 +887,7 @@ export type Database = {
         Args: { p_user_id: string; p_workspace_id: string }
         Returns: boolean
       }
+      purge_orphan_attachments: { Args: never; Returns: number }
       restore_board: {
         Args: { p_board_id: string }
         Returns: {
