@@ -208,3 +208,26 @@ describe.skip("comment image upload pipeline", () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// Read-mode rendering (Epic 15 enabling — skipped until Vitest + jsdom wired)
+// ---------------------------------------------------------------------------
+
+describe.skip("comment image display (no-taskId render path)", () => {
+  it("read-only CommentEditor (no taskId) registers the image node schema + NodeView", () => {
+    // Render <CommentEditor readOnly mentionableMembers={[]} initialDoc={docWithImageNode} />.
+    // Assert the rendered output contains [data-testid="attachment-image-node"].
+    //
+    // docWithImageNode fixture:
+    // {
+    //   type: "doc",
+    //   content: [{ type: "image", attrs: { src: "", alt: "test", attachmentId: ATTACHMENT_ID } }],
+    // }
+    //
+    // When no taskId is provided, CommentEditor registers buildImageDisplayExtensions()
+    // which includes the `image` node schema and the AttachmentImageNode NodeView.
+    // The rendered NodeViewWrapper carries data-testid="attachment-image-node".
+    //
+    // Verify: screen.getByTestId("attachment-image-node") does not throw.
+  });
+});

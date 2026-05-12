@@ -7,7 +7,7 @@ import Typography from "@tiptap/extension-typography";
 import StarterKit from "@tiptap/starter-kit";
 import { all, createLowlight } from "lowlight";
 import type { ImageUploadCtx } from "./imageUpload";
-import { buildImageUploadExtension } from "./imageUpload";
+import { buildImageDisplayExtension, buildImageUploadExtension } from "./imageUpload";
 
 const lowlight = createLowlight(all);
 
@@ -40,6 +40,19 @@ export function buildBaseExtensions(placeholder?: string) {
       lowlight,
     }),
   ];
+}
+
+/**
+ * Builds the display-only image extension array for use with `extraExtensions`.
+ *
+ * Use in read-only or no-taskId contexts (CommentBody, inline-edit of existing
+ * comments) so embedded attachment images render correctly without a paste/drop
+ * upload plugin.
+ *
+ * Returns a single-element array so the caller can spread or concat as needed.
+ */
+export function buildImageDisplayExtensions() {
+  return [buildImageDisplayExtension()];
 }
 
 /**

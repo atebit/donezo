@@ -13,7 +13,11 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { MentionPopover } from "@/components/comments/MentionPopover";
-import { buildBaseExtensions, buildImageUploadExtensions } from "@/components/rich-text/extensions";
+import {
+  buildBaseExtensions,
+  buildImageDisplayExtensions,
+  buildImageUploadExtensions,
+} from "@/components/rich-text/extensions";
 import type { MentionItem, MentionSuggestionBridge } from "@/components/rich-text/MentionExtension";
 import { buildMentionExtension } from "@/components/rich-text/MentionExtension";
 import type { TiptapDoc } from "@/lib/comments/types";
@@ -74,12 +78,18 @@ export const CommentEditor = forwardRef<CommentEditorHandle, CommentEditorProps>
       [mentionableMembers],
     );
 
-    // Build image upload extension when taskId is provided (e.g. from TaskDrawer).
-    // commentId is undefined per autonomous decision Q14 / deferred flip note.
+    // Build image extension based on taskId presence:
+    //   - taskId provided → upload extension (schema + NodeView + paste/drop plugin)
+    //   - no taskId → display extension (schema + NodeView only; no upload plugin)
+    // This ensures embedded attachment images render correctly in read-only or
+    // no-taskId contexts (CommentBody, inline-edit of existing comments).
+    // Note: commentId is omitted (not passed as undefined) because exactOptionalPropertyTypes
+    // is enabled. Per autonomous decision Q14 / deferred flip note, comment_id stays null in v1.
     const imageExtensions = useMemo(
-      // commentId is omitted (not passed as undefined) because exactOptionalPropertyTypes is enabled.
-      // Per autonomous decision Q14 / deferred flip note, comment_id stays null in v1.
-      () => (taskId ? buildImageUploadExtensions({ taskId }) : []),
+      () =>
+        taskId
+          ? buildImageUploadExtensions({ taskId })
+          : buildImageDisplayExtensions(),
       // eslint-disable-next-line react-hooks/exhaustive-deps
       // taskId should be stable for the lifetime of the editor mount (drawer stays open for one task).
       [taskId],
@@ -160,8 +170,13 @@ interface CommentEditorInnerProps {
   readOnly: boolean;
   autoFocus: boolean;
   mentionExtension: ReturnType<typeof buildMentionExtension>;
-  /** Image upload extensions — only present when taskId was provided. */
-  imageExtensions: ReturnType<typeof buildImageUploadExtensions>;
+  /**
+   * Image extensions — upload extension when taskId is present, display-only extension otherwise.
+   * Both return a single-element array of Tiptap extensions.
+   */
+  imageExtensions:
+    | ReturnType<typeof buildImageUploadExtensions>
+    | ReturnType<typeof buildImageDisplayExtensions>;
   editorRef: React.MutableRefObject<import("@tiptap/react").Editor | null>;
 }
 
