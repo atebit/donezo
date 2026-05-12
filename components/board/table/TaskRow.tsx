@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { TableCell } from "@/components/cells/TableCell";
-import { useBoardStore } from "@/stores/board-store";
+import { selectUsersViewingTask, useBoardStore } from "@/stores/board-store";
 
 import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
 import { colorToToken } from "./group-color";
@@ -66,6 +66,9 @@ export function TaskRow({ task, group }: TaskRowProps) {
 
   const isFocused = focusedRowId === task.id;
 
+  // Presence dot — shows when any other user is viewing this task in the drawer (Epic 09)
+  const viewingUserIds = useBoardStore((s) => selectUsersViewingTask(s, task.id));
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { kind: "task", groupId: group.id },
@@ -121,6 +124,17 @@ export function TaskRow({ task, group }: TaskRowProps) {
           <TableCell task={task} column={col} />
         </div>
       ))}
+
+      {/* Presence dot — visible when at least one other user is viewing this task (Epic 09 F.3) */}
+      {viewingUserIds.length > 0 && (
+        <div
+          role="status"
+          className="flex-shrink-0 w-2 h-2 rounded-full bg-[color:var(--color-primary)] mx-1"
+          title={`${viewingUserIds.length} viewer${viewingUserIds.length === 1 ? "" : "s"} in task`}
+          aria-label={`${viewingUserIds.length} user${viewingUserIds.length === 1 ? "" : "s"} currently viewing this task`}
+          data-testid="task-presence-dot"
+        />
+      )}
 
       {/* Overflow menu — hover-revealed, aligned to the right */}
       <div className="ml-auto pr-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
