@@ -110,10 +110,44 @@ async function uploadImageFile(
 const imageUploadPluginKey = new PluginKey("attachmentImageUpload");
 
 // ---------------------------------------------------------------------------
-// Extension builder
+// Extension builders
 // ---------------------------------------------------------------------------
 
 /**
+ * Display-only Image extension: registers the `image` node schema with the
+ * `attachmentId` custom attr and the AttachmentImageNode React NodeView.
+ * Does NOT install paste/drop upload plugins.
+ *
+ * Use this in read-only or no-taskId contexts (CommentBody, inline edit of
+ * existing comments) so embedded attachment images render correctly.
+ */
+export function buildImageDisplayExtension() {
+  return Image.extend({
+    name: "image",
+
+    addAttributes() {
+      return {
+        src: { default: null },
+        alt: { default: null },
+        title: { default: null },
+        // Epic 10: DB attachment id; NodeView fetches signed URL from this.
+        attachmentId: { default: null },
+      };
+    },
+
+    addNodeView() {
+      return ReactNodeViewRenderer(AttachmentImageNode);
+    },
+  }).configure({
+    inline: false,
+    allowBase64: false,
+  });
+}
+
+/**
+ * Compose-mode Image extension: display extension schema + NodeView + paste/drop upload plugin.
+ * Requires `ctx.taskId` for the upload pipeline.
+ *
  * Builds the Tiptap Image extension extended with:
  *   - `attachmentId` attr (alongside `src`, `alt`)
  *   - React NodeView using `<AttachmentImageNode>`
