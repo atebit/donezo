@@ -7,20 +7,15 @@
  *   - Self-reacted chip: bg var(--color-primary-selected), outline 1px solid var(--color-primary).
  *   - Other chip: bg var(--color-surface-hover).
  *   - Chip padding: 2px 6px, radius 12px.
- *   - "+" trigger opens <ReactionPicker /> (Slice B).
+ *   - "+" trigger opens <ReactionPicker />.
  *
  * Optimistic mutations:
  *   - Click self-reacted chip → applyReactionDelete + unreactComment server action.
  *   - Click other chip → applyReactionInsert + reactComment server action.
  *   - Picker onSelect → applyReactionInsert + reactComment server action.
- *
- * Dependency note (Slice B parallel):
- *   <ReactionPicker> lives in components/comments/ReactionPicker.tsx (Slice B).
- *   Loaded via lazy require so this file compiles before Slice B lands.
  */
 
 import { Plus } from "lucide-react";
-import type React from "react";
 import { useCallback, useTransition } from "react";
 import { toast } from "sonner";
 // Server actions — from Slice A
@@ -31,31 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { selectGroupedReactions, useBoardStore } from "@/stores/board-store";
 import type { CommentReactionRow } from "@/stores/types/comments";
-
-// ---------------------------------------------------------------------------
-// Lazy-load ReactionPicker from Slice B (parallel slice)
-// ---------------------------------------------------------------------------
-
-interface ReactionPickerProps {
-  onSelect: (emoji: string) => void;
-  trigger: React.ReactNode;
-}
-
-let _ReactionPickerCached: React.ComponentType<ReactionPickerProps> | null | undefined;
-
-function tryGetReactionPicker(): React.ComponentType<ReactionPickerProps> | null {
-  if (_ReactionPickerCached !== undefined) return _ReactionPickerCached;
-  try {
-    const mod = require("./ReactionPicker") as {
-      ReactionPicker?: React.ComponentType<ReactionPickerProps>;
-      default?: React.ComponentType<ReactionPickerProps>;
-    };
-    _ReactionPickerCached = mod.ReactionPicker ?? mod.default ?? null;
-  } catch {
-    _ReactionPickerCached = null;
-  }
-  return _ReactionPickerCached;
-}
+import { ReactionPicker } from "./ReactionPicker";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -136,8 +107,6 @@ export function CommentReactions({ commentId, boardId, currentUserId }: CommentR
   // Render
   // ---------------------------------------------------------------------------
 
-  const ReactionPicker = tryGetReactionPicker();
-
   const addButton = (
     <button
       type="button"
@@ -176,7 +145,7 @@ export function CommentReactions({ commentId, boardId, currentUserId }: CommentR
         </button>
       ))}
 
-      {ReactionPicker ? <ReactionPicker onSelect={handleReact} trigger={addButton} /> : addButton}
+      <ReactionPicker onSelect={handleReact} trigger={addButton} />
     </div>
   );
 }
