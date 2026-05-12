@@ -86,10 +86,7 @@ export const CommentEditor = forwardRef<CommentEditorHandle, CommentEditorProps>
     // Note: commentId is omitted (not passed as undefined) because exactOptionalPropertyTypes
     // is enabled. Per autonomous decision Q14 / deferred flip note, comment_id stays null in v1.
     const imageExtensions = useMemo(
-      () =>
-        taskId
-          ? buildImageUploadExtensions({ taskId })
-          : buildImageDisplayExtensions(),
+      () => (taskId ? buildImageUploadExtensions({ taskId }) : buildImageDisplayExtensions()),
       // eslint-disable-next-line react-hooks/exhaustive-deps
       // taskId should be stable for the lifetime of the editor mount (drawer stays open for one task).
       [taskId],
