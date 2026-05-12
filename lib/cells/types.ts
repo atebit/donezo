@@ -202,6 +202,42 @@ export type CellTypeDef<TValue, TConfig = Record<string, never>> = {
   matchesFilter: (value: TValue | null, op: FilterOperator, operand: unknown) => boolean;
 
   // ------------------------------------------------------------------
+  // Search
+  // ------------------------------------------------------------------
+
+  /**
+   * Render the value as a plain-text searchable string. Used by in-board search
+   * (Epic 11) to test whether a cell matches a free-text query.
+   *
+   * MUST be a pure function. Return "" when the cell is empty or when search has
+   * no useful representation (e.g. file cell — file names are searched via the
+   * attachment table directly in v2; for v1 file returns "").
+   *
+   * `config` is the column.settings jsonb (typed as TConfig). Some types resolve
+   * labels via config (e.g. status pulls label title from column.labels).
+   */
+  toSearchString: (value: TValue | null, config: TConfig) => string;
+
+  /**
+   * Optional compact-mode operand input for the filter builder. When absent, the
+   * filter UI falls back to the regular `Editor` rendered in a Base UI Popover.
+   *
+   * `compact: true` signals the editor to shrink internal paddings and hide
+   * footer chrome that's appropriate for a free-standing cell edit.
+   *
+   * `op` is the active filter operator — useful for editors that switch between
+   * single-value and multi-value modes (e.g. status `equals` vs `in`).
+   */
+  OperandEditor?: ComponentType<{
+    value: unknown;
+    config: TConfig;
+    op: FilterOperator;
+    compact: true;
+    onChange: (next: unknown) => void;
+    onClose: () => void;
+  }>;
+
+  // ------------------------------------------------------------------
   // Sorting
   // ------------------------------------------------------------------
 

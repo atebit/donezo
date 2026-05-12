@@ -96,6 +96,8 @@ export const tagsType: CellTypeDef<TagsCellValue, Record<string, never>> = {
     return "—";
   },
 
+  toSearchString: (value) => value?.values.join(" ") ?? "",
+
   compare: (a, b) => {
     const aLen = a?.values.length ?? 0;
     const bLen = b?.values.length ?? 0;

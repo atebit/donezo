@@ -45,6 +45,7 @@
         "app/**/route.ts",
         "next.config.ts",
         "postcss.config.mjs",
+        "vitest.config.ts",
         "components/ui/**",
         "**/*.stories.tsx"
       ],

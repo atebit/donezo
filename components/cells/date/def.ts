@@ -129,6 +129,8 @@ export const dateType: CellTypeDef<DateCellValue, DateConfig> = {
     return "—";
   },
 
+  toSearchString: (value) => value?.iso ?? "",
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return 1;

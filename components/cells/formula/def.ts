@@ -47,6 +47,9 @@ export const formulaType: CellTypeDef<null, FormulaConfig> = {
 
   aggregate: () => "—",
 
+  // v1: formula values are computed, not stored; no searchable text.
+  toSearchString: () => "",
+
   compare: () => 0,
 
   convertTo: {},

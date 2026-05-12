@@ -51,6 +51,9 @@ export const createdAtColType: CellTypeDef<CreatedAtColValue, Record<string, nev
     return "—";
   },
 
+  // v1: derived display-only; no useful searchable text.
+  toSearchString: () => "",
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return -1;

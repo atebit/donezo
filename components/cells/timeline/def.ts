@@ -91,6 +91,8 @@ export const timelineType: CellTypeDef<TimelineCellValue, Record<string, never>>
     return "—";
   },
 
+  toSearchString: (value) => (value ? `${value.start} → ${value.end}` : ""),
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return 1;

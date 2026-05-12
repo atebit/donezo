@@ -93,6 +93,9 @@ export const voteType: CellTypeDef<VoteCellValue, Record<string, never>> = {
     return "—";
   },
 
+  // v1: vote values are user-id arrays; no useful text representation without resolveUser.
+  toSearchString: () => "",
+
   compare: (a, b) => {
     const aLen = a?.userIds.length ?? 0;
     const bLen = b?.userIds.length ?? 0;
