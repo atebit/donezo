@@ -27,27 +27,13 @@ import { MenuList, MenuListItem } from "@/components/ui/menu-list";
 import type { TiptapDoc } from "@/lib/comments/types";
 import { cn } from "@/lib/utils";
 import type { CommentRow } from "@/stores/types/comments";
+import { CommentEditor, type MemberOption } from "./CommentEditor";
+import type { CommentComposerHandle } from "./CommentComposer";
 import { CommentBody } from "./CommentBody";
 import { CommentReactions } from "./CommentReactions";
 
-// ---------------------------------------------------------------------------
-// CommentComposerHandle — interface for the ref to the sibling composer.
-// Matches the shape Slice B exports from CommentComposer.tsx (spec B.6).
-// ---------------------------------------------------------------------------
-
-/** Shape of the imperative handle exposed by <CommentComposer /> (Slice B). */
-export interface CommentComposerHandle {
-  quoteReply: (src: CommentRow) => void;
-  focus: () => void;
-}
-
-/** Shape of a mentionable workspace member (matches Slice B MemberOption). */
-export interface MemberOption {
-  id: string;
-  displayName: string | null;
-  email: string | null;
-  avatarUrl: string | null;
-}
+// Re-export for back-compat consumers (e.g. CommentList, tests).
+export type { CommentComposerHandle, MemberOption };
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -324,7 +310,6 @@ export function CommentItem({
 
 // ---------------------------------------------------------------------------
 // InlineEditForm — rendered when a comment is being edited in-place.
-// Uses <CommentEditor> from Slice B via lazy require.
 // ---------------------------------------------------------------------------
 
 interface InlineEditFormProps {
@@ -335,32 +320,6 @@ interface InlineEditFormProps {
   onCancel: () => void;
 }
 
-interface CommentEditorProps {
-  initialDoc?: TiptapDoc | null;
-  onChange?: (doc: TiptapDoc, text: string) => void;
-  onSubmit?: () => void;
-  mentionableMembers?: MemberOption[];
-  readOnly?: boolean;
-  autoFocus?: boolean;
-  className?: string;
-}
-
-let _EditorCached: React.ComponentType<CommentEditorProps> | null | undefined;
-
-function tryGetCommentEditor(): React.ComponentType<CommentEditorProps> | null {
-  if (_EditorCached !== undefined) return _EditorCached;
-  try {
-    const mod = require("./CommentEditor") as {
-      CommentEditor?: React.ComponentType<CommentEditorProps>;
-      default?: React.ComponentType<CommentEditorProps>;
-    };
-    _EditorCached = mod.CommentEditor ?? mod.default ?? null;
-  } catch {
-    _EditorCached = null;
-  }
-  return _EditorCached;
-}
-
 function InlineEditForm({
   initialDoc,
   mentionableMembers,
@@ -368,27 +327,15 @@ function InlineEditForm({
   onSave,
   onCancel,
 }: InlineEditFormProps) {
-  const CommentEditor = tryGetCommentEditor();
-
   return (
     <div className="mt-2" data-testid="comment-inline-edit">
-      {CommentEditor ? (
-        <CommentEditor
-          initialDoc={initialDoc}
-          onChange={onDocChange}
-          onSubmit={onSave}
-          mentionableMembers={mentionableMembers}
-          autoFocus
-        />
-      ) : (
-        /* Fallback when Slice B hasn't landed yet — should never appear in production. */
-        <textarea
-          className="w-full border border-[color:var(--color-border-strong)] rounded p-2 text-sm"
-          defaultValue=""
-          placeholder="Edit your comment…"
-          aria-label="Edit comment text"
-        />
-      )}
+      <CommentEditor
+        initialDoc={initialDoc}
+        onChange={onDocChange}
+        onSubmit={onSave}
+        mentionableMembers={mentionableMembers}
+        autoFocus
+      />
       <div className="flex gap-2 mt-2">
         <button
           type="button"
