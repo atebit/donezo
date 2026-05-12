@@ -11,7 +11,8 @@ import { useBoardStore } from "@/stores/board-store";
  * useBoardRealtime — owns the entire board-scoped Realtime lifecycle.
  *
  * Subscribes to:
- *  - postgres_changes for task, group, column, cell (all filtered by board_id)
+ *  - postgres_changes for task, group, column, cell, comment, comment_reaction, activity
+ *    (all filtered by board_id)
  *  - presence for membership (sync event drives setPresence)
  *  - broadcast for cursor and typing events
  *
@@ -20,8 +21,6 @@ import { useBoardStore } from "@/stores/board-store";
  *    tree, then marks connected and tracks the user's presence.
  *  - On TIMED_OUT / CHANNEL_ERROR: marks reconnecting and clears stale presence.
  *  - Cleans up channel and sweeper interval on unmount or [boardId, userId] change.
- *
- * comment postgres_changes deferred to epic 09
  */
 export function useBoardRealtime(boardId: string, userId: string): void {
   const router = useRouter();
@@ -145,7 +144,92 @@ export function useBoardRealtime(boardId: string, userId: string): void {
       },
     );
 
-    // comment postgres_changes deferred to epic 09
+    // ------------------------------------------------------------------
+    // Postgres changes — comment
+    // Hard-delete only (Q2): DELETE fires when deleteComment removes a row.
+    // UPDATE fires when editComment updates body/body_text.
+    // ------------------------------------------------------------------
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "comment",
+        filter: `board_id=eq.${boardId}`,
+      },
+      (e: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+        const store = useBoardStore.getState();
+        if (e.eventType === "INSERT" || e.eventType === "UPDATE") {
+          store.applyCommentUpsert(e.new as Parameters<typeof store.applyCommentUpsert>[0]);
+        } else if (e.eventType === "DELETE") {
+          const id = (e.old as { id?: string }).id;
+          if (id) {
+            store.applyCommentDelete(id);
+          }
+        }
+      },
+    );
+
+    // ------------------------------------------------------------------
+    // Postgres changes — comment_reaction
+    // Reactions are immutable (toggle = insert/delete); UPDATE is a no-op.
+    // ------------------------------------------------------------------
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "comment_reaction",
+        filter: `board_id=eq.${boardId}`,
+      },
+      (e: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+        const store = useBoardStore.getState();
+        if (e.eventType === "INSERT") {
+          store.applyReactionInsert(e.new as Parameters<typeof store.applyReactionInsert>[0]);
+        } else if (e.eventType === "DELETE") {
+          const old = e.old as { comment_id?: string; user_id?: string; emoji?: string };
+          if (old.comment_id && old.user_id && old.emoji) {
+            store.applyReactionDelete(old.comment_id, old.user_id, old.emoji);
+          }
+        } else if (e.eventType === "UPDATE") {
+          // Reactions are immutable — UPDATE should never happen.
+          if (process.env.NODE_ENV !== "production") {
+            // biome-ignore lint/suspicious/noConsole: dev-only diagnostic for unexpected reaction UPDATE
+            console.warn(
+              "[useBoardRealtime] Received unexpected comment_reaction UPDATE event. Ignored.",
+            );
+          }
+        }
+      },
+    );
+
+    // ------------------------------------------------------------------
+    // Postgres changes — activity
+    // Activity is append-only; UPDATE/DELETE events should never happen.
+    // ------------------------------------------------------------------
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "activity",
+        filter: `board_id=eq.${boardId}`,
+      },
+      (e: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+        const store = useBoardStore.getState();
+        if (e.eventType === "INSERT") {
+          store.applyActivityInsert(e.new as Parameters<typeof store.applyActivityInsert>[0]);
+        } else if (e.eventType === "UPDATE" || e.eventType === "DELETE") {
+          // Activity is append-only — UPDATE/DELETE should never happen.
+          if (process.env.NODE_ENV !== "production") {
+            // biome-ignore lint/suspicious/noConsole: dev-only diagnostic for unexpected activity mutation
+            console.warn(
+              `[useBoardRealtime] Received unexpected activity ${e.eventType} event. Ignored.`,
+            );
+          }
+        }
+      },
+    );
 
     // ------------------------------------------------------------------
     // Presence — sync is the canonical event; join/leave are no-ops
