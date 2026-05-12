@@ -80,6 +80,7 @@ export const createComment = withUser(async ({ supabase, userId }, raw) => {
     actorId: userId,
     supabase,
     previousMentionIds: [],
+    previousEveryone: false,
   });
 
   // 5. Log activity (best-effort).
@@ -135,6 +136,7 @@ export const editComment = withUser(async ({ supabase, userId }, raw) => {
     actorId: userId,
     supabase,
     previousMentionIds: oldMentions.userIds,
+    previousEveryone: oldMentions.everyone,
   });
 
   // 4. Log activity (best-effort).
@@ -307,6 +309,7 @@ async function _fanOutMentions({
   actorId,
   supabase,
   previousMentionIds,
+  previousEveryone,
 }: {
   doc: TiptapDoc | null | undefined;
   boardId: string;
@@ -316,14 +319,26 @@ async function _fanOutMentions({
   supabase: ActionContext["supabase"];
   /** Previously mentioned user IDs (for edit diff — skip already-notified). */
   previousMentionIds: string[];
+  /**
+   * Whether `@everyone` was present in the previous version of the comment body.
+   * When true, board members were already notified by the prior create/edit and
+   * should not be re-notified on this edit (even if @everyone is still present).
+   */
+  previousEveryone: boolean;
 }): Promise<void> {
   try {
     const { userIds: rawUserIds, everyone } = extractMentions(doc);
 
     let targetIds = new Set<string>(rawUserIds);
 
-    // Expand @everyone: query all board members.
-    if (everyone) {
+    // Only expand @everyone when it's newly added.
+    // If it was present on the previous version too, the prior createComment /
+    // editComment already fanned out to every board member; re-expanding would
+    // re-notify them on every subsequent edit.
+    // NOTE: For public boards, workspace members with implicit access are NOT
+    // expanded here. Confirmed Option A per followup-1 Q-A1: only explicit
+    // board_member rows are expanded.
+    if (everyone && !previousEveryone) {
       const { data: members } = await supabase
         .from("board_member")
         .select("user_id")
@@ -334,10 +349,6 @@ async function _fanOutMentions({
           targetIds.add(m.user_id);
         }
       }
-
-      // Also include workspace members who have implicit board access.
-      // For simplicity and correctness, we rely on role_for_board check below
-      // to filter out non-members when @everyone is used without board_member rows.
     }
 
     // Remove the actor (no self-notify).
