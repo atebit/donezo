@@ -170,7 +170,6 @@ describe("extractMentions", () => {
         {
           type: "paragraph",
           content: [
-            // @ts-expect-error: intentionally wrong attr type
             { type: "mention", attrs: { id: 12345, label: "invalid" } },
           ],
         },

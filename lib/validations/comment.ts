@@ -3,10 +3,10 @@ import { z } from "zod";
 const TiptapNodeSchema: z.ZodType<unknown> = z.lazy(() =>
   z.object({
     type: z.string(),
-    attrs: z.record(z.unknown()).optional(),
+    attrs: z.record(z.string(), z.unknown()).optional(),
     content: z.array(TiptapNodeSchema).optional(),
     marks: z
-      .array(z.object({ type: z.string(), attrs: z.record(z.unknown()).optional() }))
+      .array(z.object({ type: z.string(), attrs: z.record(z.string(), z.unknown()).optional() }))
       .optional(),
     text: z.string().optional(),
   }),
