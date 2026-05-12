@@ -27,6 +27,7 @@ import { useTaskDrawerPresence } from "@/hooks/use-task-drawer-presence";
 import type { Role } from "@/lib/authorization";
 import type { Database } from "@/lib/supabase/types";
 import { useBoardStore } from "@/stores/board-store";
+import type { AttachmentRow } from "@/stores/types/attachments";
 import type { ActivityRow, CommentReactionRow, CommentRow } from "@/stores/types/comments";
 import type { TaskDrawerTab } from "./TaskDrawerTabs";
 import { TaskDrawerTabs } from "./TaskDrawerTabs";
@@ -42,6 +43,8 @@ export interface TaskDrawerProps {
   comments: CommentRow[];
   reactions: CommentReactionRow[];
   activity: ActivityRow[];
+  /** SSR-first attachment rows for this task. Hydrated into the board store on mount. */
+  attachments: AttachmentRow[];
   mentionableMembers: MemberOption[];
   currentUserId: string;
   boardRole: Role;
@@ -55,6 +58,7 @@ export function TaskDrawer({
   comments,
   reactions,
   activity,
+  attachments,
   mentionableMembers,
   currentUserId,
   boardRole,
@@ -65,19 +69,25 @@ export function TaskDrawer({
   const hydrateCommentsForTask = useBoardStore((s) => s.hydrateCommentsForTask);
   const hydrateReactionsForComments = useBoardStore((s) => s.hydrateReactionsForComments);
   const hydrateActivityForTask = useBoardStore((s) => s.hydrateActivityForTask);
+  const hydrateAttachmentsForBoard = useBoardStore((s) => s.hydrateAttachmentsForBoard);
 
   useEffect(() => {
     hydrateCommentsForTask(taskId, comments);
     hydrateReactionsForComments(reactions);
     hydrateActivityForTask(taskId, activity);
+    // Idempotent: hydrateAttachmentsForBoard merges into existing map,
+    // so calling it here after the board-level hydration in BoardTable is safe.
+    hydrateAttachmentsForBoard(attachments);
   }, [
     taskId,
     comments,
     reactions,
     activity,
+    attachments,
     hydrateCommentsForTask,
     hydrateReactionsForComments,
     hydrateActivityForTask,
+    hydrateAttachmentsForBoard,
   ]);
 
   // Track presence: user is viewing this task

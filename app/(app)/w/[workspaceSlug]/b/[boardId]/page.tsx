@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
 type Cell = Database["public"]["Tables"]["cell"]["Row"];
+type AttachmentRow = Database["public"]["Tables"]["attachment"]["Row"];
 
 export default async function BoardPage({
   params,
@@ -44,17 +45,24 @@ export default async function BoardPage({
   const tasks = tasksResult.data;
   const columns = columnsResult.data;
 
-  // Round 2 — load cells filtered by the task ids just fetched.
+  // Round 2 — load cells and uploaded attachments in parallel,
+  // both filtered by the board_id just resolved.
   // Note: `cell` has no `deleted_at` column in the schema; omit that filter.
   const taskIds = tasks.map((t) => t.id);
   let cells: Cell[] = [];
+  let attachments: AttachmentRow[] = [];
 
   if (taskIds.length > 0) {
-    const cellsResult = await supabase.from("cell").select("*").in("task_id", taskIds);
+    const [cellsResult, attachmentsResult] = await Promise.all([
+      supabase.from("cell").select("*").in("task_id", taskIds),
+      supabase.from("attachment").select("*").eq("board_id", boardId).eq("is_uploaded", true),
+    ]);
 
     if (cellsResult.error) throw cellsResult.error;
+    if (attachmentsResult.error) throw attachmentsResult.error;
     cells = cellsResult.data;
+    attachments = attachmentsResult.data;
   }
 
-  return <BoardTable boardId={boardId} initial={{ groups, tasks, cells, columns }} />;
+  return <BoardTable boardId={boardId} initial={{ groups, tasks, cells, columns, attachments }} />;
 }

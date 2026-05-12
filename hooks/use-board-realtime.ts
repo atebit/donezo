@@ -232,6 +232,35 @@ export function useBoardRealtime(boardId: string, userId: string): void {
     );
 
     // ------------------------------------------------------------------
+    // Postgres changes — attachment
+    // INSERT arrives when a row is first created (is_uploaded=false).
+    // UPDATE catches the is_uploaded flip from confirmUpload (false→true).
+    // DELETE fires when an attachment is removed.
+    // The store's applyAttachmentUpsert filters out non-is_uploaded rows,
+    // so both INSERT and UPDATE are safe to route there unconditionally.
+    // ------------------------------------------------------------------
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "attachment",
+        filter: `board_id=eq.${boardId}`,
+      },
+      (e: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+        const store = useBoardStore.getState();
+        if (e.eventType === "INSERT" || e.eventType === "UPDATE") {
+          store.applyAttachmentUpsert(e.new as Parameters<typeof store.applyAttachmentUpsert>[0]);
+        } else if (e.eventType === "DELETE") {
+          const id = (e.old as { id?: string }).id;
+          if (id) {
+            store.applyAttachmentDelete(id);
+          }
+        }
+      },
+    );
+
+    // ------------------------------------------------------------------
     // Presence — sync is the canonical event; join/leave are no-ops
     // ------------------------------------------------------------------
     channel.on("presence", { event: "sync" }, () => {
