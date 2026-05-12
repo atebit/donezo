@@ -147,7 +147,7 @@ export function BoardHeaderClient({
         <MemberStack members={memberStackItems} max={4} size={24} className="ml-2" />
 
         {/* Board activity trigger — Epic 09 */}
-        <BoardActivityTrigger />
+        <BoardActivityTrigger members={members} />
 
         {/* Spacer */}
         <div className="flex-1" />
