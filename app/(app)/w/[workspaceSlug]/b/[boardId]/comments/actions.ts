@@ -21,11 +21,11 @@
 import { type ActionContext, withUser } from "@/lib/actions";
 import { logActivity } from "@/lib/activity";
 import { requireBoardRole } from "@/lib/authorization";
-// biome-ignore lint/style/noRestrictedImports: admin-delete of others' comments bypasses RLS author check.
-import { adminClient } from "@/lib/supabase/admin";
 import { extractMentions } from "@/lib/comments/mentions";
 import type { TiptapDoc } from "@/lib/comments/types";
 import { notifyUsers } from "@/lib/notifications/notify";
+// biome-ignore lint/style/noRestrictedImports: admin-delete of others' comments bypasses RLS author check.
+import { adminClient } from "@/lib/supabase/admin";
 import {
   CreateCommentSchema,
   DeleteCommentSchema,
@@ -170,10 +170,7 @@ export const deleteComment = withUser(async ({ supabase, userId }, raw) => {
 
   if (isAuthor) {
     // 2a. Actor is author — DELETE via user-client (RLS allows author).
-    const { error } = await supabase
-      .from("comment")
-      .delete()
-      .eq("id", input.commentId);
+    const { error } = await supabase.from("comment").delete().eq("id", input.commentId);
 
     if (error) throw { code: "DB", message: error.message };
   } else {
@@ -183,10 +180,7 @@ export const deleteComment = withUser(async ({ supabase, userId }, raw) => {
     // user-client, but we use adminClient() here as a documented defensive path.)
     await requireBoardRole(comment.board_id, "admin");
 
-    const { error } = await adminClient()
-      .from("comment")
-      .delete()
-      .eq("id", input.commentId);
+    const { error } = await adminClient().from("comment").delete().eq("id", input.commentId);
 
     if (error) throw { code: "DB", message: error.message };
   }
@@ -224,14 +218,12 @@ export const reactComment = withUser(async ({ supabase, userId }, raw) => {
   await requireBoardRole(comment.board_id, "member");
 
   // 3. INSERT reaction; on unique-violation (already reacted with same emoji), treat as no-op.
-  const { error: insertError } = await supabase
-    .from("comment_reaction")
-    .insert({
-      comment_id: input.commentId,
-      user_id: userId,
-      emoji: input.emoji,
-      board_id: comment.board_id,
-    });
+  const { error: insertError } = await supabase.from("comment_reaction").insert({
+    comment_id: input.commentId,
+    user_id: userId,
+    emoji: input.emoji,
+    board_id: comment.board_id,
+  });
 
   if (insertError) {
     // PostgreSQL unique violation code: 23505
@@ -373,9 +365,7 @@ async function _fanOutMentions({
       }),
     );
 
-    const validRows = notificationRows.filter(
-      (r): r is NonNullable<typeof r> => r !== null,
-    );
+    const validRows = notificationRows.filter((r): r is NonNullable<typeof r> => r !== null);
 
     await notifyUsers(validRows);
   } catch {

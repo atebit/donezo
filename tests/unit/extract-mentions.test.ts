@@ -86,9 +86,7 @@ describe("extractMentions", () => {
           content: [
             {
               type: "paragraph",
-              content: [
-                { type: "text", text: "Quoted text" },
-              ],
+              content: [{ type: "text", text: "Quoted text" }],
             },
           ],
         },
@@ -100,9 +98,7 @@ describe("extractMentions", () => {
               content: [
                 {
                   type: "paragraph",
-                  content: [
-                    { type: "mention", attrs: { id: userId, label: "Charlie" } },
-                  ],
+                  content: [{ type: "mention", attrs: { id: userId, label: "Charlie" } }],
                 },
               ],
             },
@@ -169,9 +165,7 @@ describe("extractMentions", () => {
       content: [
         {
           type: "paragraph",
-          content: [
-            { type: "mention", attrs: { id: 12345, label: "invalid" } },
-          ],
+          content: [{ type: "mention", attrs: { id: 12345, label: "invalid" } }],
         },
       ],
     };
