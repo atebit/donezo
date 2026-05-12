@@ -9,9 +9,12 @@ import { createClient } from "@/lib/supabase/server";
 export default async function BoardLayout({
   params,
   children,
+  modal,
 }: {
   params: Promise<{ workspaceSlug: string; boardId: string }>;
   children: React.ReactNode;
+  /** @modal parallel route slot — renders <TaskDrawerModalShell> when a task is open */
+  modal: React.ReactNode;
 }) {
   const { boardId } = await params;
   const supabase = await createClient();
@@ -46,6 +49,8 @@ export default async function BoardLayout({
         <BoardViewTabs />
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">{children}</div>
       </div>
+      {/* @modal slot — null when no task is open; <TaskDrawerModalShell> when intercepting */}
+      {modal}
     </BoardProvider>
   );
 }

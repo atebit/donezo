@@ -117,6 +117,18 @@ Run these steps after epic 01 merges to `main`. These are human-executed steps �
 
 TBD; deferred per epic 01 decision Q11. Tracked in the conversion plan. Preview deploys use Vercel's generated URLs until a domain is provisioned.
 
+## Comments & activity
+
+Every mutation server action emits one activity row via `logActivity`. The set of activity types is closed (see `lib/activity.ts`); add new ones in lockstep with the matching renderer in `components/activity/renderers/`. Missing renderers degrade to a generic line — but every new action type should ship with its renderer in the same PR.
+
+Comment writes go through the user-client (RLS-enforced). Notification fan-out goes through the service role (`lib/notifications/notify.ts`). Mention extraction is `lib/comments/mentions.ts`; `@everyone` is the sentinel `attrs.id = "everyone"` and expands to all board members at notify time.
+
+Reactions have no `updated_at` — store idempotency keys on the PK tuple `(comment_id, user_id, emoji)`.
+
+The task drawer uses Next.js intercepting routes (`@modal/(.)t/[taskId]`). Direct URL navigation hits the full-page route at `t/[taskId]`. Both render the same `<TaskDrawer />`; only the shell differs.
+
+`@everyone` on public boards expands to explicit `board_member` rows only (Option A from followup Q-A1). Workspace members with implicit access are not notified. Documented as intended behavior.
+
 ## Realtime & writes
 
 Donezo's writes go through server actions only. Realtime is read-only on the client — postgres_changes events feed the Zustand store via idempotent `applyXxxUpsert` methods, gated on `updated_at`. Never write to the database directly from the client. Presence and broadcast (cursors, typing) are non-persistent advisory state; the server does not trust them.
