@@ -120,6 +120,7 @@ export function AttachmentTile({
 
   return (
     <div
+      data-testid="attachment-tile"
       className={cn(
         "flex items-center gap-3 rounded-md px-2 py-1.5",
         "hover:bg-[var(--color-surface-hover)] transition-colors",

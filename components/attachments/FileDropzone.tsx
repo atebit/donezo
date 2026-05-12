@@ -239,6 +239,7 @@ export function FileDropzone({
               : "hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-hover)]",
           ),
           onPaste: handlePaste,
+          "data-testid": "file-dropzone",
         })}
       >
         <input {...getInputProps()} />
