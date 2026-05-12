@@ -1,32 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BoardActivityModal } from "@/components/activity/BoardActivityModal";
-// Slice D — parallel; ctx build will be completed when Slice D merges
-import type { ActivityRenderCtx } from "@/components/activity/renderers";
-import { useBoard } from "@/hooks/use-board";
+import type {
+  ActivityRenderCtx,
+  ColumnRow,
+  ProfileRow,
+} from "@/components/activity/renderers";
 import { IconHistory } from "@/lib/icons";
+import { useBoardStore } from "@/stores/board-store";
 
-/**
- * Board topbar trigger for the per-board Activity modal.
- * Reads boardId from useBoard(). Opens <BoardActivityModal>.
- *
- * ctx is built with empty maps here — full ctx (columns, labels, profiles) will
- * be threaded through from the parent once Slice D's renderers are available.
- * For v1, the modal renders events; renderers apply ctx to format cell values.
- */
-const EMPTY_CTX: ActivityRenderCtx = {
-  columns: new Map(),
-  labelsByColumn: new Map(),
-  profiles: new Map(),
-};
+interface BoardActivityTriggerProps {
+  members: Array<{
+    id: string;
+    displayName: string | null;
+    email: string | null;
+    avatarUrl: string | null;
+  }>;
+}
 
-export function BoardActivityTrigger() {
-  const { board } = useBoard();
+export function BoardActivityTrigger({ members }: BoardActivityTriggerProps) {
   const [open, setOpen] = useState(false);
 
-  // boardId consumed from context — trigger is board-scoped
-  void board.id;
+  const columnsArr = useBoardStore((s) => s.columns);
+  const labelsByColumn = useBoardStore((s) => s.labelsByColumn);
+
+  const ctx: ActivityRenderCtx = useMemo(() => {
+    const columns = new Map<string, ColumnRow>();
+    for (const c of columnsArr) columns.set(c.id, c);
+
+    // Build a partial ProfileRow per known member (sufficient for resolveActor +
+    // ActivityItem avatar). Unknown fields default to null / synthetic values to
+    // satisfy ProfileRow's required shape without inventing data.
+    const profiles = new Map<string, ProfileRow>();
+    for (const m of members) {
+      profiles.set(m.id, {
+        id: m.id,
+        display_name: m.displayName,
+        email: m.email,
+        avatar_url: m.avatarUrl,
+        // Required-by-type but unused in renderers — safe synthetic values.
+        created_at: new Date(0).toISOString(),
+        updated_at: new Date(0).toISOString(),
+        last_workspace_id: null,
+      });
+    }
+
+    return { columns, labelsByColumn, profiles };
+  }, [columnsArr, labelsByColumn, members]);
 
   return (
     <>
@@ -40,7 +61,12 @@ export function BoardActivityTrigger() {
         Activity
       </button>
 
-      <BoardActivityModal open={open} onOpenChange={setOpen} ctx={EMPTY_CTX} />
+      <BoardActivityModal
+        open={open}
+        onOpenChange={setOpen}
+        ctx={ctx}
+        members={members.map((m) => ({ id: m.id, displayName: m.displayName, email: m.email }))}
+      />
     </>
   );
 }
