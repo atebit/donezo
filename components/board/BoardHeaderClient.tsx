@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { renameBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
+import { BoardActivityTrigger } from "@/components/activity/BoardActivityTrigger";
 import { BoardDescriptionModal } from "@/components/board/BoardDescriptionModal";
 import { BoardSettingsMenu } from "@/components/board/BoardSettingsMenu";
 import { BoardStarToggle } from "@/components/board/BoardStarToggle";
@@ -93,16 +94,6 @@ export function BoardHeaderClient({
 
         {/* Tool row */}
         <div className="flex items-center gap-1">
-          {/* Activity — placeholder; epic 12 */}
-          <button
-            type="button"
-            aria-label="Activity feed (coming soon)"
-            disabled
-            className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium text-[color:var(--color-fg-muted)] opacity-50 cursor-not-allowed"
-          >
-            Activity
-          </button>
-
           {/* Members tool */}
           <button
             type="button"
@@ -144,6 +135,9 @@ export function BoardHeaderClient({
 
         {/* Member avatar stack */}
         <MemberStack members={memberStackItems} max={4} size={24} className="ml-2" />
+
+        {/* Board activity trigger — Epic 09 */}
+        <BoardActivityTrigger members={members} />
 
         {/* Spacer */}
         <div className="flex-1" />

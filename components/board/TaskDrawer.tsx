@@ -1,0 +1,150 @@
+"use client";
+
+/**
+ * TaskDrawer — the task detail drawer.
+ *
+ * Shared between the intercepting-route variant (<TaskDrawerModalShell>) and
+ * the full-page route variant. Receives pre-fetched data as props and hydrates
+ * the board store on mount via hydrateXxx actions.
+ *
+ * Tabs:
+ *   - Updates (default): CommentComposer + CommentList (via UpdatesTab)
+ *   - Activity: ActivityList scope=task (via ActivityTab)
+ *   - Files: Epic 10 placeholder (via FilesTab)
+ *
+ * Presence: useTaskDrawerPresence tracks this user as "viewing task" on the
+ * board channel (same channel as useBoardRealtime — Supabase deduplication).
+ *
+ * Visual spec (component-system §3.5):
+ *   position: fixed; top: 0; right: 0; height: 100vh; min-width: 570px
+ *   Bg white, border-inline-start: 1px solid #ccc
+ *   Header: padding 20px 20px 6px 24px, height 53px, font-size 18px
+ */
+
+import { useEffect, useState } from "react";
+import type { MemberOption } from "@/components/comments/CommentEditor";
+import { useTaskDrawerPresence } from "@/hooks/use-task-drawer-presence";
+import type { Role } from "@/lib/authorization";
+import type { Database } from "@/lib/supabase/types";
+import { useBoardStore } from "@/stores/board-store";
+import type { ActivityRow, CommentReactionRow, CommentRow } from "@/stores/types/comments";
+import type { TaskDrawerTab } from "./TaskDrawerTabs";
+import { TaskDrawerTabs } from "./TaskDrawerTabs";
+import { ActivityTab } from "./tabs/ActivityTab";
+import { FilesTab } from "./tabs/FilesTab";
+import { UpdatesTab } from "./tabs/UpdatesTab";
+
+type TaskRow = Database["public"]["Tables"]["task"]["Row"];
+
+export interface TaskDrawerProps {
+  taskId: string;
+  task: TaskRow;
+  comments: CommentRow[];
+  reactions: CommentReactionRow[];
+  activity: ActivityRow[];
+  mentionableMembers: MemberOption[];
+  currentUserId: string;
+  boardRole: Role;
+  /** "modal" = slide-in over board; "full" = standalone full-page view. */
+  variant: "modal" | "full";
+}
+
+export function TaskDrawer({
+  taskId,
+  task,
+  comments,
+  reactions,
+  activity,
+  mentionableMembers,
+  currentUserId,
+  boardRole,
+}: TaskDrawerProps) {
+  const [activeTab, setActiveTab] = useState<TaskDrawerTab>("updates");
+
+  // Hydrate the board store with pre-fetched server data
+  const hydrateCommentsForTask = useBoardStore((s) => s.hydrateCommentsForTask);
+  const hydrateReactionsForComments = useBoardStore((s) => s.hydrateReactionsForComments);
+  const hydrateActivityForTask = useBoardStore((s) => s.hydrateActivityForTask);
+
+  useEffect(() => {
+    hydrateCommentsForTask(taskId, comments);
+    hydrateReactionsForComments(reactions);
+    hydrateActivityForTask(taskId, activity);
+  }, [
+    taskId,
+    comments,
+    reactions,
+    activity,
+    hydrateCommentsForTask,
+    hydrateReactionsForComments,
+    hydrateActivityForTask,
+  ]);
+
+  // Track presence: user is viewing this task
+  useTaskDrawerPresence(taskId);
+
+  // Build profiles map from mentionableMembers for activity renderers + comment author display
+  const profilesForActivity = new Map(
+    mentionableMembers.map((m) => [
+      m.id,
+      {
+        display_name: m.displayName ?? null,
+        avatar_url: m.avatarUrl ?? null,
+        email: m.email ?? null,
+      },
+    ]),
+  );
+
+  return (
+    <div
+      className="flex flex-col bg-white"
+      style={{
+        borderInlineStart: "1px solid #ccc",
+        minWidth: 570,
+        height: "100vh",
+      }}
+      data-testid="task-drawer"
+    >
+      {/* Header */}
+      <div
+        className="flex-shrink-0 flex items-center"
+        style={{ padding: "20px 20px 6px 24px", minHeight: 53 }}
+      >
+        <h2
+          className="text-lg font-semibold text-[color:var(--color-fg-strong)] truncate"
+          style={{ fontSize: 18 }}
+        >
+          {task.title || "Untitled"}
+        </h2>
+      </div>
+
+      {/* Tab strip */}
+      <TaskDrawerTabs activeTab={activeTab} onChange={setActiveTab} />
+
+      {/* Tab content — scrollable */}
+      <div
+        className="flex-1 min-h-0 overflow-y-auto"
+        style={{ scrollbarWidth: "none" }}
+        role="tabpanel"
+        aria-label={`${activeTab} tab content`}
+      >
+        <div className="p-6">
+          {activeTab === "updates" && (
+            <UpdatesTab
+              taskId={taskId}
+              boardId={task.board_id}
+              currentUserId={currentUserId}
+              boardRole={boardRole}
+              mentionableMembers={mentionableMembers}
+              profiles={profilesForActivity}
+            />
+          )}
+          {activeTab === "activity" && (
+            <ActivityTab taskId={taskId} profiles={profilesForActivity} />
+          )}
+          {activeTab === "files" && <FilesTab />}
+        </div>
+      </div>
+    </div>
+  );
+}
