@@ -1,0 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+/**
+ * SSR-safe hook that returns whether a CSS media query currently matches.
+ * Returns `false` on the server and until the first client-side mount.
+ *
+ * @example
+ * const isDesktop = useMediaQuery('(min-width: 768px)');
+ */
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    // Set initial value after mount.
+    setMatches(media.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setMatches(event.matches);
+    };
+
+    media.addEventListener("change", handleChange);
+    return () => {
+      media.removeEventListener("change", handleChange);
+    };
+  }, [query]);
+
+  return matches;
+}
