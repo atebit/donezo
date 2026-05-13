@@ -18,6 +18,7 @@
 
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useTranslations } from "next-intl";
 import { useCallback, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { Group, Task } from "@/components/board/table/types";
@@ -153,17 +154,14 @@ export function BoardCardList() {
       reorderMode: s.reorderMode,
     })),
   );
+  const t = useTranslations("empty.noTasks");
 
   const totalTasks = tasks.length;
 
   if (totalTasks === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
-        <EmptyState
-          icon={IconLayoutList}
-          title="No tasks yet"
-          description="Add your first task to get started."
-        />
+        <EmptyState icon={IconLayoutList} title={t("title")} description={t("description")} />
       </div>
     );
   }
