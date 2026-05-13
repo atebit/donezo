@@ -123,7 +123,7 @@ export function MainSidebar({ user, workspaces = [] }: MainSidebarProps) {
 
       {/* Mobile: fixed-bottom row at 8vh height */}
       <nav
-        aria-label="Main navigation"
+        aria-label="Mobile navigation"
         className="md:hidden"
         style={{
           position: "fixed",
