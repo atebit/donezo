@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 function resolveBuildSha(): string {
   try {
@@ -39,4 +40,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with next-intl plugin. The default i18n request config path is
+// `./i18n/request.ts` (also checked as `./src/i18n/request.ts`).
+// Single-locale v1 — no locale routing prefixes.
+const withNextIntl = createNextIntlPlugin();
+
+export default withNextIntl(nextConfig);

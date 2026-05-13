@@ -17,7 +17,7 @@ export function BoardCardGrid() {
   if (allBoards.length === 0) {
     return (
       <>
-        <NoBoardsInWorkspace workspaceName={workspace.name} onCreate={() => setModalOpen(true)} />
+        <NoBoardsInWorkspace onCreate={() => setModalOpen(true)} />
         <CreateBoardModal open={modalOpen} onOpenChange={setModalOpen} />
       </>
     );

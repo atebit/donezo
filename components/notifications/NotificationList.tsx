@@ -9,6 +9,7 @@
  */
 
 import { isThisWeek, isToday, isYesterday } from "date-fns";
+import { useTranslations } from "next-intl";
 import type { AnyNotification } from "@/stores/notification-store";
 import { NotificationItem } from "./NotificationItem";
 
@@ -45,10 +46,13 @@ type Props = {
 };
 
 export function NotificationList({ notifications, workspaceSlug }: Props) {
+  const t = useTranslations("empty.noNotifications");
+
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-        <p className="text-sm text-[var(--color-fg-muted)]">No notifications</p>
+        <p className="text-sm text-[var(--color-fg-muted)]">{t("title")}</p>
+        <p className="text-xs text-[var(--color-fg-muted)] mt-1">{t("description")}</p>
       </div>
     );
   }

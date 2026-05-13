@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "@base-ui/react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { IconThemeDark, IconThemeLight, IconThemeSystem } from "@/lib/icons";
@@ -28,6 +29,7 @@ export const THEME_OPTIONS: ThemeOption[] = [
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const t = useTranslations("account.theme");
 
   useEffect(() => {
     setMounted(true);
@@ -90,7 +92,7 @@ export function ThemeToggle() {
             color: "var(--color-fg-muted)",
           }}
         >
-          {active.label}
+          {t(active.value)}
         </span>
       </Menu.Trigger>
 
@@ -111,7 +113,7 @@ export function ThemeToggle() {
               minWidth: 140,
             }}
           >
-            {THEME_OPTIONS.map(({ value, label, Icon }) => (
+            {THEME_OPTIONS.map(({ value, Icon }) => (
               <Menu.Item
                 key={value}
                 onClick={() => setTheme(value)}
@@ -130,7 +132,7 @@ export function ThemeToggle() {
                 aria-current={theme === value ? "true" : undefined}
               >
                 <Icon size={16} aria-hidden />
-                {label}
+                {t(value)}
               </Menu.Item>
             ))}
           </Menu.Popup>

@@ -1,19 +1,21 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { IconLayout } from "@/lib/icons";
 import { EmptyState } from "./EmptyState";
 
 type NoBoardsInWorkspaceProps = {
-  workspaceName: string;
   onCreate?: () => void;
 };
 
-export function NoBoardsInWorkspace({ workspaceName, onCreate }: NoBoardsInWorkspaceProps) {
+export function NoBoardsInWorkspace({ onCreate }: NoBoardsInWorkspaceProps) {
+  const t = useTranslations("empty.noBoards");
+
   return (
     <EmptyState
       icon={IconLayout}
-      title={`${workspaceName} is ready for its first board`}
-      description="or pick a template — coming soon"
+      title={t("title")}
+      description={t("description")}
       action={
         onCreate ? (
           <button
