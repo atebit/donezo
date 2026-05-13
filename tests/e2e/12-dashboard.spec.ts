@@ -27,7 +27,7 @@ const _USER_A_EMAIL = "user-a+e2e@donezo.local";
 const _USER_A_PASSWORD = "test-password-12345";
 const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
 const BOARD_ID = E2E_BOARD_ID;
-const _DASHBOARD_VIEW_ID = "REPLACE_WITH_SEED_DASHBOARD_VIEW_ID";
+const DASHBOARD_VIEW_ID = "REPLACE_WITH_SEED_DASHBOARD_VIEW_ID";
 const NUMBER_COLUMN_NAME = "Budget";
 // The number column's UUID — set by seed script (used in epic 15 seed script).
 const __NUMBER_COLUMN_ID = "REPLACE_WITH_SEED_NUMBER_COLUMN_ID";
