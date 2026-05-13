@@ -13,6 +13,7 @@ import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
 import { Cell } from "./Cell";
 import { Editor } from "./Editor";
+import { OperandEditor } from "./OperandEditor";
 
 export type DateCellValue = { iso: string };
 export type DateConfig = { format?: string };
@@ -38,6 +39,7 @@ export const dateType: CellTypeDef<DateCellValue, DateConfig> = {
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => (row?.date_value ? { iso: row.date_value } : null),
 

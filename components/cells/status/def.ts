@@ -20,6 +20,7 @@ import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 import type { StatusCellValue } from "./Cell";
 import { Cell } from "./Cell";
 import { Editor } from "./Editor";
+import { OperandEditor } from "./OperandEditor";
 
 /** All value columns in the `cell` table — every toRow must set all 7 explicitly. */
 const NULL_VALUE_PATCH = {
@@ -42,6 +43,7 @@ export const statusType: CellTypeDef<StatusCellValue, Record<string, never>> = {
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => (row?.label_id ? { labelId: row.label_id } : null),
 

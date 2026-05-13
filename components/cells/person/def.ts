@@ -13,6 +13,7 @@ import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
 import { Cell } from "./Cell";
 import { Editor } from "./Editor";
+import { OperandEditor } from "./OperandEditor";
 
 export type PersonCellValue = { userIds: string[] };
 
@@ -49,6 +50,7 @@ export const personType: CellTypeDef<PersonCellValue, Record<string, never>> = {
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => {
     const raw = row?.json_value;
