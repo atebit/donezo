@@ -81,6 +81,13 @@ export function TaskRow({ task, group }: TaskRowProps) {
   // Presence dot — shows when any other user is viewing this task in the drawer (Epic 09)
   const viewingUserIds = useBoardStore((s) => selectUsersViewingTask(s, task.id));
 
+  // Epic 11 (Slice D): DnD is disabled when a sort or column-based group-by is active,
+  // because task reorder would conflict with the derived order (cross-slice contract §44–46).
+  const isDraggable = useBoardStore((s) => {
+    const config = selectEffectiveConfig(s);
+    return (s.sortKeys ?? []).length === 0 && config.groupBy?.kind !== "column";
+  });
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { kind: "task", groupId: group.id },
@@ -113,8 +120,8 @@ export function TaskRow({ task, group }: TaskRowProps) {
         aria-hidden="true"
       />
 
-      {/* Drag handle — wired to dnd-kit useSortable */}
-      <TaskDragHandle attributes={attributes} listeners={listeners} />
+      {/* Drag handle — hidden when sort or column group-by is active (Epic 11 §cross-slice) */}
+      {isDraggable && <TaskDragHandle attributes={attributes} listeners={listeners} />}
 
       {/* Bulk-select checkbox */}
       <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">

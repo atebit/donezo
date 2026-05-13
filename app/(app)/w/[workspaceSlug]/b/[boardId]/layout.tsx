@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { BoardHeader } from "@/components/board/BoardHeader";
-import { BoardViewTabs } from "@/components/board/BoardViewTabs";
+import { ViewTabs } from "@/components/board/ViewTabs";
+import { ViewToolbar } from "@/components/board/ViewToolbar";
 import { requireUser } from "@/lib/auth/current-user";
 import { getBoardRole } from "@/lib/authorization";
 import { BoardProvider } from "@/lib/board-context";
@@ -46,7 +47,8 @@ export default async function BoardLayout({
     <BoardProvider board={board} role={role} isStarred={isStarred} userId={currentUser.id}>
       <div className="flex flex-col h-full min-h-0">
         <BoardHeader boardId={board.id} />
-        <BoardViewTabs />
+        <ViewTabs />
+        <ViewToolbar />
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">{children}</div>
       </div>
       {/* @modal slot — null when no task is open; <TaskDrawerModalShell> when intercepting */}
