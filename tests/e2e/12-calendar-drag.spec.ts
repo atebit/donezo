@@ -63,17 +63,12 @@ async function dragEventToDate(page, taskTitle: string, targetIsoDate: string) {
 
   if (!cardBBox || !targetBBox) throw new Error("Could not find bounding box for drag");
 
-  await page.mouse.move(
-    cardBBox.x + cardBBox.width / 2,
-    cardBBox.y + cardBBox.height / 2,
-  );
+  await page.mouse.move(cardBBox.x + cardBBox.width / 2, cardBBox.y + cardBBox.height / 2);
   await page.mouse.down();
   // Move in steps for dnd-kit pointer sensor activation.
-  await page.mouse.move(
-    targetBBox.x + targetBBox.width / 2,
-    targetBBox.y + targetBBox.height / 2,
-    { steps: 20 },
-  );
+  await page.mouse.move(targetBBox.x + targetBBox.width / 2, targetBBox.y + targetBBox.height / 2, {
+    steps: 20,
+  });
   await page.mouse.up();
 }
 
@@ -109,10 +104,7 @@ test.describe("Epic 12 — Calendar view", () => {
     // Wait for the calendar to re-render with events.
     // TASK_A should appear on TASK_A_INITIAL_DATE.
     await page.waitForSelector(`[data-task-id]`);
-    const eventCard = page
-      .locator(`[data-task-id]`)
-      .filter({ hasText: TASK_A_TITLE })
-      .first();
+    const eventCard = page.locator(`[data-task-id]`).filter({ hasText: TASK_A_TITLE }).first();
     await expect(eventCard).toBeVisible();
   });
 
@@ -130,9 +122,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(offPanelCard).toBeVisible();
   });
 
-  test("04: drag TASK_A from initial date to target date — cell updates", async ({
-    page,
-  }) => {
+  test("04: drag TASK_A from initial date to target date — cell updates", async ({ page }) => {
     await page.goto(`${BOARD_URL}/calendar`);
     const picker = page.getByLabel("Pick the date column that drives the calendar");
     await picker.selectOption({ label: DATE_COLUMN_NAME });
@@ -169,10 +159,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await page.waitForSelector(`[data-task-id]`);
 
     // Event should still be on the target date.
-    const eventCard = page
-      .locator(`[data-task-id]`)
-      .filter({ hasText: TASK_A_TITLE })
-      .first();
+    const eventCard = page.locator(`[data-task-id]`).filter({ hasText: TASK_A_TITLE }).first();
     await expect(eventCard).toBeVisible();
 
     // Confirm the event is NOT on the original date.
@@ -190,10 +177,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await picker.selectOption({ label: DATE_COLUMN_NAME });
     await page.waitForSelector(`[data-task-id]`);
 
-    const eventCard = page
-      .locator(`[data-task-id]`)
-      .filter({ hasText: TASK_A_TITLE })
-      .first();
+    const eventCard = page.locator(`[data-task-id]`).filter({ hasText: TASK_A_TITLE }).first();
     await eventCard.click();
 
     // The task drawer is opened via the @modal intercept route (/t/[taskId]).
@@ -213,7 +197,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await emptyDay.click();
 
     // Wait for the toast confirming task creation.
-    await page.waitForSelector('text=Task created on');
+    await page.waitForSelector("text=Task created on");
   });
 
   test("08: dragging TASK_B from off-calendar panel onto a day assigns the date", async ({
@@ -255,10 +239,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(offCard).not.toBeVisible();
 
     // TASK_B should now appear on the calendar.
-    const movedCard = page
-      .locator(`[data-task-id]`)
-      .filter({ hasText: TASK_B_TITLE })
-      .first();
+    const movedCard = page.locator(`[data-task-id]`).filter({ hasText: TASK_B_TITLE }).first();
     await expect(movedCard).toBeVisible();
   });
 });

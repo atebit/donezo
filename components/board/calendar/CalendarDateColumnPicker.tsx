@@ -11,8 +11,8 @@
  * Slice C — C.2.
  */
 
-import { useBoardView } from "@/hooks/use-board-view";
 import { useShallow } from "zustand/react/shallow";
+import { useBoardView } from "@/hooks/use-board-view";
 import { useBoardStore } from "@/stores/board-store";
 
 export function CalendarDateColumnPicker() {
@@ -20,9 +20,7 @@ export function CalendarDateColumnPicker() {
   const columns = useBoardStore(useShallow((s) => s.columns));
 
   // Filter to `date` and `timeline` column types only.
-  const eligibleColumns = columns.filter(
-    (c) => c.type === "date" || c.type === "timeline",
-  );
+  const eligibleColumns = columns.filter((c) => c.type === "date" || c.type === "timeline");
 
   const currentColumnId = effective.calendar?.dateColumnId ?? null;
 
@@ -38,9 +36,7 @@ export function CalendarDateColumnPicker() {
 
   if (eligibleColumns.length === 0) {
     return (
-      <span className="text-xs text-[color:var(--color-fg-subtle)] italic">
-        No date columns
-      </span>
+      <span className="text-xs text-[color:var(--color-fg-subtle)] italic">No date columns</span>
     );
   }
 

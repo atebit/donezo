@@ -47,10 +47,7 @@ export function CalendarEventCard({
     })),
   );
 
-  const task = useMemo(
-    () => tasks.find((t) => t.id === event.taskId),
-    [tasks, event.taskId],
-  );
+  const task = useMemo(() => tasks.find((t) => t.id === event.taskId), [tasks, event.taskId]);
 
   // cardStyle is stored per-kind inside effective.calendar.cardStyle
   const cardStyle = effective.calendar?.cardStyle;

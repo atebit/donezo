@@ -6,15 +6,9 @@
  * C.1 / C.7 — Slice C (Calendar view).
  */
 
-import { dateFnsLocalizer } from "react-big-calendar";
-import {
-  endOfWeek,
-  format,
-  getDay,
-  parse,
-  startOfWeek,
-} from "date-fns";
+import { format, getDay, parse, startOfWeek } from "date-fns";
 import { enUS } from "date-fns/locale";
+import { dateFnsLocalizer } from "react-big-calendar";
 
 const locales = {
   "en-US": enUS,

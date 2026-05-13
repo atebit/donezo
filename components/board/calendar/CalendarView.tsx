@@ -31,16 +31,16 @@ import "./calendar.css";
 import {
   DndContext,
   type DragEndEvent,
-  type DragStartEvent,
   DragOverlay,
+  type DragStartEvent,
   PointerSensor,
   useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import type { DateCellWrapperProps, EventProps, View } from "react-big-calendar";
 import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
+import type { DateCellWrapperProps, EventProps, View } from "react-big-calendar";
 import { Calendar } from "react-big-calendar";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
@@ -104,7 +104,7 @@ export function CalendarView() {
 
   // Find the active date column.
   const dateColumn = useMemo(
-    () => (dateColumnId ? columns.find((c) => c.id === dateColumnId) ?? null : null),
+    () => (dateColumnId ? (columns.find((c) => c.id === dateColumnId) ?? null) : null),
     [columns, dateColumnId],
   );
 
@@ -121,16 +121,11 @@ export function CalendarView() {
   }, [tasks, cells, dateColumn]);
 
   // First live group for quick-create (spec C.5).
-  const firstGroupId = useMemo(
-    () => groups.find((g) => !g.deleted_at)?.id ?? null,
-    [groups],
-  );
+  const firstGroupId = useMemo(() => groups.find((g) => !g.deleted_at)?.id ?? null, [groups]);
 
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
   // ---------------------------------------------------------------------------
   // Parse a dnd-kit active id to the underlying taskId.
@@ -168,7 +163,9 @@ export function CalendarView() {
       const cellKey = `${taskId}:${dateColumnId}`;
       const existingCell = cells.get(cellKey);
       const existingStart = existingCell?.date_value ? new Date(existingCell.date_value) : null;
-      const existingEnd = existingCell?.date_end_value ? new Date(existingCell.date_end_value) : null;
+      const existingEnd = existingCell?.date_end_value
+        ? new Date(existingCell.date_end_value)
+        : null;
 
       const newStart = overIsoDate;
       let newEnd = overIsoDate;

@@ -12,11 +12,11 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { useState } from "react";
-import { TaskCard } from "@/components/board/shared/TaskCard";
-import { useBoardView } from "@/hooks/use-board-view";
 import { useShallow } from "zustand/react/shallow";
-import { useBoardStore } from "@/stores/board-store";
+import { TaskCard } from "@/components/board/shared/TaskCard";
 import type { Task } from "@/components/board/table/types";
+import { useBoardView } from "@/hooks/use-board-view";
+import { useBoardStore } from "@/stores/board-store";
 
 function DraggableTaskCard({ task }: { task: Task }) {
   const { effective } = useBoardView();
@@ -32,11 +32,7 @@ function DraggableTaskCard({ task }: { task: Task }) {
   });
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{ opacity: isDragging ? 0.4 : 1 }}
-      className="mb-1"
-    >
+    <div ref={setNodeRef} style={{ opacity: isDragging ? 0.4 : 1 }} className="mb-1">
       <TaskCard
         task={task}
         cellsByKey={cells}

@@ -27,7 +27,9 @@
   font-size: 13px;
   background: var(--color-surface);
   cursor: pointer;
-  transition: background 0.1s, border-color 0.1s;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
 }
 
 .rbc-toolbar button:hover {
