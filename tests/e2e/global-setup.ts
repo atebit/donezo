@@ -95,7 +95,9 @@ export default async function globalSetup() {
         msg.includes("already") || msg.includes("duplicate") || msg.includes("registered");
       if (!alreadyExists) {
         // biome-ignore lint/suspicious/noConsole: setup script output is intentional
-        console.warn(`[global-setup] admin.createUser error (will retry sign-in): ${createErr.message}`);
+        console.warn(
+          `[global-setup] admin.createUser error (will retry sign-in): ${createErr.message}`,
+        );
       }
     }
     const retry = await anon.auth.signInWithPassword({
