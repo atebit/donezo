@@ -20,10 +20,8 @@ import { describe, expect, it } from "vitest";
  * - On desktop (≥768px) the persisted view mode is used.
  */
 
-const ROOT = "/Volumes/SSD1T/DEV WORK/donezo/.claude/worktrees/agent-a462b0776957501bb";
-
 function readSource(relPath: string): string {
-  return readFileSync(resolve(ROOT, relPath), "utf-8");
+  return readFileSync(resolve(process.cwd(), relPath), "utf-8");
 }
 
 // ---------------------------------------------------------------------------

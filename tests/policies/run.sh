@@ -25,6 +25,10 @@ set -euo pipefail
 # Move into this script's directory so glob patterns resolve correctly
 cd "$(dirname "$0")"
 
+# pgTAP ships with Supabase's Postgres image but the extension is not loaded
+# by default. Ensure it exists before any test file calls plan() / ok() / etc.
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "create extension if not exists pgtap;" >/dev/null
+
 found=0
 for f in *.sql *.spec.sql; do
   # 00_setup.sql is \i-included by each spec file; do not invoke it directly
