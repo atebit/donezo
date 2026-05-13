@@ -1,9 +1,10 @@
 "use client";
 
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { UserMenu } from "@/components/shared/sidebar/UserMenu";
+import { useWorkspaceMaybe } from "@/hooks/use-workspace";
 import type { CurrentUser } from "@/lib/auth/current-user";
 import { Breadcrumbs } from "./Breadcrumbs";
-import { NotificationBellStub } from "./NotificationBellStub";
 import { SearchStub } from "./SearchStub";
 
 /**
@@ -11,6 +12,9 @@ import { SearchStub } from "./SearchStub";
  * Height: 48px, items left-to-right: breadcrumbs, spacer, search, bell, account menu.
  */
 export function Topbar({ user }: { user: CurrentUser }) {
+  const workspaceCtx = useWorkspaceMaybe();
+  const workspaceSlug = workspaceCtx?.workspace.slug;
+
   return (
     <header
       style={{
@@ -30,7 +34,7 @@ export function Topbar({ user }: { user: CurrentUser }) {
       {/* Right side controls */}
       <div className="flex items-center gap-2">
         <SearchStub />
-        <NotificationBellStub />
+        <NotificationBell {...(workspaceSlug !== undefined ? { workspaceSlug } : {})} />
         <UserMenu user={user} variant="small" />
       </div>
     </header>
