@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -11,7 +10,7 @@ import { describe, expect, it } from "vitest";
  * Full integration testing lives in the Epic 11 E2E spec.
  */
 
-describe.skip("ViewTabs", () => {
+describe("ViewTabs", () => {
   it("renders one tab per view sorted by position", () => {
     // When useBoardView().views = [
     //   { id: 'v1', name: 'Main table', kind: 'table', position: 0, ... },

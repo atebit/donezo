@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { fireEvent, render, screen } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 import type { CommentComposerHandle } from "@/components/comments/CommentItem";
 import { CommentItem } from "@/components/comments/CommentItem";
@@ -68,7 +66,7 @@ const baseProps = {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("CommentItem", () => {
+describe("CommentItem", () => {
   it("renders header with author name and timestamp", () => {
     render(<CommentItem comment={makeComment()} {...baseProps} />);
     expect(screen.getByText("Alice")).toBeTruthy();

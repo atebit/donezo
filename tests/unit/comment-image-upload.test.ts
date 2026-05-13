@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -107,7 +106,7 @@ function makeImageFile(name = "photo.png", type = "image/png"): File {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("comment image upload pipeline", () => {
+describe("comment image upload pipeline", () => {
   beforeEach(() => {
     mockRequestUpload.mockReset();
     mockConfirmUpload.mockReset();
@@ -213,7 +212,7 @@ describe.skip("comment image upload pipeline", () => {
 // Read-mode rendering (Epic 15 enabling — skipped until Vitest + jsdom wired)
 // ---------------------------------------------------------------------------
 
-describe.skip("comment image display (no-taskId render path)", () => {
+describe("comment image display (no-taskId render path)", () => {
   it("read-only CommentEditor (no taskId) registers the image node schema + NodeView", () => {
     // Render <CommentEditor readOnly mentionableMembers={[]} initialDoc={docWithImageNode} />.
     // Assert the rendered output contains [data-testid="attachment-image-node"].

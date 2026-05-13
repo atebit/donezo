@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -62,6 +61,10 @@ describe("MainSidebar mobile — sidebar store contract", () => {
 // ---------------------------------------------------------------------------
 
 describe.skip("MainSidebar — mobile render (requires RTL + jsdom, epic 15)", () => {
+  // Skipped: 3 tests fail — (1) fireEvent.click doesn't flush Zustand state without act(),
+  // (2) "Workspace sidebar" complementary role not found after setState (render already done),
+  // (3) aria-expanded="false" even when mobileSidebarOpen=true (same pre-render setState issue).
+  // Needs act() wrapping and store subscription fix. Tracked in epic-15-test-debt.md.
   beforeEach(async () => {
     const { useSidebarStore } = await import("@/stores/sidebar-store");
     useSidebarStore.setState({ mobileSidebarOpen: false });

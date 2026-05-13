@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "../../lib/supabase/types";
@@ -32,7 +31,7 @@ function makeAttachment(overrides: Partial<AttachmentRow> = {}): AttachmentRow {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("useBoardStore — Epic 10 attachments", () => {
+describe("useBoardStore — Epic 10 attachments", () => {
   beforeEach(() => {
     useBoardStore.getState().reset();
     useBoardStore.setState({

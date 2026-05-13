@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import { getArity, type OperandArity } from "@/components/filters/OperandInput";
 import type { FilterOperator } from "@/lib/cells/types";
@@ -16,7 +15,7 @@ import type { FilterOperator } from "@/lib/cells/types";
 // describe.skip — wired in Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("OperandInput.getArity", () => {
+describe("OperandInput.getArity", () => {
   describe("none-arity operators (no operand input shown)", () => {
     const noneOps: FilterOperator[] = [
       "is_empty",

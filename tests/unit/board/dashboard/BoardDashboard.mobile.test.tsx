@@ -11,7 +11,6 @@
  * but instead verify the exported config shape that drives mobile layout.
  */
 
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 // ---------------------------------------------------------------------------

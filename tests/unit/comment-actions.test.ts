@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TiptapDoc } from "../../lib/comments/types";
 

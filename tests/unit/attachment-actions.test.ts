@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -44,12 +43,13 @@ vi.mock("../../lib/attachments/server", () => ({
 // Constants
 // ---------------------------------------------------------------------------
 
-const BOARD_ID = "bbbbb000-0000-0000-0000-000000000001";
-const TASK_ID = "ttttt000-0000-0000-0000-000000000001";
-const ATTACHMENT_ID = "aaaaa000-0000-0000-0000-000000000001";
-const _COMMENT_ID = "ccccc000-0000-0000-0000-000000000001"; // reserved for future tests
-const USER_ID = "uuuuu000-0000-0000-0000-000000000001";
-const USER2_ID = "uuuuu000-0000-0000-0000-000000000002";
+// Valid RFC 4122 v4 UUIDs (Zod 4 enforces strict UUID format including variant bits).
+const BOARD_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+const TASK_ID = "bc09bc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+const ATTACHMENT_ID = "ab09bc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+const _COMMENT_ID = "d379bc99-9c0b-4ef8-bb6d-6bb9bd380a11"; // reserved for future tests
+const USER_ID = "fa09bc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+const USER2_ID = "a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 const STORAGE_PATH = `${BOARD_ID}/${TASK_ID}/${ATTACHMENT_ID}/test_file.pdf`;
 
 // ---------------------------------------------------------------------------

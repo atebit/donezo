@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -53,7 +52,7 @@ function makeSupabaseChain(resolveWith: { data: unknown; error: unknown }) {
 }
 
 const mockGetUser = vi.fn().mockResolvedValue({
-  data: { user: { id: "user-uuid-actor" } },
+  data: { user: { id: "fa09bc99-9c0b-4ef8-bb6d-6bb9bd380a11" } },
 });
 
 const mockFrom = vi.fn();
@@ -77,10 +76,12 @@ async function getActions() {
 // describe.skip — all test cases
 // ---------------------------------------------------------------------------
 
-describe.skip("group server actions", () => {
+describe("group server actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-uuid-actor" } } });
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "fa09bc99-9c0b-4ef8-bb6d-6bb9bd380a11" } },
+    });
     mockRequireBoardRole.mockResolvedValue("member");
     mockLogActivity.mockResolvedValue(undefined);
   });
@@ -101,7 +102,7 @@ describe.skip("group server actions", () => {
 
       const { createGroup } = await getActions();
       const result = await createGroup({
-        boardId: "board-uuid-1",
+        boardId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "New Group",
         color: "#a25ddc",
         position: 1,
@@ -118,7 +119,7 @@ describe.skip("group server actions", () => {
 
       const { createGroup } = await getActions();
       const result = await createGroup({
-        boardId: "board-uuid-1",
+        boardId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "New Group",
         color: "#badbad", // not in palette
         position: 1,
@@ -132,8 +133,8 @@ describe.skip("group server actions", () => {
 
     it("succeeds: calls insert and logActivity with correct type and payload", async () => {
       const newGroupRow = {
-        id: "group-uuid-new",
-        board_id: "board-uuid-1",
+        id: "f599bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Sprint 1",
         color: "#a25ddc",
         position: 1,
@@ -147,7 +148,7 @@ describe.skip("group server actions", () => {
 
       const { createGroup } = await getActions();
       const result = await createGroup({
-        boardId: "board-uuid-1",
+        boardId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Sprint 1",
         color: "#a25ddc",
         position: 1,
@@ -158,7 +159,7 @@ describe.skip("group server actions", () => {
       // Verify insert was invoked.
       expect(chain.insert).toHaveBeenCalledWith(
         expect.objectContaining({
-          board_id: "board-uuid-1",
+          board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
           name: "Sprint 1",
           color: "#a25ddc",
           position: 1,
@@ -189,7 +190,10 @@ describe.skip("group server actions", () => {
       mockFrom.mockReturnValue(makeSupabaseChain({ data: null, error: null }));
 
       const { renameGroup } = await getActions();
-      const result = await renameGroup({ groupId: "group-uuid-1", name: "" });
+      const result = await renameGroup({
+        groupId: "d379bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        name: "",
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -199,8 +203,8 @@ describe.skip("group server actions", () => {
 
     it("succeeds: logActivity payload contains from/to names", async () => {
       const existingGroup = {
-        id: "group-uuid-1",
-        board_id: "board-uuid-1",
+        id: "d379bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Old Name",
       };
       const updatedGroup = {
@@ -226,7 +230,7 @@ describe.skip("group server actions", () => {
 
       const { renameGroup } = await getActions();
       const result = await renameGroup({
-        groupId: "group-uuid-1",
+        groupId: "d379bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         name: "New Name",
       });
 
@@ -248,19 +252,31 @@ describe.skip("group server actions", () => {
   describe("duplicateGroup", () => {
     it("copies the correct number of tasks from the source group", async () => {
       const sourceGroup = {
-        id: "group-uuid-src",
-        board_id: "board-uuid-1",
+        id: "e489bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Sprint 1",
         color: "#a25ddc",
         position: 2,
       };
       const sourceTasks = [
-        { id: "task-uuid-1", title: "Task A", position: 1, created_by: null, updated_by: null },
-        { id: "task-uuid-2", title: "Task B", position: 2, created_by: null, updated_by: null },
+        {
+          id: "bc09bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+          title: "Task A",
+          position: 1,
+          created_by: null,
+          updated_by: null,
+        },
+        {
+          id: "cd19bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+          title: "Task B",
+          position: 2,
+          created_by: null,
+          updated_by: null,
+        },
       ];
       const newGroup = {
         ...sourceGroup,
-        id: "group-uuid-new",
+        id: "f599bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         name: "Sprint 1 copy",
         position: 2.5,
         created_at: "2026-05-11T00:00:00Z",
@@ -293,13 +309,13 @@ describe.skip("group server actions", () => {
         if (callIdx === 4) return makeSupabaseChain({ data: newGroup, error: null });
         // Calls 5+: INSERT each task → single resolves to a new task id.
         return makeSupabaseChain({
-          data: { id: `task-uuid-new-${callIdx}` },
+          data: { id: `ef39bc99-9c0b-4ef8-bb6d-6bb9bd380a11-${callIdx}` },
           error: null,
         });
       });
 
       const { duplicateGroup } = await getActions();
-      const result = await duplicateGroup({ groupId: "group-uuid-src" });
+      const result = await duplicateGroup({ groupId: "e489bc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result).toEqual({ ok: true, data: newGroup });
 
@@ -320,8 +336,8 @@ describe.skip("group server actions", () => {
   describe("deleteGroup", () => {
     it("soft deletes by setting deleted_at (cascade is DB-side, not asserted here)", async () => {
       const group = {
-        id: "group-uuid-del",
-        board_id: "board-uuid-1",
+        id: "a6a9bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "To Delete",
       };
 
@@ -342,18 +358,21 @@ describe.skip("group server actions", () => {
       });
 
       const { deleteGroup } = await getActions();
-      const result = await deleteGroup({ groupId: "group-uuid-del" });
+      const result = await deleteGroup({ groupId: "a6a9bc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result).toEqual({
         ok: true,
-        data: { groupId: "group-uuid-del" },
+        data: { groupId: "a6a9bc99-9c0b-4ef8-bb6d-6bb9bd380a11" },
       });
 
       // Verify the update was called with deleted_at.
       expect(mockLogActivity).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "group.deleted",
-          payload: expect.objectContaining({ groupId: "group-uuid-del", name: "To Delete" }),
+          payload: expect.objectContaining({
+            groupId: "a6a9bc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            name: "To Delete",
+          }),
         }),
       );
     });

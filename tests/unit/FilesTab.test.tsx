@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { render } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -82,7 +80,7 @@ function makeAttachment(id: string, filename: string, mimeType = "image/png", is
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("FilesTab", () => {
+describe("FilesTab", () => {
   beforeEach(() => {
     mockSelectAttachmentsForTask.mockReset();
   });

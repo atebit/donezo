@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FilterTree, SortKey } from "@/lib/views/config-schema";
 import { encodeFilterTree, encodeSortKeys, URL_PARAM_KEYS } from "@/lib/views/url-codec";
@@ -75,6 +74,8 @@ const SAMPLE_SORT: SortKey[] = [
 // ---------------------------------------------------------------------------
 
 describe.skip("useBoardView", () => {
+  // Skipped: beforeEach uses require("@/stores/board-store") which fails in ESM
+  // context — @/ aliases are not resolved by CJS require(). Tracked in epic-15-test-debt.md.
   // -------------------------------------------------------------------------
   // Per-test setup
   // -------------------------------------------------------------------------

@@ -213,6 +213,124 @@ insert into public.cell (task_id, column_id, number_value) values
   ('77777777-7777-7777-7777-777777770011', '55555555-5555-5555-5555-555555555505', 2)
 on conflict (task_id, column_id) do nothing;
 
+-- =============================================================
+-- E2E TEST SEED — deterministic IDs for Playwright specs
+--
+-- Stable uuid constants (e2e section):
+--   E2E user:          eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+--   E2E workspace:     eeeeeeee-eeee-eeee-eeee-eeeeeeeeee01
+--   E2E board:         eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02
+--   E2E group:         eeeeeeee-eeee-eeee-eeee-eeeeeeeeee03
+--   E2E column title:  eeeeeeee-eeee-eeee-eeee-eeeeeeeeee04
+--   E2E task 1:        eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10
+--   E2E task 2:        eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11
+--   E2E task 3:        eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12
+--
+-- All inserts use ON CONFLICT DO NOTHING so existing demo seed rows are
+-- preserved. This section is safe to apply multiple times (idempotent).
+-- =============================================================
+
+-- ------------------------------------------------------------
+-- E2E-1. Auth user (service role bypasses RLS; trigger creates profile)
+-- ------------------------------------------------------------
+insert into auth.users (
+  id,
+  instance_id,
+  email,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  aud,
+  role,
+  created_at,
+  updated_at,
+  encrypted_password
+) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+  '00000000-0000-0000-0000-000000000000',
+  'e2e-user@donezo.test',
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{"name":"E2E Test User"}'::jsonb,
+  'authenticated',
+  'authenticated',
+  now(),
+  now(),
+  -- bcrypt hash of 'e2e-test-password-12345'; generated with Supabase local stack
+  crypt('e2e-test-password-12345', gen_salt('bf'))
+) on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- E2E-2. Workspace + member
+-- ------------------------------------------------------------
+insert into public.workspace (id, slug, name, created_by) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee01',
+  'e2e-workspace',
+  'E2E Workspace',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
+) on conflict (id) do nothing;
+
+insert into public.workspace_member (workspace_id, user_id, role) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee01',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+  'owner'
+) on conflict do nothing;
+
+-- ------------------------------------------------------------
+-- E2E-3. Board + member
+-- ------------------------------------------------------------
+insert into public.board (id, workspace_id, name, created_by) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee01',
+  'E2E Board',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
+) on conflict (id) do nothing;
+
+insert into public.board_member (board_id, user_id, role) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+  'owner'
+) on conflict do nothing;
+
+-- ------------------------------------------------------------
+-- E2E-4. Column (title/text)
+-- ------------------------------------------------------------
+insert into public."column" (id, board_id, name, type, position) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee04',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02',
+  'Task',
+  'text',
+  1
+) on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- E2E-5. Group
+-- ------------------------------------------------------------
+insert into public."group" (id, board_id, name, position) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee03',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02',
+  'E2E Group',
+  1
+) on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- E2E-6. Tasks (3 tasks in E2E group)
+-- ------------------------------------------------------------
+insert into public.task (id, group_id, board_id, title, position, created_by) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee03', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02', 'E2E Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee03', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02', 'E2E Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee03', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee02', 'E2E Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee')
+on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- E2E-7. Title cells for E2E tasks
+-- ------------------------------------------------------------
+insert into public.cell (task_id, column_id, text_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee04', 'E2E Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee04', 'E2E Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee04', 'E2E Task Three')
+on conflict (task_id, column_id) do nothing;
+
 -- ------------------------------------------------------------
 -- 9. Reload PostgREST schema cache
 -- ------------------------------------------------------------

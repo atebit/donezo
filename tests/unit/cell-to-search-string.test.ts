@@ -2,7 +2,6 @@
  * Tests for `toSearchString` on all 24 cell type defs.
  * One assertion per type — verifies the expected text representation.
  */
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import { checkboxType } from "../../components/cells/checkbox/def";
 import { countryType } from "../../components/cells/country/def";

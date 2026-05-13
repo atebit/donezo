@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -18,14 +17,16 @@ import {
   SetLastViewSchema,
 } from "../../lib/validations/view";
 
-const VALID_UUID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
-const VALID_UUID_2 = "bbbbbbbb-cccc-dddd-eeee-ffffffffffff";
+// Valid RFC 4122 v4 UUIDs (version nibble = 4, variant nibble ∈ [89ab]).
+// Zod 4 enforces strict UUID format including the variant bits.
+const VALID_UUID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+const VALID_UUID_2 = "c73bcdcc-2669-4bf6-81d3-e4ae73fb11fd";
 
 // ---------------------------------------------------------------------------
 // CreateViewSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("CreateViewSchema", () => {
+describe("CreateViewSchema", () => {
   it("accepts a minimal valid personal view", () => {
     const result = CreateViewSchema.safeParse({
       boardId: VALID_UUID,
@@ -128,7 +129,7 @@ describe.skip("CreateViewSchema", () => {
 // SaveViewSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("SaveViewSchema", () => {
+describe("SaveViewSchema", () => {
   it("accepts a valid save request with empty config", () => {
     const result = SaveViewSchema.safeParse({
       viewId: VALID_UUID,
@@ -171,7 +172,7 @@ describe.skip("SaveViewSchema", () => {
 // RenameViewSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("RenameViewSchema", () => {
+describe("RenameViewSchema", () => {
   it("accepts a valid rename request", () => {
     const result = RenameViewSchema.safeParse({
       viewId: VALID_UUID,
@@ -218,7 +219,7 @@ describe.skip("RenameViewSchema", () => {
 // DuplicateViewSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("DuplicateViewSchema", () => {
+describe("DuplicateViewSchema", () => {
   it("accepts a valid UUID", () => {
     const result = DuplicateViewSchema.safeParse({ viewId: VALID_UUID });
     expect(result.success).toBe(true);
@@ -242,7 +243,7 @@ describe.skip("DuplicateViewSchema", () => {
 // DeleteViewSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("DeleteViewSchema", () => {
+describe("DeleteViewSchema", () => {
   it("accepts a valid UUID", () => {
     const result = DeleteViewSchema.safeParse({ viewId: VALID_UUID });
     expect(result.success).toBe(true);
@@ -258,7 +259,7 @@ describe.skip("DeleteViewSchema", () => {
 // SetLastViewSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("SetLastViewSchema", () => {
+describe("SetLastViewSchema", () => {
   it("accepts valid boardId and viewId", () => {
     const result = SetLastViewSchema.safeParse({
       boardId: VALID_UUID,
@@ -299,7 +300,7 @@ describe.skip("SetLastViewSchema", () => {
 // GlobalSearchSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("GlobalSearchSchema", () => {
+describe("GlobalSearchSchema", () => {
   it("accepts a valid search request", () => {
     const result = GlobalSearchSchema.safeParse({
       workspaceId: VALID_UUID,

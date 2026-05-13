@@ -1,15 +1,12 @@
-// @ts-expect-error playwright wired in epic 15
 import AxeBuilder from "@axe-core/playwright";
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
 
 /**
- * Auth page a11y specs (sign-in, sign-up).
+ * Auth page a11y specs (sign-in, sign-up, forgot-password).
  *
  * These pages are anonymous — no auth fixture required.
- *
- * Runner wiring (config, baseURL, retries) is owned by epic 15.
- * Run locally with: pnpm dlx playwright test tests/e2e/a11y/auth.a11y.spec.ts
+ * The storageState fixture from global-setup.ts is applied but these
+ * pages redirect unauthenticated users, so cookies are ignored here.
  */
 
 test.describe("Auth pages — axe-core a11y", () => {

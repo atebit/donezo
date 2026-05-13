@@ -1,6 +1,4 @@
-// @ts-expect-error @testing-library/react wired in epic 15
 import { render } from "@testing-library/react";
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { ConnectionStatus } from "@/components/board/ConnectionStatus";
@@ -19,7 +17,7 @@ function setStatus(status: ConnectionStatusType) {
 // Tests — deferred: vitest runner wired in epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("ConnectionStatus", () => {
+describe("ConnectionStatus", () => {
   beforeEach(() => {
     // Reset to connected (the default / "invisible" state)
     useBoardStore.setState({ connection: "connected" });

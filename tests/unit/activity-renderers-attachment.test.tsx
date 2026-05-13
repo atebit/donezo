@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { render } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -66,7 +64,7 @@ function makeEvent(
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("attachment activity renderers", () => {
+describe("attachment activity renderers", () => {
   it("attachment.uploaded renders '{actor} uploaded {filename}'", () => {
     const event = makeEvent("attachment.uploaded", {
       attachmentId: "a1",

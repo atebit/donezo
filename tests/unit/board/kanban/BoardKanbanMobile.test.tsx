@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -80,6 +79,9 @@ describe("KanbanLane — snap CSS classes", () => {
 // ---------------------------------------------------------------------------
 
 describe.skip("KanbanBoard — mobile snap render (requires RTL + jsdom, epic 15)", () => {
+  // Skipped: KanbanBoard requires <BoardProvider> wrapper (useBoard context).
+  // Rendering without it throws "useBoard must be used inside <BoardProvider>".
+  // Tracked in epic-15-test-debt.md.
   it("lane container has scroll-snap-type x mandatory class on mobile", async () => {
     const { render, container } = await import("@testing-library/react");
     const { KanbanBoard } = await import("@/components/board/kanban/KanbanBoard");

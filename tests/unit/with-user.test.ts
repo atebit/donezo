@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import type { ActionContext } from "../../lib/actions/with-user";

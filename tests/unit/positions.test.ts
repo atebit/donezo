@@ -1,8 +1,7 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import { MIN_POSITION_DELTA, positionBetween } from "../../lib/positions";
 
-describe.skip("positionBetween", () => {
+describe("positionBetween", () => {
   it("returns 1 when both prev and next are null", () => {
     expect(positionBetween(null, null)).toBe(1);
   });

@@ -1,9 +1,8 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { throttle } from "../../lib/realtime/throttle";
 
-describe.skip("throttle", () => {
+describe("throttle", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

@@ -11,7 +11,6 @@
  * Slice C — Epic 12.
  */
 
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import { getOffCalendarTasks, mapTasksToEvents } from "@/components/board/calendar/event-mapping";
 import type { Cell, Column, Task } from "@/components/board/table/types";

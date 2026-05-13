@@ -19,7 +19,7 @@
 
 import { describe, it } from "vitest";
 
-describe.skip("GlobalSearchPalette", () => {
+describe("GlobalSearchPalette", () => {
   it("renders the search input autofocused on open", () => {
     // Arrange: render <GlobalSearchPalette isOpen onClose={fn} />.
     // Assert: input[aria-label="Search boards and tasks"] is in the DOM and has focus.
@@ -74,7 +74,7 @@ describe.skip("GlobalSearchPalette", () => {
   });
 });
 
-describe.skip("useCmdK", () => {
+describe("useCmdK", () => {
   it("returns isOpen=false initially", () => {
     // Render a test component that calls useCmdK().
     // Assert: isOpen is false.

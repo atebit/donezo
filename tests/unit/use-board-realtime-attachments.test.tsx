@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -129,7 +128,6 @@ vi.mock("../../stores/board-store", () => ({
 // ---------------------------------------------------------------------------
 // Import the hook AFTER mocks are set up
 // ---------------------------------------------------------------------------
-// @ts-expect-error renderHook is wired in epic 15
 import { act, renderHook } from "@testing-library/react";
 import { useBoardRealtime } from "../../hooks/use-board-realtime";
 
@@ -152,7 +150,7 @@ function clearAllMocks(): void {
 // Tests — Epic 10: attachment subscription
 // ---------------------------------------------------------------------------
 
-describe.skip("useBoardRealtime — Epic 10 attachment subscription", () => {
+describe("useBoardRealtime — Epic 10 attachment subscription", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     stubChannel = makeStubChannel();

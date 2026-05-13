@@ -1,5 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
-
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -60,7 +58,7 @@ describe("NotificationList empty-state — module contract", () => {
 // Render tests (require RTL + jsdom — skip until epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("NotificationList empty-state — render (requires RTL + jsdom, epic 15)", () => {
+describe("NotificationList empty-state — render (requires RTL + jsdom, epic 15)", () => {
   it("renders EmptyState with bell-off icon when notifications is empty", () => {
     // Given: notifications = []
     // → renders <EmptyState icon={IconBellOff} title="No notifications" description="..." />

@@ -5,7 +5,6 @@
  * Uses vitest (node environment — no browser/React required).
  */
 
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 import {

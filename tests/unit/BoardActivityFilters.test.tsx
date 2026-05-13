@@ -1,8 +1,5 @@
-// biome-ignore-all assist/source/organizeImports: @ts-expect-error directives must immediately precede their suppressed imports
-// @ts-expect-error vitest is wired in epic 15
-import { describe, expect, it, vi } from "vitest";
-// @ts-expect-error @testing-library/react wired in epic 15
 import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { BoardActivityFilters } from "../../components/activity/BoardActivityFilters";
 import type { ActivityFilters } from "../../lib/validations/activity";
 
@@ -23,7 +20,7 @@ const MEMBERS = [
   { id: "user-2", displayName: "Bob", email: "bob@example.com" },
 ];
 
-describe.skip("BoardActivityFilters", () => {
+describe("BoardActivityFilters", () => {
   it("renders member checkboxes for each member", () => {
     const onChange = vi.fn();
     render(<BoardActivityFilters value={{}} onChange={onChange} members={MEMBERS} />);

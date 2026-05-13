@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { render, screen } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 import { ActivityItem } from "@/components/activity/ActivityItem";
@@ -51,7 +49,7 @@ const ctx: ActivityRenderCtx = {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("ActivityItem", () => {
+describe("ActivityItem", () => {
   it("renders via registered renderer for a known activity type", () => {
     const event = makeEvent({ type: "task.created" });
     render(<ActivityItem event={event} ctx={ctx} />);

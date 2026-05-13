@@ -1,7 +1,5 @@
-// @ts-expect-error RTL wired in epic 15
 import { render, screen } from "@testing-library/react";
 import type React from "react";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 import { type ActivityRenderCtx, activityRenderers } from "@/components/activity/renderers/index";
@@ -136,7 +134,7 @@ type _ConfigOptional = _CellInlinePropsCheck["config"]; // should be optional
 // Tests — one per renderer group
 // ---------------------------------------------------------------------------
 
-describe.skip("activityRenderers registry", () => {
+describe("activityRenderers registry", () => {
   // ------ task renderers ------
 
   it("task.created renders 'created this task'", () => {

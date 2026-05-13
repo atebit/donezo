@@ -1,6 +1,4 @@
-// @ts-expect-error @testing-library/react wired in epic 15
 import { render, screen } from "@testing-library/react";
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { OutboxBanner } from "@/components/board/OutboxBanner";
@@ -25,7 +23,7 @@ function seedOutboxCount(count: number) {
 // Tests — deferred: vitest runner wired in epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("OutboxBanner", () => {
+describe("OutboxBanner", () => {
   beforeEach(() => {
     useBoardStore.setState({ outbox: [] });
   });

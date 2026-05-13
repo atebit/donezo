@@ -1,14 +1,12 @@
-// @ts-expect-error @testing-library/react wired in epic 15
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { createRef } from "react";
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
 
 // Tests deferred: vitest runner wired in epic 15
-describe.skip("EditableTitle", () => {
+describe("EditableTitle", () => {
   it("Enter commits the value", async () => {
     // TODO: render <EditableTitle initialValue="foo" onCommit={...} />,
     // simulate Enter, assert onCommit called with "foo"
@@ -28,7 +26,7 @@ describe.skip("EditableTitle", () => {
 });
 
 // S14: Imperative focus API + ARIA polish
-describe.skip("EditableTitle imperative focus()", () => {
+describe("EditableTitle imperative focus()", () => {
   it("exposes a ref handle after mount", () => {
     const ref = createRef<EditableTitleHandle>();
     render(
@@ -59,7 +57,9 @@ describe.skip("EditableTitle imperative focus()", () => {
     const el = getByRole("textbox", { name: "Test title" });
     expect(el.getAttribute("aria-readonly")).toBe("true");
 
-    ref.current?.focus();
+    act(() => {
+      ref.current?.focus();
+    });
     // After focus(): setEditing(true) fires synchronously — aria-readonly removed.
     // The actual DOM focus happens after setTimeout(0), so we just check state.
     expect(el.getAttribute("aria-readonly")).toBeNull();
@@ -91,7 +91,9 @@ describe.skip("EditableTitle imperative focus()", () => {
         ariaLabel="Task title"
       />,
     );
-    ref.current?.focus();
+    act(() => {
+      ref.current?.focus();
+    });
     const el = getByRole("textbox", { name: "Task title" });
     expect(el.getAttribute("aria-multiline")).toBe("false");
     expect(el.getAttribute("aria-readonly")).toBeNull();
