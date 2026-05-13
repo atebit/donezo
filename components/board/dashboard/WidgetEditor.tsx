@@ -167,7 +167,7 @@ export function WidgetEditor({
               </Dialog.Title>
             </div>
             <Dialog.Close
-              className="flex items-center justify-center rounded p-1 hover:bg-[color:var(--color-surface-hover)] focus-visible:outline-none"
+              className="flex items-center justify-center rounded p-1 hover:bg-[color:var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]"
               aria-label="Close"
             >
               <X size={15} />
@@ -728,13 +728,13 @@ function FormFooter({ onClose }: { onClose: () => void }) {
       <button
         type="button"
         onClick={onClose}
-        className="rounded-md px-3 py-1.5 text-sm font-medium text-[color:var(--color-fg)] hover:bg-[color:var(--color-surface-hover)] focus-visible:outline-none"
+        className="rounded-md px-3 py-1.5 text-sm font-medium text-[color:var(--color-fg)] hover:bg-[color:var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]"
       >
         Cancel
       </button>
       <button
         type="submit"
-        className="rounded-md bg-[color:var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 focus-visible:outline-none disabled:opacity-50"
+        className="rounded-md bg-[color:var(--color-primary)] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] disabled:opacity-50"
       >
         Save widget
       </button>
