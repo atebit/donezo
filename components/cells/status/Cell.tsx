@@ -26,6 +26,7 @@
  */
 
 import React from "react";
+import { labelTextColor } from "@/lib/cells/label-text-color";
 import type { TaskRow } from "@/lib/cells/types";
 import { useBoardStore } from "@/stores/board-store";
 
@@ -52,6 +53,7 @@ function StatusCellInner({ value, columnId }: StatusCellProps) {
 
   const bgColor = label?.color ?? "var(--color-label-gray)";
   const labelName = label?.name ?? null;
+  const textColor = label ? labelTextColor(label.color) : null;
 
   return (
     /**
@@ -75,7 +77,10 @@ function StatusCellInner({ value, columnId }: StatusCellProps) {
       aria-label={labelName ?? "No status"}
     >
       {labelName && (
-        <span className="text-xs font-medium text-white truncate px-2 select-none">
+        <span
+          className="text-xs font-medium truncate px-2 select-none"
+          style={{ color: textColor ?? undefined }}
+        >
           {labelName}
         </span>
       )}
