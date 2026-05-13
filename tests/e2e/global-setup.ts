@@ -53,15 +53,24 @@ export default async function globalSetup() {
     await page.getByLabel("Password", { exact: true }).fill(E2E_USER_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    // signInWithEmail server action redirects to `next` (defaults to "/").
-    // The root page redirects to /w/<slug> for an authenticated user;
-    // either way we should land off of /sign-in.
-    await page.waitForURL((url) => !url.pathname.startsWith("/sign-in"), {
-      timeout: 30_000,
-    });
+    // signInWithEmail server action sets auth cookies, then the form's
+    // router.push("/") sends us to the home page; HomePage redirects an
+    // authenticated user with a workspace to /w/<slug>. Wait for that
+    // final URL (not just any non-/sign-in URL) and for the network to
+    // be idle so the @supabase/ssr cookie chain has finished refreshing
+    // before we snapshot storage state.
+    await page.waitForURL(/\/w\//, { timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
 
     // biome-ignore lint/suspicious/noConsole: setup script output is intentional
     console.log("[global-setup] Signed in as", E2E_USER_EMAIL, "→", page.url());
+
+    const cookies = await context.cookies();
+    // biome-ignore lint/suspicious/noConsole: setup script output is intentional
+    console.log(
+      "[global-setup] cookies snapshotted:",
+      cookies.map((c) => c.name).join(", ") || "(none)",
+    );
 
     await context.storageState({ path: AUTH_STORAGE_PATH });
     // biome-ignore lint/suspicious/noConsole: setup script output is intentional
