@@ -41,11 +41,7 @@ function makeTask(id: string, overrides: Partial<Task> = {}): Task {
   };
 }
 
-function makeCell(
-  taskId: string,
-  columnId: string,
-  overrides: Partial<Cell> = {},
-): Cell {
+function makeCell(taskId: string, columnId: string, overrides: Partial<Cell> = {}): Cell {
   return {
     id: `${taskId}:${columnId}`,
     task_id: taskId,
@@ -78,7 +74,13 @@ function makeColumn(id: string, type: string, overrides: Partial<Column> = {}): 
   };
 }
 
-function makeLabel(id: string, columnId: string, name: string, color: string, position: number): Label {
+function makeLabel(
+  id: string,
+  columnId: string,
+  name: string,
+  color: string,
+  position: number,
+): Label {
   return {
     id,
     column_id: columnId,
@@ -197,7 +199,6 @@ describe("bucketValuesByColumn", () => {
 
 describe("timeSeriesBuckets", () => {
   const colId = "col-date";
-  const columns = [makeColumn(colId, "date")];
 
   it("groups tasks into day buckets", () => {
     const tasks = [makeTask("t1"), makeTask("t2"), makeTask("t3")];
