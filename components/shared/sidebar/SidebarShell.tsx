@@ -37,6 +37,14 @@ export function SidebarShell({ user, workspaces, children }: SidebarShellProps) 
         overflow: "hidden",
       }}
     >
+      {/* Skip-to-content: visible only on focus, allows keyboard users to bypass nav */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:left-4 focus:top-4 focus:px-4 focus:py-2 focus:rounded-md focus:text-sm focus:bg-primary focus:text-primary-foreground focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
       {/* Main nav rail (desktop) + mobile bottom bar + mobile drawer */}
       <MainSidebar user={user} workspaces={flatWorkspaces} />
 
@@ -61,6 +69,7 @@ export function SidebarShell({ user, workspaces, children }: SidebarShellProps) 
 
           {/* Page content */}
           <main
+            id="main-content"
             style={{
               flex: 1,
               overflow: "auto",
