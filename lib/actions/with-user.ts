@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
@@ -49,6 +50,9 @@ export function withUser<I, O>(
         return { ok: false, error: err as { code: string; message: string; field?: string } };
       }
       logger.error({ err, action, userId: user.id }, "action threw");
+      if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+        Sentry.captureException(err, { extra: { action, userId: user.id } });
+      }
       return { ok: false, error: { code: "INTERNAL", message: "Unexpected error" } };
     }
   };
