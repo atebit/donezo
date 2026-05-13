@@ -27,6 +27,7 @@
 
 import { withUser } from "@/lib/actions";
 import { logActivity } from "@/lib/activity";
+import { trackEvent } from "@/lib/analytics";
 import { requireBoardRole } from "@/lib/authorization";
 import { positionBetween } from "@/lib/positions";
 import {
@@ -86,6 +87,8 @@ export const createTask = withUser(async ({ supabase, userId }, raw) => {
     type: "task.created",
     payload: { groupId: input.groupId, title: input.title },
   });
+
+  trackEvent({ name: "task.added", props: { boardId: group.board_id } });
 
   return data;
 });

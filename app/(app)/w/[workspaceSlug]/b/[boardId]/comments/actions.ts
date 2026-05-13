@@ -20,6 +20,7 @@
 
 import { withUser } from "@/lib/actions";
 import { logActivity } from "@/lib/activity";
+import { trackEvent } from "@/lib/analytics";
 import { requireBoardRole } from "@/lib/authorization";
 import { extractMentions } from "@/lib/comments/mentions";
 import type { TiptapDoc } from "@/lib/comments/types";
@@ -117,6 +118,8 @@ export const createComment = withUser(async ({ supabase, userId }, raw) => {
     type: "comment.posted",
     payload: { commentId: comment.id, bodyTextPreview: input.bodyText.slice(0, 140) },
   });
+
+  trackEvent({ name: "comment.posted", props: { boardId: task.board_id, taskId: input.taskId } });
 
   return comment;
 });

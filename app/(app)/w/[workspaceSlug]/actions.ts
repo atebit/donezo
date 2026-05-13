@@ -1,6 +1,7 @@
 "use server";
 import { InviteEmail } from "@/emails/invite/Invite";
 import { withUser } from "@/lib/actions";
+import { trackEvent } from "@/lib/analytics";
 import { requireWorkspaceRole } from "@/lib/authorization";
 import { sendEmail } from "@/lib/email/send";
 import { logger } from "@/lib/logger";
@@ -20,6 +21,15 @@ export const createBoard = withUser(async ({ supabase }, raw) => {
     })
     .single();
   if (error) throw { code: "DB", message: error.message };
+  // data is typed as `never` by the Supabase client when the RPC returns a
+  // single (non-setof) row and .single() is chained; cast to extract the id.
+  const board = data as unknown as { id: string } | null;
+  if (board) {
+    trackEvent({
+      name: "board.created",
+      props: { workspaceId: input.workspaceId, boardId: board.id },
+    });
+  }
   return data;
 });
 
