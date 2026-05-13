@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
+import { LiveRegion } from "@/components/shared/a11y/LiveRegion";
 import { ThemeProvider } from "@/components/shared/theme/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-bg text-fg antialiased">
         <ThemeProvider>
           {children}
+          <LiveRegion />
           <Toaster />
         </ThemeProvider>
       </body>
