@@ -39,6 +39,9 @@ export {
   Menu as IconMenu,
   MessageCircle as IconComment,
   MessageSquarePlus as IconCommentAdd,
+  // Theme
+  Monitor as IconThemeSystem,
+  Moon as IconThemeDark,
   // Menus / overflow
   MoreHorizontal as IconMore,
   Pin as IconPin,
@@ -49,6 +52,7 @@ export {
   Settings as IconSettings,
   Square as IconSquare,
   Star as IconStar,
+  Sun as IconThemeLight,
   Table2 as IconViewTable,
   Trash2 as IconDelete,
   User as IconViewPerson,

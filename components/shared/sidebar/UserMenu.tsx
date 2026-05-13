@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { signOut } from "@/app/(auth)/actions";
 import { Avatar } from "@/components/shared/Avatar";
+import { ThemeToggle } from "@/components/shared/theme/ThemeToggle";
 import type { CurrentUser } from "@/lib/auth/current-user";
 import { IconLogOut, IconSettings } from "@/lib/icons";
 
@@ -108,39 +109,8 @@ export function UserMenu({ user, variant = "main" }: UserMenuProps) {
               Account settings
             </Menu.Item>
 
-            {/* Theme toggle — disabled, epic 14 owns dark mode */}
-            <Menu.Item
-              disabled
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "6px 8px",
-                borderRadius: "var(--radius-sm)",
-                fontSize: 14,
-                color: "var(--color-fg-muted)",
-                cursor: "not-allowed",
-                opacity: 0.5,
-              }}
-              title="Coming soon"
-            >
-              <span aria-hidden="true" style={{ fontSize: 16, lineHeight: 1 }}>
-                ◑
-              </span>
-              Theme
-              <span
-                style={{
-                  marginLeft: "auto",
-                  fontSize: 11,
-                  color: "var(--color-fg-subtle)",
-                  background: "var(--color-surface-info)",
-                  padding: "1px 6px",
-                  borderRadius: "var(--radius-pill)",
-                }}
-              >
-                Coming soon
-              </span>
-            </Menu.Item>
+            {/* Theme toggle — System / Light / Dark */}
+            <ThemeToggle />
 
             {/* Divider */}
             <hr
