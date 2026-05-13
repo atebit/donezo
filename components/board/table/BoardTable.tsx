@@ -17,11 +17,8 @@ import { useShallow } from "zustand/react/shallow";
 import { reorderColumn } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/columns/actions";
 import { reorderGroup } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
 import { moveTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
-import { MigrateLegacyColumnPrefs } from "@/components/board/MigrateLegacyColumnPrefs";
 import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
-import { useBoard } from "@/hooks/use-board";
-import { useBoardRealtime } from "@/hooks/use-board-realtime";
 import { useBoardView } from "@/hooks/use-board-view";
 import { useTableKeyboardNav } from "@/hooks/use-table-keyboard-nav";
 import { applyFilterTree } from "@/lib/filtering/apply-filter-tree";
@@ -29,7 +26,6 @@ import { applyGroupBy } from "@/lib/filtering/apply-group-by";
 import { applySearch } from "@/lib/filtering/apply-search";
 import { applySort } from "@/lib/filtering/apply-sort";
 import { positionBetween } from "@/lib/positions";
-import { flushOutbox } from "@/lib/realtime/outbox";
 import { wrappedRenameGroup } from "@/lib/realtime/wrapped-actions";
 import { useBoardStore } from "@/stores/board-store";
 import { AddGroupFooter } from "./AddGroupFooter";
@@ -46,7 +42,7 @@ import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./
 import { TaskRow } from "./TaskRow";
 import { TableKeyboardContext, useTableKeyboard } from "./table-keyboard-context";
 import { TableScrollContext } from "./table-scroll-context";
-import type { Group, TableData } from "./types";
+import type { Group } from "./types";
 
 // isQueuedResult — type-narrowing guard for withOutbox's queued branch.
 // Kept local so it does not add a new export to lib/realtime/outbox.ts.
@@ -262,89 +258,18 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
 
 // ---------------------------------------------------------------------------
 // BoardTable
+//
+// Data hydration, Realtime subscription, and outbox flush are handled by the
+// parent <BoardDataProvider> (mounted in layout.tsx). This component reads
+// from the already-hydrated store and renders the table.
 // ---------------------------------------------------------------------------
 
-interface BoardTableProps {
-  boardId: string;
-  initial: TableData;
-}
-
-export function BoardTable({ boardId, initial }: BoardTableProps) {
-  // currentUserId is sourced from the initial data (set by page.tsx / layout.tsx).
-  const currentUserId = initial.currentUserId;
-  const hydratedRef = useRef(false);
+export function BoardTable() {
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [, startTransition] = useTransition();
 
-  // ---------------------------------------------------------------------------
-  // Epic 08 — Realtime hook mount + outbox flush trigger
-  //
-  // userId is sourced from BoardContext (wired in layout.tsx via BoardProvider).
-  // This avoids re-plumbing through page.tsx; the layout already calls
-  // requireUser() and passes the id down through BoardProvider.
-  // ---------------------------------------------------------------------------
-  const { userId } = useBoard();
-
-  // Mount the board-scoped Realtime subscription (postgres_changes + presence +
-  // broadcast). This hook owns channel lifecycle; cleanup on unmount.
-  useBoardRealtime(boardId, userId);
-
-  // Flush any queued outbox entries on reconnect or when the browser comes
-  // back online. Two triggers:
-  //   1. window 'online' event — the browser regained network access.
-  //   2. Zustand store `connection` field transitions to 'connected' — the
-  //      Supabase channel re-established (may happen after router.refresh()).
-  //
-  // Note: Zustand v5 removed the two-argument subscribe(selector, listener) API.
-  // We use the full-state subscribe and track prev connection manually.
-  useEffect(() => {
-    const onOnline = () => {
-      void flushOutbox();
-    };
-    window.addEventListener("online", onOnline);
-
-    // Zustand v5: subscribe(listener) receives (state, prevState).
-    const unsub = useBoardStore.subscribe((state, prevState) => {
-      if (prevState.connection !== "connected" && state.connection === "connected") {
-        void flushOutbox();
-      }
-    });
-
-    return () => {
-      window.removeEventListener("online", onOnline);
-      unsub();
-    };
-  }, []);
-
-  // Hydrate the store once on mount (StrictMode-safe ref guard prevents
-  // double-hydration from the dev-mode double-invocation of effects).
-  // initial.* are bootstrap data; rehydration is keyed on boardId only.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: boardId is the only re-hydration trigger; initial.* is bootstrap data
-  useEffect(() => {
-    if (!hydratedRef.current) {
-      hydratedRef.current = true;
-      useBoardStore.getState().hydrate({
-        boardId,
-        groups: initial.groups,
-        tasks: initial.tasks,
-        cells: initial.cells,
-      });
-      // Epic 10 — hydrate board-level attachments (idempotent, filters non-uploaded)
-      useBoardStore.getState().hydrateAttachmentsForBoard(initial.attachments ?? []);
-      // Epic 11 / Slice F — hydrate server-resolved views and the initial active view id.
-      if (initial.views && initial.views.length > 0) {
-        useBoardStore.getState().hydrateViewsForBoard(boardId, initial.views);
-      }
-      if (initial.activeViewId !== undefined) {
-        useBoardStore.getState().setActiveViewId(initial.activeViewId ?? null);
-      }
-    }
-
-    return () => {
-      useBoardStore.getState().reset();
-      hydratedRef.current = false;
-    };
-  }, [boardId]);
+  // boardId is read from the store (set during hydration by BoardDataProvider).
+  const boardId = useBoardStore((s) => s.boardId) ?? "";
 
   const groups = useBoardStore((s) => s.groups);
   const tasks = useBoardStore((s) => s.tasks);
@@ -865,8 +790,6 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   if (groups.length === 0) {
     return (
       <>
-        {/* Still run the migration component on the empty-state path. */}
-        <MigrateLegacyColumnPrefs boardId={boardId} currentUserId={currentUserId} />
         <NoGroupsEmptyState onAddGroup={() => setIsAddGroupOpen(true)} />
         <AddGroupFooter
           boardId={boardId}
@@ -908,9 +831,6 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
         focusGroupTitle,
       }}
     >
-      {/* Epic 11 / Slice F — one-shot migration of legacy columnPrefsByBoard
-          into the personal view config. Renders null; runs on first mount. */}
-      <MigrateLegacyColumnPrefs boardId={boardId} currentUserId={currentUserId} />
       {/* containerRef is on the outermost div so keydown events from any focused
           row (inside the tree) bubble up to the single listener attached by the
           keyboard nav hook. */}

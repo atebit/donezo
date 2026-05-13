@@ -1,0 +1,121 @@
+/**
+ * calendar.css — minimal overrides on top of react-big-calendar's base stylesheet.
+ *
+ * Design tokens from design-system.md are applied here. react-big-calendar's
+ * own stylesheet is imported in CalendarView.tsx ("use client" component).
+ *
+ * Only override what is necessary to match Donezo's visual language; let
+ * react-big-calendar handle the structural layout CSS.
+ *
+ * Slice C — C.2.
+ */
+
+/* -------------------------------------------------------------------------
+ * Toolbar (react-big-calendar's built-in toolbar)
+ * ------------------------------------------------------------------------- */
+.rbc-toolbar {
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.rbc-toolbar button {
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+}
+
+.rbc-toolbar button:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-strong);
+}
+
+.rbc-toolbar button.rbc-active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* -------------------------------------------------------------------------
+ * Month / Week / Day grid chrome
+ * ------------------------------------------------------------------------- */
+.rbc-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-fg-subtle);
+  border-bottom: 1px solid var(--color-border);
+  padding: 4px 0;
+  background: var(--color-surface);
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+}
+
+.rbc-day-bg + .rbc-day-bg,
+.rbc-month-row + .rbc-month-row {
+  border-color: var(--color-border);
+}
+
+.rbc-off-range-bg {
+  background: var(--color-surface-rail);
+}
+
+.rbc-today {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+/* -------------------------------------------------------------------------
+ * Events
+ * ------------------------------------------------------------------------- */
+.rbc-event {
+  background: transparent !important;
+  border: none !important;
+  padding: 1px 2px;
+}
+
+.rbc-event.rbc-selected {
+  background: transparent !important;
+}
+
+.rbc-event-label {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------
+ * Agenda view
+ * ------------------------------------------------------------------------- */
+.rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-fg-subtle);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* -------------------------------------------------------------------------
+ * Slot selection highlight (quick-create)
+ * ------------------------------------------------------------------------- */
+.rbc-slot-selection {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+}
+
+/* -------------------------------------------------------------------------
+ * Drop-target highlight (dnd-kit overlay approach)
+ * ------------------------------------------------------------------------- */
+[data-date][data-drop-active="true"] {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent) !important;
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
