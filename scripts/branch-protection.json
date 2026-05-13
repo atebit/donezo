@@ -1,15 +1,7 @@
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": [
-      "lint",
-      "typecheck",
-      "build",
-      "unit",
-      "policies",
-      "e2e",
-      "drift"
-    ]
+    "contexts": ["lint", "typecheck", "build", "unit", "policies", "e2e", "drift"]
   },
   "enforce_admins": false,
   "required_pull_request_reviews": {
