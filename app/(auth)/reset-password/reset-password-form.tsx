@@ -109,10 +109,16 @@ export function ResetPasswordForm() {
             id="password"
             type="password"
             autoComplete="new-password"
+            required
             aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "reset-password-error" : undefined}
             {...register("password")}
           />
-          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+          {errors.password && (
+            <p id="reset-password-error" className="text-sm text-destructive" role="alert">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         <Button type="submit" disabled={pending} className="w-full">

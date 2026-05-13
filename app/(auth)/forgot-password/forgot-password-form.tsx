@@ -72,10 +72,16 @@ export function ForgotPasswordForm() {
             id="email"
             type="email"
             autoComplete="email"
+            required
             aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "forgot-password-email-error" : undefined}
             {...register("email")}
           />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+          {errors.email && (
+            <p id="forgot-password-email-error" className="text-sm text-destructive" role="alert">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <Button type="submit" disabled={pending} className="w-full">

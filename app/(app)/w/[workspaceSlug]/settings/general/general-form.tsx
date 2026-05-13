@@ -75,10 +75,16 @@ function RenameSection({
             id="name"
             type="text"
             autoComplete="off"
+            required
             aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? "workspace-settings-name-error" : undefined}
             {...register("name")}
           />
-          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+          {errors.name && (
+            <p id="workspace-settings-name-error" className="text-sm text-destructive" role="alert">
+              {errors.name.message}
+            </p>
+          )}
         </div>
         <div>
           <Button type="submit" disabled={pending} size="sm">
@@ -153,11 +159,17 @@ function SlugSection({
               ref={slugRef}
               type="text"
               autoComplete="off"
+              required
               defaultValue={workspaceSlug}
               aria-invalid={!!slugError}
+              aria-describedby={slugError ? "workspace-settings-slug-error" : undefined}
             />
           </div>
-          {slugError && <p className="text-sm text-destructive">{slugError}</p>}
+          {slugError && (
+            <p id="workspace-settings-slug-error" className="text-sm text-destructive" role="alert">
+              {slugError}
+            </p>
+          )}
         </div>
         <div>
           <Button type="submit" disabled={pending} size="sm">
