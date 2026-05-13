@@ -10,6 +10,8 @@
 
 import { isThisWeek, isToday, isYesterday } from "date-fns";
 import { useTranslations } from "next-intl";
+import { EmptyState } from "@/components/shared/empty-states/EmptyState";
+import { IconBellOff } from "@/lib/icons";
 import type { AnyNotification } from "@/stores/notification-store";
 import { NotificationItem } from "./NotificationItem";
 
@@ -49,12 +51,7 @@ export function NotificationList({ notifications, workspaceSlug }: Props) {
   const t = useTranslations("empty.noNotifications");
 
   if (notifications.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-        <p className="text-sm text-[var(--color-fg-muted)]">{t("title")}</p>
-        <p className="text-xs text-[var(--color-fg-muted)] mt-1">{t("description")}</p>
-      </div>
-    );
+    return <EmptyState icon={IconBellOff} title={t("title")} description={t("description")} />;
   }
 
   const groups = groupByDate(notifications);
