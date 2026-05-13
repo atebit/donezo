@@ -155,6 +155,7 @@ select throws_ok(
       'a4000000-0000-0000-0000-000000000003'
     )$$,
   '42501',
+  null::text,
   'member cannot INSERT invitation (requires admin+; 42501 raised)'
 );
 
@@ -214,6 +215,7 @@ select throws_ok(
       set email = 'hacked@evil.example'
     where id = 'i4000000-0000-0000-0000-000000000001'$$,
   '42501',
+  null::text,
   'invitation trigger blocks updating email column (only accepted_at allowed)'
 );
 
@@ -266,6 +268,7 @@ select throws_ok(
       'member'
     )$$,
   '42501',
+  null::text,
   'expired invitation cannot be used to self-insert into workspace_member'
 );
 
@@ -284,6 +287,7 @@ select throws_ok(
       'member'
     )$$,
   '42501',
+  null::text,
   'user with mismatched email cannot self-insert into workspace_member'
 );
 
@@ -303,6 +307,7 @@ select throws_ok(
       'member'
     )$$,
   '42501',
+  null::text,
   'board-scoped invitation cannot be used to self-insert into workspace_member (Q13)'
 );
 
@@ -343,6 +348,7 @@ select throws_ok(
       'viewer'
     )$$,
   '42501',
+  null::text,
   'already-accepted invitation cannot be reused for self-insert'
 );
 
@@ -369,6 +375,7 @@ select throws_ok(
       'admin'
     )$$,
   '42501',
+  null::text,
   'invitation with role=member cannot be used to self-insert as admin (role mismatch)'
 );
 

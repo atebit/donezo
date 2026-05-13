@@ -136,6 +136,7 @@ select throws_ok(
       99.0
     )$$,
   '42501',
+  null::text,
   'viewer cannot INSERT task (with check violation raises 42501)'
 );
 
@@ -223,6 +224,7 @@ select throws_ok(
       'viewer should not write'
     )$$,
   '42501',
+  null::text,
   'viewer cannot INSERT cell (cell_modify with check raises 42501)'
 );
 
@@ -345,6 +347,7 @@ select throws_ok(
       'impersonated comment'
     )$$,
   '42501',
+  null::text,
   'member cannot INSERT comment with a different author_id (with check raises 42501)'
 );
 

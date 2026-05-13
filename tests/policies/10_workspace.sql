@@ -218,6 +218,9 @@ select is(:rcnt::int, 1, 'member can self-remove from workspace_member');
 select tests.reset_to_service_role();
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000005'::uuid);
 
+-- pgTAP's 3-arg throws_ok(sql, errcode, errmsg) matches errmsg literally.
+-- We only want to assert the errcode, so use the 4-arg form with errmsg=NULL
+-- and the description in the trailing slot.
 select throws_ok(
   $$insert into public.workspace_member (workspace_id, user_id, role)
     values (
@@ -226,6 +229,7 @@ select throws_ok(
       'viewer'
     )$$,
   '42501',
+  null::text,
   'non-member cannot INSERT into workspace_member without admin role or invitation'
 );
 
