@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -89,7 +88,7 @@ function makeSupabaseChain(resolveWith: { data: unknown; error: unknown }) {
 }
 
 const mockGetUser = vi.fn().mockResolvedValue({
-  data: { user: { id: "user-uuid-actor" } },
+  data: { user: { id: "fa09bc99-9c0b-4ef8-bb6d-6bb9bd380a11" } },
 });
 
 const mockFrom = vi.fn();
@@ -113,10 +112,12 @@ async function getActions() {
 // describe.skip — all test cases
 // ---------------------------------------------------------------------------
 
-describe.skip("column server actions", () => {
+describe("column server actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetUser.mockResolvedValue({ data: { user: { id: "user-uuid-actor" } } });
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "fa09bc99-9c0b-4ef8-bb6d-6bb9bd380a11" } },
+    });
     mockRequireBoardRole.mockResolvedValue("admin");
     mockLogActivity.mockResolvedValue(undefined);
     mockGetCellDef.mockReturnValue({
@@ -133,8 +134,8 @@ describe.skip("column server actions", () => {
   describe("createColumn", () => {
     it("inserts a status column and seeds default labels", async () => {
       const newColumn = {
-        id: "col-uuid-1",
-        board_id: "board-uuid-1",
+        id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Status",
         type: "status",
         position: 1,
@@ -145,7 +146,7 @@ describe.skip("column server actions", () => {
       const seededLabels = [
         {
           id: "lbl-1",
-          column_id: "col-uuid-1",
+          column_id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           name: "Working on it",
           color: "#fdab3d",
           position: 1,
@@ -154,7 +155,7 @@ describe.skip("column server actions", () => {
         },
         {
           id: "lbl-2",
-          column_id: "col-uuid-1",
+          column_id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           name: "Done",
           color: "#00c875",
           position: 2,
@@ -163,7 +164,7 @@ describe.skip("column server actions", () => {
         },
         {
           id: "lbl-3",
-          column_id: "col-uuid-1",
+          column_id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           name: "Stuck",
           color: "#e2445c",
           position: 3,
@@ -188,7 +189,7 @@ describe.skip("column server actions", () => {
 
       const { createColumn } = await getActions();
       const result = await createColumn({
-        boardId: "board-uuid-1",
+        boardId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Status",
         type: "status",
         position: 1,
@@ -197,7 +198,10 @@ describe.skip("column server actions", () => {
 
       expect(result).toEqual({ ok: true, data: { column: newColumn, labels: seededLabels } });
 
-      expect(mockRequireBoardRole).toHaveBeenCalledWith("board-uuid-1", "admin");
+      expect(mockRequireBoardRole).toHaveBeenCalledWith(
+        "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "admin",
+      );
       expect(mockLogActivity).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "column.created",
@@ -208,8 +212,8 @@ describe.skip("column server actions", () => {
 
     it("inserts a text column without seeding any labels", async () => {
       const newColumn = {
-        id: "col-uuid-2",
-        board_id: "board-uuid-1",
+        id: "d2eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Notes",
         type: "text",
         position: 2,
@@ -222,7 +226,7 @@ describe.skip("column server actions", () => {
 
       const { createColumn } = await getActions();
       const result = await createColumn({
-        boardId: "board-uuid-1",
+        boardId: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Notes",
         type: "text",
         position: 2,
@@ -242,8 +246,8 @@ describe.skip("column server actions", () => {
   describe("renameColumn", () => {
     it("updates column name and logs activity with from/to payload", async () => {
       const existingColumn = {
-        id: "col-uuid-1",
-        board_id: "board-uuid-1",
+        id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Old Name",
       };
       const updatedColumn = {
@@ -264,10 +268,16 @@ describe.skip("column server actions", () => {
       });
 
       const { renameColumn } = await getActions();
-      const result = await renameColumn({ columnId: "col-uuid-1", name: "New Name" });
+      const result = await renameColumn({
+        columnId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        name: "New Name",
+      });
 
       expect(result).toEqual({ ok: true, data: updatedColumn });
-      expect(mockRequireBoardRole).toHaveBeenCalledWith("board-uuid-1", "admin");
+      expect(mockRequireBoardRole).toHaveBeenCalledWith(
+        "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "admin",
+      );
       expect(mockLogActivity).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "column.renamed",
@@ -280,7 +290,10 @@ describe.skip("column server actions", () => {
       mockFrom.mockReturnValue(makeSupabaseChain({ data: null, error: null }));
 
       const { renameColumn } = await getActions();
-      const result = await renameColumn({ columnId: "col-uuid-1", name: "" });
+      const result = await renameColumn({
+        columnId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        name: "",
+      });
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
@@ -296,8 +309,8 @@ describe.skip("column server actions", () => {
   describe("deleteColumn", () => {
     it("hard-deletes the column and returns deletedColumnId + affectedCellCount", async () => {
       const column = {
-        id: "col-uuid-del",
-        board_id: "board-uuid-1",
+        id: "a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "To Delete",
         type: "text",
       };
@@ -320,11 +333,11 @@ describe.skip("column server actions", () => {
       });
 
       const { deleteColumn } = await getActions();
-      const result = await deleteColumn({ columnId: "col-uuid-del" });
+      const result = await deleteColumn({ columnId: "a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data.deletedColumnId).toBe("col-uuid-del");
+        expect(result.data.deletedColumnId).toBe("a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
         // affectedCellCount may be 0 or 5 depending on mock resolution; just verify it's present.
         expect(typeof result.data.affectedCellCount).toBe("number");
       }
@@ -332,7 +345,10 @@ describe.skip("column server actions", () => {
       expect(mockLogActivity).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "column.deleted",
-          payload: expect.objectContaining({ columnId: "col-uuid-del", name: "To Delete" }),
+          payload: expect.objectContaining({
+            columnId: "a5eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            name: "To Delete",
+          }),
         }),
       );
     });
@@ -345,8 +361,8 @@ describe.skip("column server actions", () => {
   describe("duplicateColumn", () => {
     it("copies the column and its labels, but does not copy cell values", async () => {
       const sourceColumn = {
-        id: "col-uuid-src",
-        board_id: "board-uuid-1",
+        id: "e3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Priority",
         type: "priority",
         position: 2,
@@ -357,8 +373,8 @@ describe.skip("column server actions", () => {
         { name: "High", color: "#e2445c", position: 2 },
       ];
       const newColumn = {
-        id: "col-uuid-new",
-        board_id: "board-uuid-1",
+        id: "f4eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Priority copy",
         type: "priority",
         position: 2.5,
@@ -397,11 +413,11 @@ describe.skip("column server actions", () => {
       });
 
       const { duplicateColumn } = await getActions();
-      const result = await duplicateColumn({ columnId: "col-uuid-src" });
+      const result = await duplicateColumn({ columnId: "e3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data.column.id).toBe("col-uuid-new");
+        expect(result.data.column.id).toBe("f4eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
         // Labels should be present (copied from source).
         expect(Array.isArray(result.data.labels)).toBe(true);
       }
@@ -415,8 +431,8 @@ describe.skip("column server actions", () => {
         expect.objectContaining({
           type: "column.duplicated",
           payload: expect.objectContaining({
-            sourceColumnId: "col-uuid-src",
-            newColumnId: "col-uuid-new",
+            sourceColumnId: "e3eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            newColumnId: "f4eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           }),
         }),
       );
@@ -430,8 +446,8 @@ describe.skip("column server actions", () => {
   describe("changeColumnType", () => {
     it("converts cell values and updates column type on happy path (text → number)", async () => {
       const sourceColumn = {
-        id: "col-uuid-1",
-        board_id: "board-uuid-1",
+        id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Price",
         type: "text",
       };
@@ -439,7 +455,7 @@ describe.skip("column server actions", () => {
       const cells = [
         {
           task_id: "task-1",
-          column_id: "col-uuid-1",
+          column_id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           text_value: "42",
           number_value: null,
           boolean_value: null,
@@ -478,7 +494,7 @@ describe.skip("column server actions", () => {
 
       const { changeColumnType } = await getActions();
       const result = await changeColumnType({
-        columnId: "col-uuid-1",
+        columnId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         newType: "number",
         confirmDataLoss: false,
       });
@@ -498,8 +514,8 @@ describe.skip("column server actions", () => {
 
     it("returns CONFIRMATION_REQUIRED when conversion is lossy and confirmDataLoss is false", async () => {
       const sourceColumn = {
-        id: "col-uuid-1",
-        board_id: "board-uuid-1",
+        id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Status",
         type: "text",
       };
@@ -517,7 +533,7 @@ describe.skip("column server actions", () => {
 
       const { changeColumnType } = await getActions();
       const result = await changeColumnType({
-        columnId: "col-uuid-1",
+        columnId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         newType: "status",
         confirmDataLoss: false,
       });
@@ -530,8 +546,8 @@ describe.skip("column server actions", () => {
 
     it("proceeds with lossy conversion when confirmDataLoss is true", async () => {
       const sourceColumn = {
-        id: "col-uuid-1",
-        board_id: "board-uuid-1",
+        id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Status",
         type: "text",
       };
@@ -559,7 +575,7 @@ describe.skip("column server actions", () => {
 
       const { changeColumnType } = await getActions();
       const result = await changeColumnType({
-        columnId: "col-uuid-1",
+        columnId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         newType: "status",
         confirmDataLoss: true,
       });
@@ -572,8 +588,8 @@ describe.skip("column server actions", () => {
 
     it("returns VALIDATION error when no conversion is defined for the type pair", async () => {
       const sourceColumn = {
-        id: "col-uuid-1",
-        board_id: "board-uuid-1",
+        id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Checkbox",
         type: "checkbox",
       };
@@ -589,7 +605,7 @@ describe.skip("column server actions", () => {
 
       const { changeColumnType } = await getActions();
       const result = await changeColumnType({
-        columnId: "col-uuid-1",
+        columnId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
         newType: "timeline",
         confirmDataLoss: false,
       });
@@ -609,8 +625,8 @@ describe.skip("column server actions", () => {
   describe("duplicateColumn (extended — label column_id verification)", () => {
     it("returned labels each carry column_id set to the new column's id", async () => {
       const sourceColumn = {
-        id: "col-uuid-src-ext",
-        board_id: "board-uuid-1",
+        id: "e9eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Status copy test",
         type: "status",
         position: 3,
@@ -618,8 +634,8 @@ describe.skip("column server actions", () => {
       };
       const sourceLabels = [{ name: "Done", color: "#00c875", position: 1 }];
       const newColumn = {
-        id: "col-uuid-new-ext",
-        board_id: "board-uuid-1",
+        id: "d8eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Status copy test copy",
         type: "status",
         position: 3.5,
@@ -630,7 +646,7 @@ describe.skip("column server actions", () => {
       const newLabels = [
         {
           id: "lbl-copy-1",
-          column_id: "col-uuid-new-ext",
+          column_id: "d8eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           name: "Done",
           color: "#00c875",
           position: 1,
@@ -659,14 +675,14 @@ describe.skip("column server actions", () => {
       });
 
       const { duplicateColumn } = await getActions();
-      const result = await duplicateColumn({ columnId: "col-uuid-src-ext" });
+      const result = await duplicateColumn({ columnId: "e9eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
         // Every returned label must have column_id equal to the new column's id.
         expect(
           result.data.labels.every(
-            (l: { column_id: string }) => l.column_id === "col-uuid-new-ext",
+            (l: { column_id: string }) => l.column_id === "d8eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
           ),
         ).toBe(true);
       }
@@ -680,8 +696,8 @@ describe.skip("column server actions", () => {
   describe("deleteColumn (extended — affectedCellCount precision)", () => {
     it("affectedCellCount matches the number of cells that existed before delete", async () => {
       const column = {
-        id: "col-uuid-cascade",
-        board_id: "board-uuid-1",
+        id: "c7eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Cascade Delete",
         type: "text",
       };
@@ -705,7 +721,7 @@ describe.skip("column server actions", () => {
       });
 
       const { deleteColumn } = await getActions();
-      const result = await deleteColumn({ columnId: "col-uuid-cascade" });
+      const result = await deleteColumn({ columnId: "c7eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -716,8 +732,8 @@ describe.skip("column server actions", () => {
 
     it("affectedCellCount is 0 when no cells existed for the column", async () => {
       const column = {
-        id: "col-uuid-empty",
-        board_id: "board-uuid-1",
+        id: "b6eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        board_id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
         name: "Empty Column",
         type: "text",
       };
@@ -740,7 +756,7 @@ describe.skip("column server actions", () => {
       });
 
       const { deleteColumn } = await getActions();
-      const result = await deleteColumn({ columnId: "col-uuid-empty" });
+      const result = await deleteColumn({ columnId: "b6eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
 
       expect(result.ok).toBe(true);
       if (result.ok) {

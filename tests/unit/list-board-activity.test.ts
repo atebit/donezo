@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -27,8 +26,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Shared fixtures
 // ---------------------------------------------------------------------------
 
-const BOARD_ID = "bbbbb000-0000-0000-0000-000000000001";
-const ACTOR_ID = "aaaaa000-0000-0000-0000-000000000001";
+// Valid RFC 4122 v4 UUIDs (Zod 4 enforces strict UUID format).
+const BOARD_ID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
+const ACTOR_ID = "fa09bc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 
 function makeActivity(overrides: Record<string, unknown> = {}) {
   return {
@@ -108,7 +108,7 @@ vi.mock("../../lib/supabase/server", () => ({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("listBoardActivity", () => {
+describe("listBoardActivity", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRequireBoardRole.mockResolvedValue("viewer");

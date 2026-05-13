@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import type { SortKey } from "@/lib/views/config-schema";
 
@@ -41,7 +40,7 @@ function arrayMove<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
 // describe.skip — wired in Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("SortBuilder logic", () => {
+describe("SortBuilder logic", () => {
   describe("toggleDirection", () => {
     it("flips asc → desc", () => {
       const key: SortKey = { columnId: COL_A, direction: "asc" };

@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -47,7 +46,7 @@ vi.mock("@/hooks/use-board", () => ({
 // Suite
 // ---------------------------------------------------------------------------
 
-describe.skip(
+describe(
   "useTaskDrawerPresence",
   "Runner wired in epic 15. Requires RTL + Vitest + jsdom + renderHook.",
   () => {

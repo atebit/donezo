@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -74,7 +73,7 @@ describe("DndProviders TouchSensor wiring", () => {
 // Rendering tests (skipped — RTL not wired until Epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("reorder mode rendering", () => {
+describe("reorder mode rendering", () => {
   it("long-press 250ms on a SortableCard triggers setReorderMode(true)", () => {
     // Simulate pointer down, wait 250ms, pointer up.
     // → store.reorderMode === true

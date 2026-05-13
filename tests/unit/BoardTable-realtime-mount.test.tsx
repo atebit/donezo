@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -191,7 +190,6 @@ vi.mock("../../components/board/table/table-scroll-context", () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-// @ts-expect-error vitest is wired in epic 15
 import { act, renderHook } from "@testing-library/react";
 import { useEffect } from "react";
 

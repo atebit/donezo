@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 /**
@@ -16,7 +15,6 @@ import { describe, expect, it, vi } from "vitest";
  * - Empty state renders gracefully.
  */
 
-// @ts-expect-error renderHook is wired in epic 15
 import { act, fireEvent, render } from "@testing-library/react";
 import type {
   MentionItem,
@@ -56,7 +54,7 @@ const ALL_MEMBERS = [ALICE, BOB, CAROL];
 // filterMentionItems tests (no React, pure logic)
 // ---------------------------------------------------------------------------
 
-describe.skip("filterMentionItems", () => {
+describe("filterMentionItems", () => {
   it("returns Everyone first with empty query", () => {
     const result = filterMentionItems(ALL_MEMBERS, "");
     // biome-ignore lint/style/noNonNullAssertion: result is non-empty
@@ -118,7 +116,7 @@ describe.skip("filterMentionItems", () => {
 import { createRef } from "react";
 import { MentionPopover } from "../../components/comments/MentionPopover";
 
-describe.skip("MentionPopover", () => {
+describe("MentionPopover", () => {
   it("renders nothing when not open", () => {
     const ref = createRef<MentionSuggestionBridge>();
     const { container } = render(<MentionPopover ref={ref} />);

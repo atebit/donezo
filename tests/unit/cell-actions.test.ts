@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 /**
@@ -13,8 +12,10 @@ import { describe, expect, it, vi } from "vitest";
  *   - A test Postgres DB is available with the full schema applied.
  */
 
-describe.skip("setCellValue", () => {
-  it("happy path: upserts a cell row and returns the updated cell", async () => {
+describe("setCellValue", () => {
+  it.skip("happy path: upserts a cell row and returns the updated cell", async () => {
+    // Skipped: test asserts mockCellDef.toRow was called but never calls it — stub test
+    // not yet wired to the real action. Tracked in epic-15-test-debt.md.
     // Arrange
     const mockPatch = {
       text_value: "Hello",
@@ -131,7 +132,7 @@ describe.skip("setCellValue", () => {
   });
 });
 
-describe.skip("bulkSetCellValue", () => {
+describe("bulkSetCellValue", () => {
   it("happy path: upserts cells for all taskIds and returns count + cells", async () => {
     // Arrange
     const taskIds = ["task-1", "task-2", "task-3"];
@@ -278,7 +279,7 @@ describe.skip("bulkSetCellValue", () => {
 // Epic 08 — S0: board_id in upsert payloads
 // ---------------------------------------------------------------------------
 
-describe.skip("setCellValue — board_id in upsert payload (Epic 08 S0)", () => {
+describe("setCellValue — board_id in upsert payload (Epic 08 S0)", () => {
   it("includes board_id from the column record in the upsert payload", async () => {
     // Arrange — simulate the upsert payload construction from setCellValue.
     // The action reads col.board_id after loading the column, then passes it
@@ -329,7 +330,7 @@ describe.skip("setCellValue — board_id in upsert payload (Epic 08 S0)", () => 
   });
 });
 
-describe.skip("bulkSetCellValue — board_id in upsert payload (Epic 08 S0)", () => {
+describe("bulkSetCellValue — board_id in upsert payload (Epic 08 S0)", () => {
   it("includes board_id from the column record in every entry of the upsert payload", async () => {
     // Arrange — simulate the bulk upsert payload construction.
     // The action computes a single patch and maps it over all taskIds, including
@@ -387,7 +388,7 @@ describe.skip("bulkSetCellValue — board_id in upsert payload (Epic 08 S0)", ()
 // Additional cases (S23 extension)
 // ---------------------------------------------------------------------------
 
-describe.skip("setCellValue (extended)", () => {
+describe("setCellValue (extended)", () => {
   it("status value { labelId } writes label_id and nulls all other value columns", () => {
     // Arrange — simulate statusType.toRow({ labelId: "lbl-uuid" })
     const statusToRow = vi.fn().mockReturnValue({
@@ -435,7 +436,7 @@ describe.skip("setCellValue (extended)", () => {
   });
 });
 
-describe.skip("bulkSetCellValue (extended)", () => {
+describe("bulkSetCellValue (extended)", () => {
   it("checkbox value=true writes boolean_value=true for all selected tasks", () => {
     // Arrange — simulate checkboxType.toRow(true)
     const checkboxToRow = vi.fn().mockReturnValue({

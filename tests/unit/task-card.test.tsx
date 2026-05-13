@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 /**
@@ -117,7 +116,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/w/acme/b/board-id/kanban",
 }));
 
-describe.skip("TaskCard rendering (Epic 15 wiring)", () => {
+describe("TaskCard rendering (Epic 15 wiring)", () => {
   it("renders task title in the card", () => {
     // TODO(epic-15): render <TaskCard /> with renderHook/render and assert
     // that the task title appears in the DOM.

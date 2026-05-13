@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -144,6 +143,9 @@ describe("TaskDrawerModalShell — mobile ARIA gate contract", () => {
 // ---------------------------------------------------------------------------
 
 describe.skip("TaskDrawer — mobile fullscreen render (requires RTL + jsdom, epic 15)", () => {
+  // Skipped: TaskDrawer requires <BoardProvider> wrapper; rendering without it throws
+  // "useBoard must be used inside <BoardProvider>". Needs a BoardProvider test wrapper.
+  // Tracked in epic-15-test-debt.md.
   it("renders data-testid=task-drawer in mobile mode", async () => {
     const { render, screen } = await import("@testing-library/react");
     const { TaskDrawer } = await import("@/components/board/TaskDrawer");

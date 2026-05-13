@@ -1,5 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
-
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -85,6 +83,10 @@ describe("CalendarView — forceMobileAgenda source contract", () => {
 // ---------------------------------------------------------------------------
 
 describe.skip("BoardCalendarAgenda — render (requires RTL + jsdom, epic 15)", () => {
+  // Skipped: importing @/components/board/calendar/BoardCalendarAgenda triggers
+  // react-big-calendar CSS import which fails with "Invalid PostCSS Plugin".
+  // CSS transforms in jsdom vitest project need postcss config fix or CSS mock.
+  // Tracked in epic-15-test-debt.md.
   it("on mobile (<768px) renders CalendarView with forceMobileAgenda=true", async () => {
     const { render } = await import("@testing-library/react");
     const { BoardCalendarAgenda } = await import("@/components/board/calendar/BoardCalendarAgenda");

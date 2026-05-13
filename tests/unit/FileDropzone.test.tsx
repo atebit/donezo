@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -52,7 +51,6 @@ vi.mock("react-dropzone", () => ({
   },
 }));
 
-// @ts-expect-error render is wired in epic 15
 import { act, fireEvent, render } from "@testing-library/react";
 import { FileDropzone } from "../../components/attachments/FileDropzone";
 import { MAX_FILE_SIZE_BYTES } from "../../lib/attachments/constants";
@@ -90,7 +88,7 @@ function makeAttachmentRow() {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("FileDropzone", () => {
+describe("FileDropzone", () => {
   beforeEach(() => {
     capturedOnDrop = null;
     mockUpload.mockReset();

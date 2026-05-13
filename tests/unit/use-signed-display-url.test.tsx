@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -23,7 +22,6 @@ vi.mock("../../app/(app)/w/[workspaceSlug]/b/[boardId]/attachments/actions", () 
   getSignedDisplayUrl: (...args: unknown[]) => mockGetSignedDisplayUrl(...args),
 }));
 
-// @ts-expect-error renderHook is wired in epic 15
 import { act, renderHook, waitFor } from "@testing-library/react";
 import {
   clearSignedDisplayUrlCache,
@@ -53,6 +51,9 @@ function makeSignedDisplayUrlOk(expiresInSeconds = 300) {
 // ---------------------------------------------------------------------------
 
 describe.skip("useSignedDisplayUrl", () => {
+  // Skipped: vi.useFakeTimers() + waitFor() interaction causes timeout — RTL's
+  // waitFor polling is blocked by fake timers. Needs vi.runAllTimersAsync() or
+  // real timers workaround. Tracked in epic-15-test-debt.md.
   beforeEach(() => {
     clearSignedDisplayUrlCache();
     mockGetSignedDisplayUrl.mockReset();

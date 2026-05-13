@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -77,7 +76,6 @@ class MockXHR {
   }
 }
 
-// @ts-expect-error XMLHttpRequest is wired in epic 15
 import { act, renderHook } from "@testing-library/react";
 import { useAttachmentUploader } from "../../hooks/use-attachment-uploader";
 
@@ -138,6 +136,11 @@ function getXhr(idx = 0): MockXHR {
 // ---------------------------------------------------------------------------
 
 describe.skip("useAttachmentUploader", () => {
+  // Skipped: async timing issue — hook creates XHR after awaiting requestUpload,
+  // but test triggers XHR load synchronously before the promise resolves.
+  // MockXHR.instances is empty when getXhr(0) is called. Needs await act(async)
+  // to flush the requestUpload promise before XHR is available.
+  // Tracked in epic-15-test-debt.md.
   let origXHR: typeof XMLHttpRequest;
 
   beforeEach(() => {

@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -48,7 +47,7 @@ describe("ThemeProvider configuration", () => {
 // DOM rendering tests — deferred to Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("ThemeProvider rendering (Epic 15 wiring)", () => {
+describe("ThemeProvider rendering (Epic 15 wiring)", () => {
   it("wraps children and renders them", () => {
     // TODO(epic-15): render <ThemeProvider><div>hello</div></ThemeProvider>
     // and assert 'hello' appears in the document.

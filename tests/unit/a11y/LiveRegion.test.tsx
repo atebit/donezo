@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -43,7 +42,7 @@ describe("LiveRegion module shape", () => {
 // DOM rendering tests — deferred to Epic 15 (jsdom environment + RTL)
 // ---------------------------------------------------------------------------
 
-describe.skip("LiveRegion DOM rendering (Epic 15 wiring)", () => {
+describe("LiveRegion DOM rendering (Epic 15 wiring)", () => {
   it("renders a visually-hidden div with role=status", () => {
     // TODO(epic-15): render <LiveRegion /> with RTL + jsdom
     // const { container } = render(<LiveRegion />);

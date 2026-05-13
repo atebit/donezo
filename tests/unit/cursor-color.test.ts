@@ -1,9 +1,8 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 import { cursorColorForUser } from "../../lib/realtime/cursor-color";
 
-describe.skip("cursorColorForUser", () => {
+describe("cursorColorForUser", () => {
   it("returns a stable color for the same user_id", () => {
     const userId = "user-abc-123";
     const color1 = cursorColorForUser(userId);

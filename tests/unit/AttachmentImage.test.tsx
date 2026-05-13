@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -24,7 +23,6 @@ vi.mock("../../hooks/use-signed-display-url", () => ({
   useSignedDisplayUrl: (opts: unknown) => mockUseSignedDisplayUrl(opts),
 }));
 
-// @ts-expect-error render is wired in epic 15
 import { fireEvent, render } from "@testing-library/react";
 import { AttachmentImage } from "../../components/attachments/AttachmentImage";
 
@@ -39,7 +37,7 @@ const SIGNED_URL = "https://storage.example.com/signed/image.png?token=abc";
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("AttachmentImage", () => {
+describe("AttachmentImage", () => {
   beforeEach(() => {
     mockUseSignedDisplayUrl.mockReset();
   });

@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -36,7 +35,7 @@ import {
   aggregateSum,
 } from "@/lib/cells/aggregations";
 
-describe.skip("aggregation helpers", () => {
+describe("aggregation helpers", () => {
   // ===========================================================================
   // aggregateCount
   // ===========================================================================

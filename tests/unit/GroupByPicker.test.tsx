@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -55,7 +54,7 @@ const COLUMNS: MockColumn[] = [
 // describe.skip — wired in Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("GroupByPicker logic", () => {
+describe("GroupByPicker logic", () => {
   describe("groupable type filtering", () => {
     it("includes status, priority, person, date, checkbox, country, rating", () => {
       const groupable = COLUMNS.filter((c) => isGroupable(c.type));

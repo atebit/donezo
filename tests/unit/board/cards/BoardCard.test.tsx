@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -32,7 +31,7 @@ describe("BoardCard module shape", () => {
 // Rendering tests (skipped — RTL not wired until Epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("BoardCard rendering", () => {
+describe("BoardCard rendering", () => {
   it("renders task title", () => {
     // When task.title = "Write tests"
     // → renders a paragraph containing "Write tests"

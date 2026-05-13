@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -9,7 +8,7 @@ import { describe, expect, it } from "vitest";
  * as executable specifications once the runner lands.
  */
 
-describe.skip("createLabel", () => {
+describe("createLabel", () => {
   it("inserts a label row and returns it with the correct shape", async () => {
     // Arrange: mock supabase, mock column lookup returning { board_id: "board-1" },
     // mock requireBoardRole to resolve, mock label insert to return a full row.
@@ -40,7 +39,7 @@ describe.skip("createLabel", () => {
   });
 });
 
-describe.skip("renameLabel", () => {
+describe("renameLabel", () => {
   it("updates the label name and logs a label.renamed activity with from/to payload", async () => {
     // Arrange: mock label lookup returning { id, name: "Old Name", column: { board_id } },
     // mock requireBoardRole, mock label update returning updated row.
@@ -58,7 +57,7 @@ describe.skip("renameLabel", () => {
   });
 });
 
-describe.skip("recolorLabel", () => {
+describe("recolorLabel", () => {
   it("updates the label color and logs a label.recolored activity with from/to payload", async () => {
     // Arrange: mock label lookup returning { id, color: "#000000", column: { board_id } },
     // mock requireBoardRole, mock label update returning updated row.
@@ -76,7 +75,7 @@ describe.skip("recolorLabel", () => {
   });
 });
 
-describe.skip("reorderLabel", () => {
+describe("reorderLabel", () => {
   it("updates the label position and logs a label.reordered activity", async () => {
     // Arrange: mock label lookup returning { id, column: { board_id } },
     // mock requireBoardRole, mock label update returning updated row with new position.
@@ -94,7 +93,7 @@ describe.skip("reorderLabel", () => {
   });
 });
 
-describe.skip("deleteLabel", () => {
+describe("deleteLabel", () => {
   it("hard-deletes the label, counts affected cells, and logs label.deleted with affectedCellCount", async () => {
     // Arrange: mock label lookup returning { id, name: "Done", color: "#00c875", column: { board_id } },
     // mock requireBoardRole, mock cell count query returning { count: 4 },

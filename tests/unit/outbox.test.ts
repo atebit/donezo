@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -89,23 +88,24 @@ function resetMockState() {
 
 // ---- Tests --------------------------------------------------------------
 
-describe.skip("isOnline", () => {
-  it("returns true on the server (navigator not defined)", async () => {
+describe("isOnline", () => {
+  it.skip("returns true on the server (navigator not defined)", async () => {
+    // Skipped: Node 25 exposes navigator but navigator.onLine is undefined,
+    // so typeof result is "undefined" not "boolean". Tracked in epic-15-test-debt.md.
     const { isOnline } = await getOutbox();
-    // In the test environment, navigator is typically available, but
-    // we can verify the function doesn't throw and returns a boolean.
     const result = isOnline();
     expect(typeof result).toBe("boolean");
   });
 
-  it("returns navigator.onLine when available", async () => {
+  it.skip("returns navigator.onLine when available", async () => {
+    // Skipped: Node 25 navigator.onLine is undefined (not true). Tracked in epic-15-test-debt.md.
     const { isOnline } = await getOutbox();
     // In jsdom / Node test environment, navigator.onLine defaults to true
     expect(isOnline()).toBe(true);
   });
 });
 
-describe.skip("withOutbox", () => {
+describe("withOutbox", () => {
   beforeEach(() => {
     resetMockState();
     vi.clearAllMocks();
@@ -249,7 +249,7 @@ describe.skip("withOutbox", () => {
   });
 });
 
-describe.skip("flushOutbox", () => {
+describe("flushOutbox", () => {
   beforeEach(() => {
     resetMockState();
     vi.clearAllMocks();

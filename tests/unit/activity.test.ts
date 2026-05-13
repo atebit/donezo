@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { LogActivityArgs } from "../../lib/activity";
 
@@ -31,7 +30,7 @@ vi.mock("../../lib/logger", () => ({
 
 // --- tests ---
 
-describe.skip("logActivity", () => {
+describe("logActivity", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: insert succeeds

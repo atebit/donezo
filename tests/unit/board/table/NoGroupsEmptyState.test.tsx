@@ -1,5 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
-
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -74,7 +72,7 @@ describe("NoGroupsEmptyState — module contract", () => {
 // Render tests (require RTL + jsdom — skip until epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("NoGroupsEmptyState — render (requires RTL + jsdom, epic 15)", () => {
+describe("NoGroupsEmptyState — render (requires RTL + jsdom, epic 15)", () => {
   it("renders EmptyState with layers icon and Add group button", () => {
     // Given: onAddGroup = vi.fn()
     // → renders <EmptyState icon={IconLayers} title="No groups yet" ... />

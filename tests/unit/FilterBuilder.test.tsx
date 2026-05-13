@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import type { FilterTree } from "@/lib/views/config-schema";
 
@@ -59,7 +58,7 @@ const COL_B = "a1b2c3d4-1234-4abc-89ab-000000000002";
 // describe.skip — wired in Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("FilterBuilder helpers", () => {
+describe("FilterBuilder helpers", () => {
   describe("flattenTree", () => {
     it("returns [] for undefined", () => {
       expect(flattenTree(undefined)).toEqual([]);

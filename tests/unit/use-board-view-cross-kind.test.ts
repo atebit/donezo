@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -119,7 +118,7 @@ vi.mock("@/hooks/use-board", () => ({
   }),
 }));
 
-describe.skip("useBoardView cross-kind navigation (Epic 15 wiring)", () => {
+describe("useBoardView cross-kind navigation (Epic 15 wiring)", () => {
   // Reset board store between tests.
   beforeEach(() => {
     vi.clearAllMocks();

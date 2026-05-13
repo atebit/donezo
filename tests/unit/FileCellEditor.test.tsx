@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { act, render } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -84,7 +82,7 @@ const ROW = { id: TASK_ID };
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("FileCellEditor", () => {
+describe("FileCellEditor", () => {
   beforeEach(() => {
     capturedOnComplete = null;
     mockDeleteAttachment.mockReset();

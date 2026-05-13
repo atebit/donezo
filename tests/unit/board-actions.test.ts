@@ -1,7 +1,6 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, it } from "vitest";
 
-describe.skip("board server actions", () => {
+describe("board server actions", () => {
   it("starBoard upserts user_starred_board row on starred=true");
   it("starBoard deletes user_starred_board row on starred=false");
   it("archiveBoard sets deleted_at");

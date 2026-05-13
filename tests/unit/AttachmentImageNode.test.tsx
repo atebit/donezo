@@ -1,7 +1,5 @@
-// @ts-expect-error RTL wired in epic 15
 import { render } from "@testing-library/react";
 import React from "react";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 /**
@@ -68,7 +66,7 @@ function makeNodeViewProps(attrs: Record<string, string | null>): NodeViewProps 
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("AttachmentImageNode", () => {
+describe("AttachmentImageNode", () => {
   it("renders AttachmentImage when attachmentId is present", () => {
     const props = makeNodeViewProps({ attachmentId: ATTACHMENT_ID, alt: "test", src: null });
     const { getByTestId } = render(<AttachmentImageNode {...props} />);
