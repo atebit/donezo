@@ -7,10 +7,9 @@
  * Epic 12, Slice E.
  */
 
-import type { Database } from "@/lib/supabase/types";
-import type { AggregationKind } from "@/lib/cells/types";
 import { getCellDef } from "@/lib/cells/registry";
-import type { CellTypeId } from "@/lib/cells/types";
+import type { AggregationKind, CellTypeId } from "@/lib/cells/types";
+import type { Database } from "@/lib/supabase/types";
 
 type Task = Database["public"]["Tables"]["task"]["Row"];
 type Cell = Database["public"]["Tables"]["cell"]["Row"];
@@ -37,7 +36,7 @@ export type BucketedGroup = {
   bucketKey: string;
   bucketLabel: string;
   /** Color from the label table (status/priority only); otherwise undefined. */
-  bucketColor?: string;
+  bucketColor?: string | undefined;
   tasks: Task[];
 };
 
@@ -63,10 +62,13 @@ export function bucketValuesByColumn(
 
   const buckets = new Map<string, BucketedGroup>();
 
-  const getOrCreate = (key: string, label: string, color?: string): BucketedGroup => {
+  const getOrCreate = (key: string, label: string, color?: string | undefined): BucketedGroup => {
     if (!buckets.has(key)) {
-      buckets.set(key, { bucketKey: key, bucketLabel: label, bucketColor: color, tasks: [] });
+      const entry: BucketedGroup = { bucketKey: key, bucketLabel: label, tasks: [] };
+      if (color !== undefined) entry.bucketColor = color;
+      buckets.set(key, entry);
     }
+    // biome-ignore lint/style/noNonNullAssertion: key was just set in the if-branch above
     return buckets.get(key)!;
   };
 
@@ -171,7 +173,7 @@ export function timeSeriesBuckets(
     }
     const key = dateToKey(date, bucket);
     if (!bins.has(key)) bins.set(key, []);
-    bins.get(key)!.push(task);
+    bins.get(key)?.push(task);
   }
 
   const sorted = Array.from(bins.entries())
@@ -299,6 +301,6 @@ export function extractColumnValues(
   }
   return tasks.map((task) => {
     const cell = cellsByKey.get(`${task.id}:${columnId}`);
-    return def!.fromRow(cell);
+    return def?.fromRow(cell);
   });
 }
