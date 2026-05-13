@@ -26,7 +26,13 @@ import {
   parseViewConfig,
   type ViewConfig,
 } from "@/lib/views/config-schema";
-import { decodeFilterTree, decodeSortKeys, URL_PARAM_KEYS } from "@/lib/views/url-codec";
+import {
+  decodeFilterTree,
+  decodeSortKeys,
+  encodeFilterTree,
+  encodeSortKeys,
+  URL_PARAM_KEYS,
+} from "@/lib/views/url-codec";
 import {
   selectActiveView,
   selectEffectiveConfig,
@@ -214,15 +220,11 @@ export function useBoardView(): UseBoardViewResult {
 
       // Encode filter.
       if (next.filter) {
-        const { encodeFilterTree } =
-          require("@/lib/views/url-codec") as typeof import("@/lib/views/url-codec");
         const encoded = encodeFilterTree(next.filter);
         if (encoded) params.set(URL_PARAM_KEYS.filter, encoded);
       }
       // Encode sort.
       if (next.sort && next.sort.length > 0) {
-        const { encodeSortKeys } =
-          require("@/lib/views/url-codec") as typeof import("@/lib/views/url-codec");
         const encoded = encodeSortKeys(next.sort);
         if (encoded) params.set(URL_PARAM_KEYS.sort, encoded);
       }
