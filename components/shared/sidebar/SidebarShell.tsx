@@ -37,13 +37,15 @@ export function SidebarShell({ user, workspaces, children }: SidebarShellProps) 
         overflow: "hidden",
       }}
     >
-      {/* Main nav rail */}
-      <MainSidebar user={user} />
+      {/* Main nav rail (desktop) + mobile bottom bar + mobile drawer */}
+      <MainSidebar user={user} workspaces={flatWorkspaces} />
 
       {/* Workspace rail + main content area */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Workspace sidebar */}
-        <WorkspaceSidebar workspaces={flatWorkspaces} />
+        {/* Workspace sidebar — desktop only; mobile uses the Sheet drawer in MainSidebar */}
+        <div className="hidden md:flex" style={{ flexShrink: 0 }}>
+          <WorkspaceSidebar workspaces={flatWorkspaces} />
+        </div>
 
         {/* Main content column */}
         <div
