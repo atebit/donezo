@@ -290,7 +290,7 @@ export function FormBuilder({ onClose }: FormBuilderProps) {
         <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--color-fg-muted)]">
           Form settings
         </p>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:gap-4">
           {/* Submit label */}
           <div className="flex flex-col gap-1 flex-1">
             <label
@@ -304,7 +304,7 @@ export function FormBuilder({ onClose }: FormBuilderProps) {
               type="text"
               value={formConfig.submitLabel ?? "Submit"}
               onChange={(e) => updateFormConfig({ submitLabel: e.target.value || "Submit" })}
-              className="h-8 px-2 text-sm rounded border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-fg)] outline-none focus:border-[color:var(--color-primary)] focus:ring-1 focus:ring-[color:var(--color-primary)]"
+              className="h-8 w-full px-2 text-sm rounded border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-fg)] outline-none focus:border-[color:var(--color-primary)] focus:ring-1 focus:ring-[color:var(--color-primary)]"
               style={{ borderRadius: "4px" }}
             />
           </div>
@@ -322,7 +322,7 @@ export function FormBuilder({ onClose }: FormBuilderProps) {
               type="text"
               value={formConfig.successMessage ?? "Submitted!"}
               onChange={(e) => updateFormConfig({ successMessage: e.target.value || "Submitted!" })}
-              className="h-8 px-2 text-sm rounded border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-fg)] outline-none focus:border-[color:var(--color-primary)] focus:ring-1 focus:ring-[color:var(--color-primary)]"
+              className="h-8 w-full px-2 text-sm rounded border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] text-[color:var(--color-fg)] outline-none focus:border-[color:var(--color-primary)] focus:ring-1 focus:ring-[color:var(--color-primary)]"
               style={{ borderRadius: "4px" }}
             />
           </div>
