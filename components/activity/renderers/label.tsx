@@ -5,6 +5,7 @@
  *   label.created, label.renamed, label.recolored, label.reordered, label.deleted
  */
 
+import { labelTextColor } from "@/lib/cells/label-text-color";
 import { ActivityLine, getPayloadField, resolveActor } from "./_shared";
 import type { ActivityRenderer } from "./index";
 
@@ -17,8 +18,11 @@ export const labelRenderers: Record<string, ActivityRenderer> = {
         added label{" "}
         {name ? (
           <span
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium text-white ml-1"
-            style={{ backgroundColor: color ?? "var(--color-label-gray)" }}
+            className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ml-1"
+            style={{
+              backgroundColor: color ?? "var(--color-label-gray)",
+              color: labelTextColor(color ?? ""),
+            }}
           >
             {name}
           </span>
