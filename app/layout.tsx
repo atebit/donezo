@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -31,6 +33,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {children}
             <LiveRegion />
             <Toaster />
+            <Analytics />
+            <SpeedInsights />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
