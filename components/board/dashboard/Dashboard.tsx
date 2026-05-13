@@ -42,8 +42,14 @@ import { WidgetEditor } from "./WidgetEditor";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-/** Layout cols at each responsive breakpoint. */
-const GRID_COLS = { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 };
+/** Breakpoints (px) for the responsive grid. */
+const GRID_BREAKPOINTS = { lg: 1024, md: 768, sm: 0 };
+
+/**
+ * Layout cols at each responsive breakpoint.
+ * sm: 1 forces a single-column stacked layout on mobile (<768px).
+ */
+const GRID_COLS = { lg: 12, md: 10, sm: 1 };
 
 /** Row height in pixels. */
 const ROW_HEIGHT = 60;
@@ -213,7 +219,20 @@ export function Dashboard() {
         ) : (
           <ResponsiveGridLayout
             className="react-grid-layout"
-            layouts={{ lg: dashboardConfig.layout }}
+            layouts={{
+              lg: dashboardConfig.layout,
+              md: dashboardConfig.layout,
+              // sm: derive a single-column stack from the desktop layout so
+              // widgets render vertically on mobile (<768px).
+              sm: dashboardConfig.layout.map((item, idx) => ({
+                i: item.i,
+                x: 0,
+                y: idx * 4,
+                w: 1,
+                h: item.h,
+              })),
+            }}
+            breakpoints={GRID_BREAKPOINTS}
             cols={GRID_COLS}
             rowHeight={ROW_HEIGHT}
             draggableHandle=".widget-drag-handle"

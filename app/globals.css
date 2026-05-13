@@ -6,7 +6,7 @@
 @source not "../supabase";
 @source not "../tests";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 /* THEME_TOKENS — canonical Monday-derived palette (epic-01-followup-2 Slice I) */
 
