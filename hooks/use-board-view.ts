@@ -17,7 +17,9 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
+import { saveView } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/views/actions";
 import { useBoard } from "@/hooks/use-board";
 import type { Role } from "@/lib/authorization";
 import {
@@ -266,16 +268,24 @@ export function useBoardView(): UseBoardViewResult {
   }, [pathname, router]);
 
   // ---------------------------------------------------------------------------
-  // save — placeholder; Slice E wires the actual server action.
+  // save — calls saveView (Slice E) with the current effective config.
+  // Wired in Slice D per the cross-slice TODO in the placeholder body.
   // ---------------------------------------------------------------------------
   const save = useCallback(async (): Promise<void> => {
-    // TODO(slice-E): call saveView server action with `effective` config.
-    // For now, this is a no-op placeholder so the hook compiles.
-    // When Slice E lands, this will call:
-    //   await saveView({ viewId: active.id, config: effective });
-    //   useBoardStore.getState().applyViewUpsert(result.data);
-    //   useBoardStore.getState().setDraftConfig(null);
-    throw new Error("useBoardView.save: not yet implemented — wired in Slice E");
+    const store = useBoardStore.getState();
+    const currentActive = selectActiveView(store);
+    if (!currentActive) throw new Error("useBoardView.save: no active view");
+
+    const currentEffective = selectEffectiveConfig(store);
+    const result = await saveView({ viewId: currentActive.id, config: currentEffective });
+
+    if (result.ok && result.data) {
+      store.applyViewUpsert(result.data);
+      store.setDraftConfig(null);
+    } else if (!result.ok) {
+      toast.error(result.error.message ?? "Failed to save view");
+      throw new Error(result.error.message ?? "saveView failed");
+    }
   }, []);
 
   // ---------------------------------------------------------------------------
