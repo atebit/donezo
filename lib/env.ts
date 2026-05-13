@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// Server-only env vars are inlined as `undefined` in the client bundle, so the
+// production-only refines below would always fail on the browser. They are only
+// meaningful on the server, where the values actually exist.
+const onServer = typeof window === "undefined";
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -23,12 +28,14 @@ const EnvSchema = z
   })
   .refine(
     (data) =>
+      !onServer ||
       data.NODE_ENV !== "production" ||
       (data.RESEND_API_KEY !== undefined && data.RESEND_API_KEY.length > 0),
     { message: "RESEND_API_KEY is required in production", path: ["RESEND_API_KEY"] },
   )
   .refine(
     (data) =>
+      !onServer ||
       data.NODE_ENV !== "production" ||
       (data.INTERNAL_CRON_SECRET !== undefined && data.INTERNAL_CRON_SECRET.length >= 32),
     {
@@ -38,6 +45,7 @@ const EnvSchema = z
   )
   .refine(
     (data) =>
+      !onServer ||
       data.NODE_ENV !== "production" ||
       (data.SUPABASE_DB_WEBHOOK_SECRET !== undefined &&
         data.SUPABASE_DB_WEBHOOK_SECRET.length >= 32),
@@ -50,6 +58,8 @@ const EnvSchema = z
     (data) => {
       // In production, NEXT_PUBLIC_SENTRY_DSN and SENTRY_AUTH_TOKEN must both
       // be set or both be absent — one without the other is a misconfiguration.
+      // SENTRY_AUTH_TOKEN is server-only, so skip on the client.
+      if (!onServer) return true;
       if (data.NODE_ENV !== "production") return true;
       const hasDsn = !!data.NEXT_PUBLIC_SENTRY_DSN;
       const hasToken = !!data.SENTRY_AUTH_TOKEN;
