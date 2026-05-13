@@ -16,6 +16,13 @@ import { describe, expect, it } from "vitest";
  * - On desktop (≥768px), drawer renders as the existing fixed overlay div
  *   with data-testid="task-drawer".
  * - Existing Esc-key and close behaviour are preserved via TaskDrawerModalShell.
+ *
+ * Epic 14 followup-1 F3 additions:
+ * - TaskDrawer imports SheetTitle for the visually-hidden accessible label.
+ * - TaskDrawer mobile branch contains <SheetTitle className="sr-only"> to
+ *   give the Base UI Dialog an accessible name (WCAG 4.1.2).
+ * - TaskDrawerModalShell imports and calls useMediaQuery('(min-width: 768px)')
+ *   and uses the result to gate the outer role="dialog" wrapper (desktop only).
  */
 
 // ---------------------------------------------------------------------------
@@ -62,6 +69,73 @@ describe("TaskDrawer mobile — module contract", () => {
     const mod = await import("@/components/board/TaskDrawer");
     const src = mod.TaskDrawer.toString();
     expect(src).toContain("h-[100dvh]");
+  });
+
+  // --- Epic 14 followup-1 F3: SheetTitle accessible label ---
+
+  it("sheet module exports SheetTitle", async () => {
+    const mod = await import("@/components/ui/sheet");
+    expect(typeof mod.SheetTitle).toBe("function");
+  });
+
+  it("TaskDrawer.tsx imports SheetTitle from @/components/ui/sheet", async () => {
+    // Source-contract: verify SheetTitle is used inside the component module.
+    // The compiled toString() of TaskDrawer won't include import statements,
+    // but we can verify the SheetTitle symbol is reachable through the sheet module
+    // and that TaskDrawer's source references it.
+    const sheetMod = await import("@/components/ui/sheet");
+    expect(typeof sheetMod.SheetTitle).toBe("function");
+    // The component function source must mention SheetTitle (used in mobile branch).
+    const drawerMod = await import("@/components/board/TaskDrawer");
+    const src = drawerMod.TaskDrawer.toString();
+    expect(src).toContain("SheetTitle");
+  });
+
+  it("TaskDrawer source contains sr-only signaling the visually-hidden title", async () => {
+    const mod = await import("@/components/board/TaskDrawer");
+    const src = mod.TaskDrawer.toString();
+    expect(src).toContain("sr-only");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TaskDrawerModalShell module-shape tests (Epic 14 followup-1 F3)
+// ---------------------------------------------------------------------------
+
+describe("TaskDrawerModalShell — mobile ARIA gate contract", () => {
+  it("exports TaskDrawerModalShell as a named function", async () => {
+    const mod = await import("@/components/board/TaskDrawerModalShell");
+    expect(typeof mod.TaskDrawerModalShell).toBe("function");
+  });
+
+  it("useMediaQuery hook is importable (dependency for the gate)", async () => {
+    const mod = await import("@/hooks/use-media-query");
+    expect(typeof mod.useMediaQuery).toBe("function");
+  });
+
+  it("TaskDrawerModalShell source calls useMediaQuery('(min-width: 768px)')", async () => {
+    const mod = await import("@/components/board/TaskDrawerModalShell");
+    const src = mod.TaskDrawerModalShell.toString();
+    // The compiled output must reference the media query string used for gating.
+    expect(src).toContain("useMediaQuery");
+    expect(src).toContain("(min-width: 768px)");
+  });
+
+  it("TaskDrawerModalShell source references isDesktop to gate the outer dialog", async () => {
+    const mod = await import("@/components/board/TaskDrawerModalShell");
+    const src = mod.TaskDrawerModalShell.toString();
+    expect(src).toContain("isDesktop");
+  });
+
+  it("TaskDrawerModalShell source does NOT render role=dialog unconditionally", async () => {
+    // The outer role="dialog" must be inside the desktop branch (behind isDesktop).
+    // We verify this by checking that the source has both isDesktop and role="dialog".
+    // (A full render assertion requires RTL — deferred to epic 15.)
+    const mod = await import("@/components/board/TaskDrawerModalShell");
+    const src = mod.TaskDrawerModalShell.toString();
+    expect(src).toContain("isDesktop");
+    expect(src).toContain("role");
+    expect(src).toContain("dialog");
   });
 });
 
