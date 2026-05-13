@@ -40,6 +40,7 @@
         "app/**/page.tsx",
         "app/**/layout.tsx",
         "app/**/error.tsx",
+        "app/global-error.tsx",
         "app/**/not-found.tsx",
         "app/**/loading.tsx",
         "app/**/route.ts",

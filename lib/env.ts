@@ -16,6 +16,10 @@ const EnvSchema = z
     SUPABASE_DB_WEBHOOK_SECRET: z.string().min(32).optional(),
     // Observability
     SENTRY_DSN: z.string().url().optional(),
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+    SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+    SENTRY_ORG: z.string().min(1).optional(),
+    SENTRY_PROJECT: z.string().min(1).optional(),
   })
   .refine(
     (data) =>
@@ -41,6 +45,21 @@ const EnvSchema = z
       message: "SUPABASE_DB_WEBHOOK_SECRET (min 32 chars) is required in production",
       path: ["SUPABASE_DB_WEBHOOK_SECRET"],
     },
+  )
+  .refine(
+    (data) => {
+      // In production, NEXT_PUBLIC_SENTRY_DSN and SENTRY_AUTH_TOKEN must both
+      // be set or both be absent — one without the other is a misconfiguration.
+      if (data.NODE_ENV !== "production") return true;
+      const hasDsn = !!data.NEXT_PUBLIC_SENTRY_DSN;
+      const hasToken = !!data.SENTRY_AUTH_TOKEN;
+      return hasDsn === hasToken;
+    },
+    {
+      message:
+        "NEXT_PUBLIC_SENTRY_DSN and SENTRY_AUTH_TOKEN must both be set (or both absent) in production",
+      path: ["NEXT_PUBLIC_SENTRY_DSN"],
+    },
   );
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -61,6 +80,10 @@ const parsed = EnvSchema.safeParse({
   INTERNAL_CRON_SECRET: process.env.INTERNAL_CRON_SECRET,
   SUPABASE_DB_WEBHOOK_SECRET: process.env.SUPABASE_DB_WEBHOOK_SECRET,
   SENTRY_DSN: process.env.SENTRY_DSN,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+  SENTRY_ORG: process.env.SENTRY_ORG,
+  SENTRY_PROJECT: process.env.SENTRY_PROJECT,
 });
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
