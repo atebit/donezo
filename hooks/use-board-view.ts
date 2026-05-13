@@ -27,7 +27,9 @@ import {
   GroupBySchema,
   parseViewConfig,
   type ViewConfig,
+  type ViewKind,
 } from "@/lib/views/config-schema";
+import { kindFromPath, pathForKind } from "@/lib/views/kind-routes";
 import {
   decodeFilterTree,
   decodeSortKeys,
@@ -96,7 +98,7 @@ export function useBoardView(): UseBoardViewResult {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { board, role } = useBoard();
+  const { board, role, workspaceSlug } = useBoard();
   const boardId = board.id;
 
   // ---------------------------------------------------------------------------
@@ -289,7 +291,13 @@ export function useBoardView(): UseBoardViewResult {
   }, []);
 
   // ---------------------------------------------------------------------------
-  // switchView — clears draft, pushes ?view=<id>, strips all other view params.
+  // switchView — clears draft, navigates to the target view.
+  //
+  // Cross-kind: when the target view's kind differs from the current URL kind,
+  // uses router.push (adds history entry so the back button works correctly).
+  // Same-kind: uses router.replace to avoid history bloat.
+  //
+  // The workspaceSlug is sourced from BoardContext (set by [boardId]/layout.tsx).
   // ---------------------------------------------------------------------------
   const switchView = useCallback(
     (viewId: string) => {
@@ -299,12 +307,26 @@ export function useBoardView(): UseBoardViewResult {
       useBoardStore.getState().setSortKeys([]);
       useBoardStore.getState().setInBoardSearch("");
 
-      // Navigate to ?view=<id> only (strip all other view params).
-      const params = new URLSearchParams();
-      params.set(URL_PARAM_KEYS.view, viewId);
-      router.replace(`${pathname}?${params.toString()}`);
+      // Determine the target view's kind from the store.
+      const store = useBoardStore.getState();
+      const boardViews = selectViewsForBoard(store, boardId);
+      const targetView = boardViews.find((v) => v.id === viewId);
+      const targetKind = (targetView?.kind ?? "table") as ViewKind;
+
+      // Build the target URL.
+      const targetPath = pathForKind(targetKind, workspaceSlug, boardId, viewId);
+
+      // Compare kinds: current kind from pathname vs target kind.
+      const currentKind = kindFromPath(pathname);
+      if (currentKind !== targetKind) {
+        // Cross-kind navigation: push to add a history entry.
+        router.push(targetPath);
+      } else {
+        // Same-kind navigation: replace to keep history clean.
+        router.replace(targetPath);
+      }
     },
-    [pathname, router],
+    [pathname, router, boardId, workspaceSlug],
   );
 
   return {

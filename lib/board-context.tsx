@@ -22,27 +22,36 @@ export type BoardContextValue = {
    * URL or making an extra server round-trip.
    */
   workspaceId: string;
+  /**
+   * The workspace slug — used by `useBoardView.switchView` to build cross-kind
+   * navigation URLs without parsing the current pathname.
+   * Set by `[boardId]/layout.tsx`.
+   */
+  workspaceSlug: string;
 };
 
 export const BoardContext = createContext<BoardContextValue | null>(null);
 
-/** Provides board identity, role, star state, current user id, and workspace id to the subtree. */
+/** Provides board identity, role, star state, current user id, workspace id, and workspace slug to the subtree. */
 export function BoardProvider({
   board,
   role,
   isStarred,
   userId,
+  workspaceSlug,
   children,
 }: {
   board: BoardContextValue["board"];
   role: Role;
   isStarred: boolean;
   userId: string;
+  /** The workspace URL slug — from the [workspaceSlug] route param. */
+  workspaceSlug: string;
   children: ReactNode;
 }) {
   return (
     <BoardContext.Provider
-      value={{ board, role, isStarred, userId, workspaceId: board.workspace_id }}
+      value={{ board, role, isStarred, userId, workspaceId: board.workspace_id, workspaceSlug }}
     >
       {children}
     </BoardContext.Provider>

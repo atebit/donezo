@@ -107,13 +107,43 @@ function CountBadge({ count }: { count: number }) {
 }
 
 // ---------------------------------------------------------------------------
+// kindGate — per-kind toolbar item disablement matrix (Epic 12, Slice A §A.11)
+//
+// Spec matrix (off = disabled, on = enabled):
+//   filter:  on/on/on/on/on/off
+//   sort:    on/on/on/on/off/off
+//   hide:    on/off/off/off/off/off
+//   group:   on/off/off/off/off/off
+//   density: on/off/off/off/off/off
+//   search:  on/on/on/on/off/off
+//   save:    on/on/on/on/on/on
+//   reset:   on/on/on/on/on/on
+// ---------------------------------------------------------------------------
+
+type ToolbarItem = "filter" | "sort" | "hide" | "group" | "density" | "search";
+
+const KIND_DISABLED_ITEMS: Record<string, ToolbarItem[]> = {
+  table: [],
+  kanban: ["hide", "group", "density"],
+  calendar: ["hide", "group", "density"],
+  timeline: ["hide", "group", "density"],
+  dashboard: ["sort", "hide", "group", "density", "search"],
+  form: ["filter", "sort", "hide", "group", "density", "search"],
+};
+
+// ---------------------------------------------------------------------------
 // ViewToolbar
 // ---------------------------------------------------------------------------
 
 export function ViewToolbar() {
-  const { effective, hasUnsavedChanges, applyDraft, resetDraft, save, role } = useBoardView();
+  const { active, effective, hasUnsavedChanges, applyDraft, resetDraft, save, role } =
+    useBoardView();
   const { userId } = useBoard();
   const columns = useBoardStore(useShallow((s) => s.columns));
+
+  // Derive the disabled item set from the active view's kind.
+  const viewKind = active?.kind ?? "table";
+  const disabledItems = new Set<ToolbarItem>(KIND_DISABLED_ITEMS[viewKind] ?? []);
 
   // Active view info for permission check.
   const activeView = useBoardStore((s) => {
@@ -172,90 +202,154 @@ export function ViewToolbar() {
       aria-label="View filters and options"
     >
       {/* ── Filter ── */}
-      <PopoverShell
-        trigger={
-          <button type="button" className={toolbarBtnCn()}>
-            <Filter size={14} aria-hidden="true" />
-            Filter
-            <CountBadge count={filterCount} />
-          </button>
-        }
-        side="bottom"
-        align="start"
-      >
-        <FilterBuilder
-          filter={effective.filter}
-          columns={columns}
-          onChange={(next) => applyDraft({ filter: next })}
-        />
-      </PopoverShell>
+      {disabledItems.has("filter") ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title={`Filter is not available on ${viewKind} view`}
+          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
+        >
+          <Filter size={14} aria-hidden="true" />
+          Filter
+        </button>
+      ) : (
+        <PopoverShell
+          trigger={
+            <button type="button" className={toolbarBtnCn()}>
+              <Filter size={14} aria-hidden="true" />
+              Filter
+              <CountBadge count={filterCount} />
+            </button>
+          }
+          side="bottom"
+          align="start"
+        >
+          <FilterBuilder
+            filter={effective.filter}
+            columns={columns}
+            onChange={(next) => applyDraft({ filter: next })}
+          />
+        </PopoverShell>
+      )}
 
       {/* ── Sort ── */}
-      <PopoverShell
-        trigger={
-          <button type="button" className={toolbarBtnCn()}>
-            <SortAsc size={14} aria-hidden="true" />
-            Sort
-            <CountBadge count={sortCount} />
-          </button>
-        }
-        side="bottom"
-        align="start"
-      >
-        <SortBuilder
-          sort={effective.sort ?? []}
-          columns={columns}
-          onChange={(next) => applyDraft({ sort: next })}
-        />
-      </PopoverShell>
+      {disabledItems.has("sort") ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title={`Sort is not available on ${viewKind} view`}
+          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
+        >
+          <SortAsc size={14} aria-hidden="true" />
+          Sort
+        </button>
+      ) : (
+        <PopoverShell
+          trigger={
+            <button type="button" className={toolbarBtnCn()}>
+              <SortAsc size={14} aria-hidden="true" />
+              Sort
+              <CountBadge count={sortCount} />
+            </button>
+          }
+          side="bottom"
+          align="start"
+        >
+          <SortBuilder
+            sort={effective.sort ?? []}
+            columns={columns}
+            onChange={(next) => applyDraft({ sort: next })}
+          />
+        </PopoverShell>
+      )}
 
       {/* ── Hide ── */}
-      <PopoverShell
-        trigger={
-          <button type="button" className={toolbarBtnCn()}>
-            <LayoutList size={14} aria-hidden="true" />
-            Hide
-            <CountBadge count={hiddenCount} />
-          </button>
-        }
-        side="bottom"
-        align="start"
-      >
-        <ColumnVisibilityPanel
-          columns={columns}
-          columnVisibility={effective.columnVisibility ?? {}}
-          {...(effective.columnOrder !== undefined && { columnOrder: effective.columnOrder })}
-          onVisibilityChange={(next) => applyDraft({ columnVisibility: next })}
-          onOrderChange={(next) => applyDraft({ columnOrder: next })}
-        />
-      </PopoverShell>
+      {disabledItems.has("hide") ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title={`Hide is not available on ${viewKind} view`}
+          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
+        >
+          <LayoutList size={14} aria-hidden="true" />
+          Hide
+        </button>
+      ) : (
+        <PopoverShell
+          trigger={
+            <button type="button" className={toolbarBtnCn()}>
+              <LayoutList size={14} aria-hidden="true" />
+              Hide
+              <CountBadge count={hiddenCount} />
+            </button>
+          }
+          side="bottom"
+          align="start"
+        >
+          <ColumnVisibilityPanel
+            columns={columns}
+            columnVisibility={effective.columnVisibility ?? {}}
+            {...(effective.columnOrder !== undefined && { columnOrder: effective.columnOrder })}
+            onVisibilityChange={(next) => applyDraft({ columnVisibility: next })}
+            onOrderChange={(next) => applyDraft({ columnOrder: next })}
+          />
+        </PopoverShell>
+      )}
 
       {/* ── Group by ── */}
-      <PopoverShell
-        trigger={
-          <button type="button" className={toolbarBtnCn()}>
-            <Group size={14} aria-hidden="true" />
-            {groupLabel ? `Group: ${groupLabel}` : "Group"}
-          </button>
-        }
-        side="bottom"
-        align="start"
-      >
-        <GroupByPicker
-          groupBy={currentGroupBy}
-          columns={columns}
-          onChange={(next: GroupBy) => applyDraft({ groupBy: next })}
-        />
-      </PopoverShell>
+      {disabledItems.has("group") ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title={`Group is not available on ${viewKind} view`}
+          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
+        >
+          <Group size={14} aria-hidden="true" />
+          Group
+        </button>
+      ) : (
+        <PopoverShell
+          trigger={
+            <button type="button" className={toolbarBtnCn()}>
+              <Group size={14} aria-hidden="true" />
+              {groupLabel ? `Group: ${groupLabel}` : "Group"}
+            </button>
+          }
+          side="bottom"
+          align="start"
+        >
+          <GroupByPicker
+            groupBy={currentGroupBy}
+            columns={columns}
+            onChange={(next: GroupBy) => applyDraft({ groupBy: next })}
+          />
+        </PopoverShell>
+      )}
 
       {/* ── Density ── (inline, not in a popover) */}
-      <DensityToggle
-        density={effective.density}
-        onChange={(next) => applyDraft({ density: next })}
-      />
+      {disabledItems.has("density") ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          title={`Density is not available on ${viewKind} view`}
+          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
+        >
+          Density
+        </button>
+      ) : (
+        <DensityToggle
+          density={effective.density}
+          onChange={(next) => applyDraft({ density: next })}
+        />
+      )}
 
       {/* ── Search (grows to fill remaining space) ── */}
-      <InlineSearchBar />
+      {disabledItems.has("search") ? <div className="flex-1 min-w-0" /> : <InlineSearchBar />}
 
       {/* ── Save / Reset (shown only when there are unsaved changes) ── */}
       {hasUnsavedChanges && canSave && (
