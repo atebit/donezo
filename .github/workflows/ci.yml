@@ -105,11 +105,18 @@ jobs:
         run: |
           supabase status -o env > /tmp/supabase.env
           cat /tmp/supabase.env
-          # Source the env vars so subsequent steps can use them
+          # `supabase status -o env` wraps values in double quotes (KEY="VALUE").
+          # GITHUB_ENV stores the literal RHS — quotes and all — which breaks
+          # z.string().url() validation when the app boots. Strip the quotes
+          # before writing the GITHUB_ENV entries.
           grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=' /tmp/supabase.env | \
             sed 's/^API_URL=/NEXT_PUBLIC_SUPABASE_URL=/' | \
             sed 's/^ANON_KEY=/NEXT_PUBLIC_SUPABASE_ANON_KEY=/' | \
-            sed 's/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/' >> "$GITHUB_ENV"
+            sed 's/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/' | \
+            sed -E 's/^([A-Z_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"
+          # Provide the site URL required by lib/env.ts; the webServer runs
+          # on localhost:3000 in CI per playwright.config.ts.
+          echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000" >> "$GITHUB_ENV"
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
@@ -152,13 +159,16 @@ jobs:
 
       - name: Check for schema drift
         run: |
-          DIFF=$(supabase db diff 2>&1 || true)
-          # Filter out informational lines so genuine drift is visible.
-          DIFF_CLEAN=$(echo "$DIFF" | grep -vE '^(Finished|Connecting|No schema changes found)' | sed '/^$/d')
+          # `supabase db diff` writes status/progress to stderr and the
+          # diff SQL (or "No schema changes found") to stdout. Capture
+          # stdout only so we are not fooled by informational chatter.
+          DIFF=$(supabase db diff 2>/dev/null || true)
+          # Treat the human-readable success line as no-drift.
+          DIFF_CLEAN=$(printf '%s\n' "$DIFF" | grep -v '^No schema changes found$' | sed '/^[[:space:]]*$/d')
           if [ -n "$DIFF_CLEAN" ]; then
             echo "::error::Schema drift detected — migrations are out of sync with the local schema."
             echo ""
-            echo "$DIFF"
+            printf '%s\n' "$DIFF"
             exit 1
           fi
           echo "No schema drift detected."

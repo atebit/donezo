@@ -110,11 +110,14 @@ create or replace function tests.seed_workspace(
 )
 returns void language plpgsql as $$
 begin
+  -- Use the full uuid for the slug because workspace.slug has a unique
+  -- constraint and seed fixtures across test files routinely share the
+  -- same first hex group (e.g. b1000000-…-001 vs b1000000-…-002).
   insert into public.workspace (id, name, slug, created_by)
   values (
     p_workspace_id,
     'Test Workspace ' || left(p_workspace_id::text, 8),
-    'test-ws-' || left(p_workspace_id::text, 8),
+    'test-ws-' || p_workspace_id::text,
     p_owner_id
   )
   on conflict (id) do nothing;
