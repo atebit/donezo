@@ -25,6 +25,8 @@ next-env.d.ts
 coverage/
 playwright-report/
 test-results/
+tests/e2e/.auth/
+tests/e2e/.diag/
 
 # Local env overrides
 .env*.local

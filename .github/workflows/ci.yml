@@ -151,6 +151,15 @@ jobs:
           path: test-results/
           retention-days: 7
 
+      - name: Upload global-setup diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-setup-diag
+          path: tests/e2e/.diag/
+          retention-days: 7
+          if-no-files-found: ignore
+
   # -------------------------------------------------------------------------
   # 7. drift — schema drift check (supabase db diff must be empty)
   # -------------------------------------------------------------------------

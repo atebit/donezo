@@ -3,6 +3,32 @@ import { requireUser } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { FirstRun } from "./_components/first-run";
 
+type WorkspaceRef = {
+  id: string;
+  slug: string;
+  name: string;
+  deleted_at: string | null;
+  created_at: string;
+};
+
+// Supabase's TS generator types FK-joined relations as `T | T[] | null`
+// depending on the FK shape; runtime is usually a single object for
+// many-to-one joins but the types force us to handle both shapes.
+function unwrapWorkspace(value: unknown): WorkspaceRef | null {
+  if (value == null) return null;
+  const candidate = Array.isArray(value) ? value[0] : value;
+  if (!candidate || typeof candidate !== "object") return null;
+  const w = candidate as Partial<WorkspaceRef>;
+  if (!w.id || !w.slug || !w.name || w.created_at === undefined) return null;
+  return {
+    id: w.id,
+    slug: w.slug,
+    name: w.name,
+    deleted_at: w.deleted_at ?? null,
+    created_at: w.created_at,
+  };
+}
+
 export default async function HomePage() {
   const user = await requireUser();
   const supabase = await createClient();
@@ -35,18 +61,8 @@ export default async function HomePage() {
     .order("created_at", { ascending: true });
 
   const active = (memberships ?? [])
-    .map((m) => m.workspace)
-    .filter(
-      (
-        w,
-      ): w is {
-        id: string;
-        slug: string;
-        name: string;
-        deleted_at: string | null;
-        created_at: string;
-      } => w !== null && (w as { deleted_at: string | null }).deleted_at === null,
-    );
+    .map((m) => unwrapWorkspace((m as { workspace: unknown }).workspace))
+    .filter((w): w is WorkspaceRef => w !== null && w.deleted_at === null);
 
   const first = active[0];
   if (first) {
