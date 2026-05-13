@@ -232,6 +232,14 @@ on conflict (task_id, column_id) do nothing;
 
 -- ------------------------------------------------------------
 -- E2E-1. Auth user (service role bypasses RLS; trigger creates profile)
+--
+-- NOTE: GoTrue (Supabase Auth) treats several token columns as NOT NULL
+-- text values at the SQL layer even though the schema permits NULL.
+-- Inserting NULL for confirmation_token / email_change_token_new /
+-- email_change / recovery_token / email_change_token_current /
+-- reauthentication_token / phone_change / phone_change_token causes
+-- sign-in to fail with the generic "Database error querying schema" /
+-- "Database error checking email" responses. Set them to '' explicitly.
 -- ------------------------------------------------------------
 insert into auth.users (
   id,
@@ -244,7 +252,15 @@ insert into auth.users (
   role,
   created_at,
   updated_at,
-  encrypted_password
+  encrypted_password,
+  confirmation_token,
+  email_change,
+  email_change_token_new,
+  email_change_token_current,
+  recovery_token,
+  reauthentication_token,
+  phone_change,
+  phone_change_token
 ) values (
   'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
   '00000000-0000-0000-0000-000000000000',
@@ -257,7 +273,15 @@ insert into auth.users (
   now(),
   now(),
   -- bcrypt hash of 'e2e-test-password-12345'; generated with Supabase local stack
-  crypt('e2e-test-password-12345', gen_salt('bf'))
+  crypt('e2e-test-password-12345', gen_salt('bf')),
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  '',
+  ''
 ) on conflict (id) do nothing;
 
 -- ------------------------------------------------------------
