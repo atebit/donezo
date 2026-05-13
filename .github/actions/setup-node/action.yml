@@ -1,0 +1,28 @@
+name: Setup Node + pnpm
+description: >
+  Enables corepack, sets up pnpm via pnpm/action-setup@v4, configures
+  Node (version from .nvmrc) with pnpm cache, and runs
+  `pnpm install --frozen-lockfile`. Used by every CI job to avoid
+  duplicating the 5-step boilerplate.
+
+runs:
+  using: composite
+  steps:
+    - name: Enable corepack
+      shell: bash
+      run: corepack enable
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        run_install: false
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
