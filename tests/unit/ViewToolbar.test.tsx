@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -33,7 +32,7 @@ function countHidden(visibility: Record<string, boolean> | undefined): number {
   return Object.values(visibility).filter((v) => v === false).length;
 }
 
-describe.skip("ViewToolbar helpers", () => {
+describe("ViewToolbar helpers", () => {
   it("countFilters returns 0 for undefined filter", () => {
     expect(countFilters(undefined)).toBe(0);
   });
@@ -94,7 +93,7 @@ describe.skip("ViewToolbar helpers", () => {
   });
 });
 
-describe.skip("ViewToolbar rendering", () => {
+describe("ViewToolbar rendering", () => {
   it("renders Filter, Sort, Hide, Group, Density, Search buttons", () => {
     expect(true).toBe(true);
   });

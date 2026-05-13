@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { fireEvent, render, screen } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CommentReactions } from "@/components/comments/CommentReactions";

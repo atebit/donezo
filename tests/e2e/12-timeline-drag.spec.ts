@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
-import { expect, test } from "@playwright/test";
+import { expect, type Mouse, type Page, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 12 — Timeline (Gantt) view — E2E drag-and-drop spec.
@@ -27,11 +27,11 @@ import { expect, test } from "@playwright/test";
 // ---------------------------------------------------------------------------
 // Constants — replace with seed-script output in epic 15
 // ---------------------------------------------------------------------------
-const USER_A_EMAIL = "user-a+e2e@donezo.local";
-const USER_A_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
-const TIMELINE_VIEW_ID = "REPLACE_WITH_SEED_TIMELINE_VIEW_ID";
+const _USER_A_EMAIL = "user-a+e2e@donezo.local";
+const _USER_A_PASSWORD = "test-password-12345";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
+const _TIMELINE_VIEW_ID = "REPLACE_WITH_SEED_TIMELINE_VIEW_ID";
 const _TIMELINE_COLUMN_ID = "REPLACE_WITH_SEED_TIMELINE_COLUMN_ID";
 const TASK_TITLE = "Test Task for Timeline Drag";
 const UNSCHEDULED_TASK_TITLE = "Unscheduled Task for Drop";
@@ -43,14 +43,10 @@ const _END_DATE = "2026-06-07"; // yyyy-MM-dd (duration = 6 days)
 // Helpers
 // ---------------------------------------------------------------------------
 
-const boardUrl = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/timeline?view=${TIMELINE_VIEW_ID}`;
+const boardUrl = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/timeline?view=${_TIMELINE_VIEW_ID}`;
 
 /** Return the bounding box of an element or throw. */
-async function getBBox(
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  page: any,
-  selector: string,
-) {
+async function getBBox(page: Page, selector: string) {
   const el = page.locator(selector);
   const box = await el.boundingBox();
   if (!box) throw new Error(`Element not found or not visible: ${selector}`);
@@ -61,8 +57,7 @@ async function getBBox(
  * Simulate a pointer-based drag from (fromX, fromY) to (toX, toY).
  * Uses steps to satisfy dnd-kit's PointerSensor distance constraint.
  */
-// biome-ignore lint/suspicious/noExplicitAny: Playwright Mouse type unavailable outside runner
-async function dragPointer(mouse: any, fromX: number, fromY: number, toX: number, toY: number) {
+async function dragPointer(mouse: Mouse, fromX: number, fromY: number, toX: number, toY: number) {
   await mouse.move(fromX, fromY);
   await mouse.down();
   await mouse.move(toX, toY, { steps: 20 });
@@ -74,16 +69,12 @@ async function dragPointer(mouse: any, fromX: number, fromY: number, toX: number
 // ---------------------------------------------------------------------------
 
 test.describe("Timeline (Gantt) view", () => {
-  test.skip(true, "Epic 15 e2e runner — wired when Playwright infra is ready");
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test.beforeEach(async ({ page }: any) => {
+  test.beforeEach(async ({ page }) => {
     // Sign in as USER_A.
     await page.goto("/sign-in");
-    await page.getByLabel("Email").fill(USER_A_EMAIL);
-    await page.getByLabel("Password").fill(USER_A_PASSWORD);
+    // Auth handled by global storageState — no sign-in needed
+
     await page.getByRole("button", { name: "Sign in" }).click();
-    await page.waitForURL(`**/w/${WORKSPACE_SLUG}/**`);
 
     // Navigate to the timeline view.
     await page.goto(boardUrl);
@@ -93,9 +84,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // Basic render
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("timeline renders the bar for the seeded task", async ({ page }: any) => {
+  test.fixme("timeline renders the bar for the seeded task", async ({ page }) => {
     // The seeded task should appear as a row label.
     await expect(page.getByText(TASK_TITLE)).toBeVisible();
 
@@ -103,25 +92,19 @@ test.describe("Timeline (Gantt) view", () => {
     const bar = page.locator(`[data-bar="true"][data-task-id]`).first();
     await expect(bar).toBeVisible();
   });
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("unscheduled task appears in the right-side panel", async ({ page }: any) => {
+  test.fixme("unscheduled task appears in the right-side panel", async ({ page }) => {
     const unscheduledPanel = page.getByLabel("Unscheduled tasks panel");
     await expect(unscheduledPanel).toBeVisible();
     await expect(unscheduledPanel.getByText(UNSCHEDULED_TASK_TITLE)).toBeVisible();
   });
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("scale switcher renders all five options", async ({ page }: any) => {
+  test.fixme("scale switcher renders all five options", async ({ page }) => {
     const switcher = page.getByRole("group", { name: "Timeline scale" });
     await expect(switcher).toBeVisible();
     for (const label of ["Day", "Week", "Month", "Quarter", "Year"]) {
       await expect(switcher.getByRole("button", { name: label })).toBeVisible();
     }
   });
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("scale switcher changes the active scale and persists on reload", async ({ page }: any) => {
+  test.fixme("scale switcher changes the active scale and persists on reload", async ({ page }) => {
     const monthBtn = page.getByRole("button", { name: "Month", pressed: false });
     await monthBtn.click();
 
@@ -139,9 +122,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // D.7 — Bar body drag: moves both start and end by 5 days
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("drag bar body 5 days right shifts start and end by 5 days", async ({ page }: any) => {
+  test.fixme("drag bar body 5 days right shifts start and end by 5 days", async ({ page }) => {
     // The seeded task has start=2026-06-01, end=2026-06-07.
     // We drag the bar body right by 5 pxPerDay units (scale=week → 28px/day → 140px).
     const DRAG_PX = 28 * 5; // 140 px at week scale
@@ -172,9 +153,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // D.7 — Right-edge drag: only end shifts
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("drag right edge handle 3 days right extends end date only", async ({ page }: any) => {
+  test.fixme("drag right edge handle 3 days right extends end date only", async ({ page }) => {
     // After the body drag test the bar is at 2026-06-06 to 2026-06-12.
     // In a fresh beforeEach context, bar is at START_DATE..END_DATE.
     const DRAG_PX = 28 * 3; // 84 px at week scale (3 days)
@@ -205,9 +184,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // D.6 — Unscheduled drop onto timeline
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("dropping an unscheduled task onto the timeline creates a range", async ({ page }: any) => {
+  test.fixme("dropping an unscheduled task onto the timeline creates a range", async ({ page }) => {
     // Locate the unscheduled card in the right panel.
     const unscheduledCard = page.locator(`[data-unscheduled-id]`, {
       hasText: UNSCHEDULED_TASK_TITLE,
@@ -244,9 +221,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // Column picker empty state
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("empty state renders when no timeline column is selected", async ({ page }: any) => {
+  test.fixme("empty state renders when no timeline column is selected", async ({ page }) => {
     // Visit a board URL without a view that has timelineColumnId set.
     await page.goto(`/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/timeline`);
     await page.waitForLoadState("networkidle");
@@ -258,9 +233,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // Click-without-drag opens task drawer
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("clicking a bar body (no drag) opens the task drawer", async ({ page }: any) => {
+  test.fixme("clicking a bar body (no drag) opens the task drawer", async ({ page }) => {
     const barBody = page.locator(`[data-task-id][data-bar="true"]`).first();
 
     // A short click (no movement) should open the task drawer.
@@ -273,9 +246,7 @@ test.describe("Timeline (Gantt) view", () => {
   // -------------------------------------------------------------------------
   // Today line visible
   // -------------------------------------------------------------------------
-
-  // biome-ignore lint/suspicious/noExplicitAny: Playwright Page type unavailable outside runner
-  test("today line is rendered in the timeline body", async ({ page }: any) => {
+  test.fixme("today line is rendered in the timeline body", async ({ page }) => {
     // The today line is a 1px div with background-color: var(--color-primary).
     // Today line is present when today is in the visible range.
     // We don't assert visibility since it depends on the seeded date range.

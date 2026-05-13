@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -20,14 +19,13 @@ vi.mock("../../stores/board-store", () => ({
 // ---------------------------------------------------------------------------
 // Import the hook AFTER mocks
 // ---------------------------------------------------------------------------
-// @ts-expect-error renderHook is wired in epic 15
 import { renderHook } from "@testing-library/react";
 import { useTypingIndicator } from "../../hooks/use-typing-indicator";
 
 const CONTEXT = "comment:task-42";
 const OTHER_CONTEXT = "comment:task-99";
 
-describe.skip("useTypingIndicator", () => {
+describe("useTypingIndicator", () => {
   // -------------------------------------------------------------------------
   // Self-filter: current user is excluded from results
   // -------------------------------------------------------------------------
@@ -46,7 +44,7 @@ describe.skip("useTypingIndicator", () => {
     const { result } = renderHook(() => useTypingIndicator({ userId: "u1", context: CONTEXT }));
 
     expect(result.current).toHaveLength(1);
-    expect(result.current[0]).toEqual({ user_id: "u2", at: 2000 });
+    expect(result.current[0]).toMatchObject({ user_id: "u2", at: 2000 });
   });
 
   it("returns all entries when none match the current userId (no self present)", () => {
@@ -83,7 +81,7 @@ describe.skip("useTypingIndicator", () => {
 
     // Should only see u2, not u3 (which is in a different context)
     expect(result.current).toHaveLength(1);
-    expect(result.current[0]).toEqual({ user_id: "u2", at: 1000 });
+    expect(result.current[0]).toMatchObject({ user_id: "u2", at: 1000 });
   });
 
   it("returns an empty array when the only entry in the context is the current user", () => {

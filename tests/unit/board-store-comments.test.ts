@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { Database } from "../../lib/supabase/types";
@@ -59,7 +58,7 @@ function makeActivity(overrides: Partial<ActivityRow> = {}): ActivityRow {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("useBoardStore — Epic 09 comments/reactions/activity", () => {
+describe("useBoardStore — Epic 09 comments/reactions/activity", () => {
   beforeEach(() => {
     useBoardStore.getState().reset();
     useBoardStore.setState({

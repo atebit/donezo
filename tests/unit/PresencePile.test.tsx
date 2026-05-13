@@ -1,6 +1,4 @@
-// @ts-expect-error @testing-library/react wired in epic 15
 import { render } from "@testing-library/react";
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PresencePile } from "@/components/board/PresencePile";
@@ -54,7 +52,7 @@ vi.mock("@base-ui/react", () => ({
   },
 }));
 
-describe.skip("PresencePile", () => {
+describe("PresencePile", () => {
   beforeEach(() => {
     // Reset store presence to empty between tests
     useBoardStore.setState({ presence: {} });

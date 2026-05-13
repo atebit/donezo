@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -16,13 +15,15 @@ import {
   RequestUploadSchema,
 } from "../../lib/validations/attachment";
 
-const VALID_UUID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+// Valid RFC 4122 v4 UUID (version nibble = 4, variant nibble ∈ [89ab]).
+// Zod 4 enforces strict UUID format including the variant bits.
+const VALID_UUID = "f47ac10b-58cc-4372-a567-0e02b2c3d479";
 
 // ---------------------------------------------------------------------------
 // RequestUploadSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("RequestUploadSchema", () => {
+describe("RequestUploadSchema", () => {
   it("accepts a valid upload request", () => {
     const result = RequestUploadSchema.safeParse({
       taskId: VALID_UUID,
@@ -165,7 +166,7 @@ describe.skip("RequestUploadSchema", () => {
 // ConfirmUploadSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("ConfirmUploadSchema", () => {
+describe("ConfirmUploadSchema", () => {
   it("accepts a valid UUID", () => {
     const result = ConfirmUploadSchema.safeParse({ attachmentId: VALID_UUID });
     expect(result.success).toBe(true);
@@ -186,7 +187,7 @@ describe.skip("ConfirmUploadSchema", () => {
 // DeleteAttachmentSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("DeleteAttachmentSchema", () => {
+describe("DeleteAttachmentSchema", () => {
   it("accepts a valid UUID", () => {
     const result = DeleteAttachmentSchema.safeParse({ attachmentId: VALID_UUID });
     expect(result.success).toBe(true);
@@ -202,7 +203,7 @@ describe.skip("DeleteAttachmentSchema", () => {
 // GetDownloadUrlSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("GetDownloadUrlSchema", () => {
+describe("GetDownloadUrlSchema", () => {
   it("accepts a valid UUID", () => {
     const result = GetDownloadUrlSchema.safeParse({ attachmentId: VALID_UUID });
     expect(result.success).toBe(true);
@@ -218,7 +219,7 @@ describe.skip("GetDownloadUrlSchema", () => {
 // GetSignedDisplayUrlSchema
 // ---------------------------------------------------------------------------
 
-describe.skip("GetSignedDisplayUrlSchema", () => {
+describe("GetSignedDisplayUrlSchema", () => {
   it("accepts a request without transform", () => {
     const result = GetSignedDisplayUrlSchema.safeParse({ attachmentId: VALID_UUID });
     expect(result.success).toBe(true);

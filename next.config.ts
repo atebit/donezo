@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import withBundleAnalyzer from "@next/bundle-analyzer";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -52,4 +53,18 @@ const withAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
-export default withAnalyzer(withNextIntl(nextConfig));
+// Sentry source-map upload — no-op when SENTRY_AUTH_TOKEN is absent (e.g. local dev, unauthenticated CI builds).
+// Source maps are deleted after upload so they are not exposed in the production bundle.
+// Build options are assembled conditionally to satisfy exactOptionalPropertyTypes: each key
+// is only included when its env var is set (so the value is string, not string | undefined).
+const sentryBuildOptions = {
+  silent: true,
+  ...(process.env.SENTRY_ORG ? { org: process.env.SENTRY_ORG } : {}),
+  ...(process.env.SENTRY_PROJECT ? { project: process.env.SENTRY_PROJECT } : {}),
+  ...(process.env.SENTRY_AUTH_TOKEN ? { authToken: process.env.SENTRY_AUTH_TOKEN } : {}),
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true as const,
+  },
+} as const;
+
+export default withSentryConfig(withAnalyzer(withNextIntl(nextConfig)), sentryBuildOptions);

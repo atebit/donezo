@@ -146,6 +146,19 @@ begin
 end $$;
 
 -- ============================================================
+-- Disable non-replica triggers for the remainder of the
+-- transaction. Newer Supabase storage images install a
+-- BEFORE-DELETE trigger on storage.objects that rejects
+-- direct SQL DELETE with the hint "Use the Storage API
+-- instead". The DELETE tests below are intentionally
+-- exercising the RLS policies on storage.objects, not the
+-- HTTP storage API; let those DELETEs through while leaving
+-- RLS evaluation intact. requires session_replication_role
+-- SET privilege, which the test runner (postgres user) has.
+-- ============================================================
+set local session_replication_role = replica;
+
+-- ============================================================
 -- Test 1: Sanity — storage.foldername returns expected segments.
 -- This validates the RLS policy's reliance on [1] = board_id.
 -- ============================================================

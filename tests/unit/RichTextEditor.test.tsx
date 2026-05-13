@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 
 /**
@@ -39,7 +38,6 @@ vi.mock("@/components/rich-text/extensions", () => ({
   buildBaseExtensions: vi.fn(() => []),
 }));
 
-// @ts-expect-error renderHook is wired in epic 15
 import { act, fireEvent, render } from "@testing-library/react";
 import { RichTextEditor } from "../../components/rich-text/RichTextEditor";
 import type { TiptapDoc } from "../../lib/comments/types";
@@ -54,13 +52,15 @@ const EMPTY_DOC: TiptapDoc = { type: "doc", content: [] };
 // Test suite
 // ---------------------------------------------------------------------------
 
-describe.skip("RichTextEditor", () => {
+describe("RichTextEditor", () => {
   it("renders without crashing", () => {
     const { getByTestId } = render(<RichTextEditor />);
     expect(getByTestId("editor-content")).toBeTruthy();
   });
 
-  it("renders the default toolbar when not readOnly", () => {
+  it.skip("renders the default toolbar when not readOnly", () => {
+    // Skipped: useEditor mock returns null → DefaultToolbar returns null → no toolbar rendered.
+    // Fixing requires a stateful useEditor stub; deferred to epic-15-test-debt.md.
     const { getByRole } = render(<RichTextEditor readOnly={false} />);
     expect(getByRole("toolbar")).toBeTruthy();
   });
@@ -80,7 +80,9 @@ describe.skip("RichTextEditor", () => {
     // Integration verification is via Playwright in Epic 15.
   });
 
-  it("calls onChange when the editor content changes", () => {
+  it.skip("calls onChange when the editor content changes", () => {
+    // Skipped: require("@tiptap/react") in ESM context returns module object without
+    // vi.fn() — mockReturnValue is not available. Deferred to epic-15-test-debt.md.
     const mockEditor = {
       getJSON: vi.fn(() => EMPTY_DOC),
       getText: vi.fn(() => "hello"),
@@ -113,7 +115,8 @@ describe.skip("RichTextEditor", () => {
     }
   });
 
-  it("calls onSubmit when ⌘+Enter is pressed on the editor DOM", () => {
+  it.skip("calls onSubmit when ⌘+Enter is pressed on the editor DOM", () => {
+    // Skipped: same require() ESM issue as onChange test above.
     const mockDom = document.createElement("div");
     const mockEditor = {
       getJSON: vi.fn(() => EMPTY_DOC),
@@ -143,7 +146,8 @@ describe.skip("RichTextEditor", () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onSubmit when Ctrl+Enter is pressed on the editor DOM", () => {
+  it.skip("calls onSubmit when Ctrl+Enter is pressed on the editor DOM", () => {
+    // Skipped: same require() ESM issue as onChange test above.
     const mockDom = document.createElement("div");
     const mockEditor = {
       getJSON: vi.fn(() => EMPTY_DOC),

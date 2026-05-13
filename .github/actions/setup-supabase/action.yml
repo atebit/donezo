@@ -1,0 +1,17 @@
+name: Setup Supabase CLI + start
+description: >
+  Installs Supabase CLI 2.98.2 via supabase/setup-cli@v1 and runs
+  `supabase start` to boot the local Postgres + Auth stack.
+  Used by the policies, e2e, and drift CI jobs.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Supabase CLI
+      uses: supabase/setup-cli@v1
+      with:
+        version: 2.98.2
+
+    - name: Start Supabase
+      shell: bash
+      run: supabase start

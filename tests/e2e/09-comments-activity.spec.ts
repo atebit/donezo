@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_TASK_1_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 09 — Comments, Activity Log, and Mentions — E2E spec.
@@ -19,57 +19,45 @@ import { expect, test } from "@playwright/test";
  */
 
 // ---------------------------------------------------------------------------
-// Constants — replace with seed-script output in epic 15
+// Constants — seeded via supabase/seed.sql e2e section
 // ---------------------------------------------------------------------------
-const USER_A_EMAIL = "user-a+e2e@donezo.local";
-const USER_A_PASSWORD = "test-password-12345";
-const USER_B_EMAIL = "user-b+e2e@donezo.local";
-const USER_B_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
 const BOARD_URL = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}`;
-const TASK_ID_T1 = "REPLACE_WITH_SEED_TASK_T1";
-// USER_B's UUID — used to verify mention notification row (prefixed with _ per biome convention for intentional unused constants)
+const TASK_ID_T1 = E2E_TASK_1_ID;
+
+// Second user — requires a dedicated storageState fixture (follow-up work)
+// See: docs/conversion-plan/_dispatch/epic-15-test-debt.md
+const _USER_B_EMAIL = "user-b+e2e@donezo.local";
+const _USER_B_PASSWORD = "test-password-12345";
 const _USER_B_ID = "REPLACE_WITH_SEED_USER_B_ID";
 
 // ---------------------------------------------------------------------------
-// Helper — sign in a page as a given user
+// Helper — kept for future multi-user tests; currently unused
 // ---------------------------------------------------------------------------
-async function signIn(
-  page: Awaited<ReturnType<typeof import("@playwright/test")["test"]["info"]>>,
-  email: string,
-  password: string,
-) {
-  // @ts-expect-error playwright wired in epic 15
+async function _signIn(page: import("@playwright/test").Page, email: string, password: string) {
   await page.goto("/sign-in");
-  // @ts-expect-error playwright wired in epic 15
   await page.getByLabel("Email").fill(email);
-  // @ts-expect-error playwright wired in epic 15
   await page.getByLabel("Password").fill(password);
-  // @ts-expect-error playwright wired in epic 15
   await page.getByRole("button", { name: /sign in/i }).click();
-  // @ts-expect-error playwright wired in epic 15
-  await page.waitForURL(`**/w/**`);
+  await page.waitForURL("**/w/**");
 }
 
 // ---------------------------------------------------------------------------
 // Suite
+// All tests in this suite require two authenticated browser contexts (two users).
+// Marked test.fixme until a second-user storageState fixture is wired.
+// See: docs/conversion-plan/_dispatch/epic-15-test-debt.md
 // ---------------------------------------------------------------------------
 
 test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
-  // Skip all tests until epic 15 wires the Playwright runner and fixtures.
-  test.skip(
-    true,
-    "Spec stub — runner wired in epic 15. Requires seeded users, Playwright config, and local Supabase stack.",
-  );
-
   // ── Test 1: Intercepting route drawer opens ──────────────────────────────
   /**
    * User A clicks "Open task" from the board. The intercepting route fires:
    * the board is still visible in the background, the drawer slides in,
    * and the URL updates to /t/<taskId>.
    */
-  test("1 — task drawer opens via intercepting route; URL updates", async ({ browser }) => {
+  test.fixme("1 — task drawer opens via intercepting route; URL updates", async ({ browser }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
@@ -96,7 +84,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * User A opens the drawer and posts a comment. User B (on the board table)
    * sees the comment count badge for the task increment within 1500ms via Realtime.
    */
-  test("2 — User A posts comment; User B sees badge increment", async ({ browser }) => {
+  test.fixme("2 — User A posts comment; User B sees badge increment", async ({ browser }) => {
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
@@ -142,7 +130,9 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * User A types @, selects User B from the mention popover, posts the comment.
    * DB check: notification table has a mention row for User B with the correct payload.
    */
-  test("3 — @user mention creates notification row for mentioned user", async ({ browser }) => {
+  test.fixme("3 — @user mention creates notification row for mentioned user", async ({
+    browser,
+  }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
@@ -183,7 +173,9 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * gets a notification. If User B was explicitly mentioned too, they only
    * get one notification row (deduped).
    */
-  test("4 — @everyone notifies all board members; dedupes explicit @user", async ({ browser }) => {
+  test.fixme("4 — @everyone notifies all board members; dedupes explicit @user", async ({
+    browser,
+  }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
@@ -212,7 +204,9 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * User A opens the task drawer. User B (on the board table) sees a presence
    * dot on the task row indicating someone is viewing it.
    */
-  test("5 — User A in task drawer → User B sees presence dot on task row", async ({ browser }) => {
+  test.fixme("5 — User A in task drawer → User B sees presence dot on task row", async ({
+    browser,
+  }) => {
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
@@ -242,7 +236,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * User A reacts 👍. User B sees chip with count 1.
    * User B reacts 👍 → count 2. User B toggles off → count 1.
    */
-  test("6 — reaction add, count, and toggle", async ({ browser }) => {
+  test.fixme("6 — reaction add, count, and toggle", async ({ browser }) => {
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
@@ -288,7 +282,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
   /**
    * User A edits their comment. User B sees the "edited" badge appear.
    */
-  test("7 — User A edits comment; User B sees 'edited' badge", async ({ browser }) => {
+  test.fixme("7 — User A edits comment; User B sees 'edited' badge", async ({ browser }) => {
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
@@ -335,7 +329,9 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
   /**
    * User A deletes their comment (hard delete per Q2). User B sees the row vanish.
    */
-  test("8 — User A deletes comment; User B sees it vanish (hard delete)", async ({ browser }) => {
+  test.fixme("8 — User A deletes comment; User B sees it vanish (hard delete)", async ({
+    browser,
+  }) => {
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
     const pageA = await contextA.newPage();
@@ -376,7 +372,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * a blockquote of User B's content. User A types and posts; new comment
    * renders with the quote at the top + User A's text below.
    */
-  test("9 — Reply opens composer with blockquote; post renders quote + reply", async ({
+  test.fixme("9 — Reply opens composer with blockquote; post renders quote + reply", async ({
     browser,
   }) => {
     const contextA = await browser.newContext();
@@ -414,7 +410,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
   /**
    * The Activity tab in the task drawer shows all events for the task in order.
    */
-  test("10 — Activity tab shows per-task event history", async ({ browser }) => {
+  test.fixme("10 — Activity tab shows per-task event history", async ({ browser }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
@@ -436,7 +432,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * The board Activity modal opens from the topbar trigger, shows 50 events,
    * "Load more" fetches the next page, and actor filter narrows results.
    */
-  test("11 — Board Activity modal: open, paginate, filter by actor", async ({ browser }) => {
+  test.fixme("11 — Board Activity modal: open, paginate, filter by actor", async ({ browser }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
@@ -461,7 +457,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
   /**
    * Esc key in modal drawer → back to board. Refresh on /t/<id> → full-page route.
    */
-  test("12 — Esc dismisses intercepting drawer; refresh hits full-page route", async ({
+  test.fixme("12 — Esc dismisses intercepting drawer; refresh hits full-page route", async ({
     browser,
   }) => {
     const contextA = await browser.newContext();
@@ -499,7 +495,7 @@ test.describe("Epic 09 — Comments, Activity Log, and Mentions", () => {
    * Navigating to the task URL with ?comment=<id> scrolls to and briefly
    * highlights the target comment.
    */
-  test("13 — ?comment=<id> deep-link scrolls to and highlights the comment", async ({
+  test.fixme("13 — ?comment=<id> deep-link scrolls to and highlights the comment", async ({
     browser,
   }) => {
     const contextA = await browser.newContext();

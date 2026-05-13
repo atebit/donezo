@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -24,11 +23,10 @@ vi.mock("../../lib/supabase/client", () => ({
 // Import hook after mocks are set up
 // ---------------------------------------------------------------------------
 
-// @ts-expect-error vitest is wired in epic 15
 import { renderHook } from "@testing-library/react";
 import { useCursorBroadcast } from "../../hooks/use-cursor-broadcast";
 
-describe.skip("useCursorBroadcast", () => {
+describe("useCursorBroadcast", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     stubChannel = {

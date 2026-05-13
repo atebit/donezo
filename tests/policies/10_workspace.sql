@@ -93,17 +93,15 @@ select is(
 
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000004'::uuid);
 
-select is(
-  (with updated as (
-     update public.workspace
-       set name = 'Hacked'
-     where id = 'b1000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  0,
-  'viewer cannot UPDATE workspace (RLS blocks; 0 rows affected)'
-);
+with updated as (
+  update public.workspace
+    set name = 'Hacked'
+  where id = 'b1000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 0, 'viewer cannot UPDATE workspace (RLS blocks; 0 rows affected)');
 
 -- ============================================================
 -- Test 4: admin can UPDATE workspace name
@@ -112,17 +110,15 @@ select is(
 select tests.reset_to_service_role();
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000002'::uuid);
 
-select is(
-  (with updated as (
-     update public.workspace
-       set name = 'Updated by Admin'
-     where id = 'b1000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  1,
-  'admin can UPDATE workspace name'
-);
+with updated as (
+  update public.workspace
+    set name = 'Updated by Admin'
+  where id = 'b1000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'admin can UPDATE workspace name');
 
 -- ============================================================
 -- Test 5: viewer DELETE returns 0 rows (policy uses `using`)
@@ -130,16 +126,14 @@ select is(
 
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000004'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.workspace
-       where id = 'b1000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from deleted),
-  0,
-  'viewer DELETE on workspace returns 0 rows (RLS blocks)'
-);
+with deleted as (
+  delete from public.workspace
+    where id = 'b1000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 0, 'viewer DELETE on workspace returns 0 rows (RLS blocks)');
 
 -- ============================================================
 -- Test 6: owner can DELETE workspace (secondary workspace)
@@ -148,16 +142,14 @@ select is(
 select tests.reset_to_service_role();
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000006'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.workspace
-       where id = 'b1000000-0000-0000-0000-000000000002'
-     returning id
-   )
-   select count(*)::int from deleted),
-  1,
-  'owner can DELETE their own workspace'
-);
+with deleted as (
+  delete from public.workspace
+    where id = 'b1000000-0000-0000-0000-000000000002'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 1, 'owner can DELETE their own workspace');
 
 -- ============================================================
 -- Test 7: member can SELECT all workspace_member rows in workspace
@@ -192,17 +184,15 @@ select is(
 
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000004'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.workspace_member
-       where workspace_id = 'b1000000-0000-0000-0000-000000000001'
-         and user_id = 'a1000000-0000-0000-0000-000000000003'
-     returning workspace_id
-   )
-   select count(*)::int from deleted),
-  0,
-  'viewer cannot DELETE another member row from workspace_member'
-);
+with deleted as (
+  delete from public.workspace_member
+    where workspace_id = 'b1000000-0000-0000-0000-000000000001'
+      and user_id = 'a1000000-0000-0000-0000-000000000003'
+  returning workspace_id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 0, 'viewer cannot DELETE another member row from workspace_member');
 
 -- ============================================================
 -- Test 10: member can self-remove (delete own wsm row)
@@ -210,17 +200,15 @@ select is(
 
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000003'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.workspace_member
-       where workspace_id = 'b1000000-0000-0000-0000-000000000001'
-         and user_id = 'a1000000-0000-0000-0000-000000000003'
-     returning workspace_id
-   )
-   select count(*)::int from deleted),
-  1,
-  'member can self-remove from workspace_member'
-);
+with deleted as (
+  delete from public.workspace_member
+    where workspace_id = 'b1000000-0000-0000-0000-000000000001'
+      and user_id = 'a1000000-0000-0000-0000-000000000003'
+  returning workspace_id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 1, 'member can self-remove from workspace_member');
 
 -- ============================================================
 -- Test 11: non-member cannot INSERT into workspace_member
@@ -230,6 +218,9 @@ select is(
 select tests.reset_to_service_role();
 select tests.set_jwt_user('a1000000-0000-0000-0000-000000000005'::uuid);
 
+-- pgTAP's 3-arg throws_ok(sql, errcode, errmsg) matches errmsg literally.
+-- We only want to assert the errcode, so use the 4-arg form with errmsg=NULL
+-- and the description in the trailing slot.
 select throws_ok(
   $$insert into public.workspace_member (workspace_id, user_id, role)
     values (
@@ -238,6 +229,7 @@ select throws_ok(
       'viewer'
     )$$,
   '42501',
+  null::text,
   'non-member cannot INSERT into workspace_member without admin role or invitation'
 );
 

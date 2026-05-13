@@ -226,17 +226,15 @@ select is(
 
 select tests.set_jwt_user('a2000000-0000-0000-0000-000000000004'::uuid);
 
-select is(
-  (with updated as (
-     update public.board
-       set name = 'Renamed by Board Admin'
-     where id = 'c2000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  1,
-  'board admin (ws-viewer + board_member admin) can UPDATE board.name'
-);
+with updated as (
+  update public.board
+    set name = 'Renamed by Board Admin'
+  where id = 'c2000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'board admin (ws-viewer + board_member admin) can UPDATE board.name');
 
 -- ============================================================
 -- Test 13: workspace member cannot DELETE public board
@@ -246,16 +244,14 @@ select is(
 
 select tests.set_jwt_user('a2000000-0000-0000-0000-000000000003'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.board
-       where id = 'c2000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from deleted),
-  0,
-  'workspace member cannot DELETE board (requires workspace owner)'
-);
+with deleted as (
+  delete from public.board
+    where id = 'c2000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 0, 'workspace member cannot DELETE board (requires workspace owner)');
 
 -- ============================================================
 -- Test 14: workspace admin cannot DELETE public board
@@ -265,16 +261,14 @@ select is(
 
 select tests.set_jwt_user('a2000000-0000-0000-0000-000000000002'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.board
-       where id = 'c2000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from deleted),
-  0,
-  'workspace admin cannot DELETE board (requires workspace owner)'
-);
+with deleted as (
+  delete from public.board
+    where id = 'c2000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 0, 'workspace admin cannot DELETE board (requires workspace owner)');
 
 -- ============================================================
 -- Test 15: workspace owner CAN DELETE public board
@@ -286,16 +280,14 @@ select is(
 
 select tests.set_jwt_user('a2000000-0000-0000-0000-000000000001'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.board
-       where id = 'c2000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from deleted),
-  1,
-  'workspace owner can DELETE board'
-);
+with deleted as (
+  delete from public.board
+    where id = 'c2000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 1, 'workspace owner can DELETE board');
 
 select tests.reset_to_service_role();
 

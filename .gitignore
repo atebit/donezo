@@ -25,6 +25,8 @@ next-env.d.ts
 coverage/
 playwright-report/
 test-results/
+tests/e2e/.auth/
+tests/e2e/.diag/
 
 # Local env overrides
 .env*.local
@@ -37,3 +39,6 @@ supabase/.temp/
 
 # Claude Code harness worktrees
 .claire/
+
+# Claude Code scheduled-task runtime lock
+.claude/scheduled_tasks.lock

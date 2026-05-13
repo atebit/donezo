@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -115,7 +114,7 @@ function resetState() {
 
 // ---- Tests -----------------------------------------------------------------
 
-describe.skip("wrappedSetCellValue (CellEditor call site)", () => {
+describe("wrappedSetCellValue (CellEditor call site)", () => {
   beforeEach(() => {
     resetState();
     vi.clearAllMocks();
@@ -157,7 +156,7 @@ describe.skip("wrappedSetCellValue (CellEditor call site)", () => {
   });
 });
 
-describe.skip("wrappedRenameTask (TaskTitleCell call site)", () => {
+describe("wrappedRenameTask (TaskTitleCell call site)", () => {
   beforeEach(() => {
     resetState();
     vi.clearAllMocks();
@@ -199,7 +198,7 @@ describe.skip("wrappedRenameTask (TaskTitleCell call site)", () => {
   });
 });
 
-describe.skip("wrappedRenameGroup (BoardTable/GroupHeaderRow call site)", () => {
+describe("wrappedRenameGroup (BoardTable/GroupHeaderRow call site)", () => {
   beforeEach(() => {
     resetState();
     vi.clearAllMocks();
@@ -241,7 +240,7 @@ describe.skip("wrappedRenameGroup (BoardTable/GroupHeaderRow call site)", () => 
   });
 });
 
-describe.skip("wrappedBulkSetCellValue (BulkActionBar call site)", () => {
+describe("wrappedBulkSetCellValue (BulkActionBar call site)", () => {
   beforeEach(() => {
     resetState();
     vi.clearAllMocks();

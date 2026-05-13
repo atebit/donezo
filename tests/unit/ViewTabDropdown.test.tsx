@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -9,7 +8,7 @@ import { describe, expect, it } from "vitest";
  * the component's contract.
  */
 
-describe.skip("ViewTabDropdown", () => {
+describe("ViewTabDropdown", () => {
   it("renders Rename, Duplicate menu items for any role", () => {
     expect(true).toBe(true);
   });

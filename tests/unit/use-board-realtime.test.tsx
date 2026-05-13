@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -122,7 +121,6 @@ vi.mock("../../stores/board-store", () => ({
 // ---------------------------------------------------------------------------
 // Import the hook AFTER mocks are set up
 // ---------------------------------------------------------------------------
-// @ts-expect-error renderHook is wired in epic 15
 import { act, renderHook } from "@testing-library/react";
 import { useBoardRealtime } from "../../hooks/use-board-realtime";
 
@@ -145,7 +143,7 @@ function clearAllMocks(): void {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("useBoardRealtime", () => {
+describe("useBoardRealtime", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     stubChannel = makeStubChannel();
@@ -189,7 +187,9 @@ describe.skip("useBoardRealtime", () => {
     expect((sub.opts as { filter?: string }).filter).toBe(`board_id=eq.${BOARD_ID}`);
   });
 
-  it("does NOT register postgres_changes for comment (deferred to epic 09)", () => {
+  it.skip("does NOT register postgres_changes for comment (deferred to epic 09)", () => {
+    // Skipped: epic 09 completed and comment postgres_changes IS now registered.
+    // The assertion is obsolete. Tracked in epic-15-test-debt.md.
     renderHook(() => useBoardRealtime(BOARD_ID, USER_ID));
 
     const commentSub = stubChannel._registeredEvents.find(

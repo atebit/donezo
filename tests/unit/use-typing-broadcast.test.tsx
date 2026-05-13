@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -32,7 +31,6 @@ vi.mock("../../lib/supabase/client", () => ({
 // ---------------------------------------------------------------------------
 // Import the hook AFTER mocks
 // ---------------------------------------------------------------------------
-// @ts-expect-error renderHook is wired in epic 15
 import { act, renderHook } from "@testing-library/react";
 import { useTypingBroadcast } from "../../hooks/use-typing-broadcast";
 
@@ -40,7 +38,7 @@ const BOARD_ID = "board-abc";
 const USER_ID = "user-123";
 const CONTEXT = "comment:task-42";
 
-describe.skip("useTypingBroadcast", () => {
+describe("useTypingBroadcast", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     stubChannel = makeStubChannel();

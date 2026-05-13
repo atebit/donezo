@@ -1,0 +1,25 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["${PREVIEW_URL}/", "${PREVIEW_URL}/sign-in", "${PREVIEW_URL}/w"],
+      "numberOfRuns": 1,
+      "settings": {
+        "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
+      }
+    },
+    "assert": {
+      "preset": "lighthouse:no-pwa",
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 1 }],
+        "categories:performance": ["warn", { "minScore": 0.85 }],
+        "interactive": ["warn", { "maxNumericValue": 200 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 200 }],
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

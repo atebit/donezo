@@ -1,5 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
-
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -22,10 +20,8 @@ import { describe, expect, it } from "vitest";
  * - On desktop (≥768px) the persisted view mode is used.
  */
 
-const ROOT = "/Volumes/SSD1T/DEV WORK/donezo/.claude/worktrees/agent-a462b0776957501bb";
-
 function readSource(relPath: string): string {
-  return readFileSync(resolve(ROOT, relPath), "utf-8");
+  return readFileSync(resolve(process.cwd(), relPath), "utf-8");
 }
 
 // ---------------------------------------------------------------------------
@@ -85,6 +81,10 @@ describe("CalendarView — forceMobileAgenda source contract", () => {
 // ---------------------------------------------------------------------------
 
 describe.skip("BoardCalendarAgenda — render (requires RTL + jsdom, epic 15)", () => {
+  // Skipped: importing @/components/board/calendar/BoardCalendarAgenda triggers
+  // react-big-calendar CSS import which fails with "Invalid PostCSS Plugin".
+  // CSS transforms in jsdom vitest project need postcss config fix or CSS mock.
+  // Tracked in epic-15-test-debt.md.
   it("on mobile (<768px) renders CalendarView with forceMobileAgenda=true", async () => {
     const { render } = await import("@testing-library/react");
     const { BoardCalendarAgenda } = await import("@/components/board/calendar/BoardCalendarAgenda");

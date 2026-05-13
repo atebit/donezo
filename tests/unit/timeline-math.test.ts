@@ -8,7 +8,6 @@
  * Epic 12, Slice D — D.7.
  */
 
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 import {
   dateToX,

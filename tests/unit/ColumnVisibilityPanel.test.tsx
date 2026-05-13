@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -63,7 +62,7 @@ function toggleVisibility(
 // describe.skip — wired in Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("ColumnVisibilityPanel logic", () => {
+describe("ColumnVisibilityPanel logic", () => {
   describe("deriveOrderedColumns", () => {
     it("sorts by position when no columnOrder override", () => {
       const shuffled = [DATE_COL, TITLE_COL, STATUS_COL]; // out of position order

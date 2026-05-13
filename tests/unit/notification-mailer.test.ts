@@ -7,7 +7,6 @@
  *   - renderNotificationEmail: returns null for reserved kinds.
  */
 
-// @ts-expect-error vitest runner wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------

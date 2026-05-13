@@ -101,6 +101,17 @@ begin
 end $$;
 
 -- ------------------------------------------------------------
+-- Permissions: tests switch the active role to `authenticated`
+-- via set_jwt_user. Subsequent calls to set_jwt_user / reset_to_service_role
+-- from inside a test must therefore be callable by `authenticated`.
+-- Other helpers (make_user, seed_*) stay restricted to the seeding context
+-- because the test files only invoke them before the first set_jwt_user.
+-- ------------------------------------------------------------
+grant usage on schema tests to authenticated;
+grant execute on function tests.set_jwt_user(uuid) to authenticated;
+grant execute on function tests.reset_to_service_role() to authenticated;
+
+-- ------------------------------------------------------------
 -- seed_workspace(p_workspace_id, p_owner_id)
 -- Insert a workspace row. Always call in service-role context.
 -- ------------------------------------------------------------
@@ -110,11 +121,14 @@ create or replace function tests.seed_workspace(
 )
 returns void language plpgsql as $$
 begin
+  -- Use the full uuid for the slug because workspace.slug has a unique
+  -- constraint and seed fixtures across test files routinely share the
+  -- same first hex group (e.g. b1000000-…-001 vs b1000000-…-002).
   insert into public.workspace (id, name, slug, created_by)
   values (
     p_workspace_id,
     'Test Workspace ' || left(p_workspace_id::text, 8),
-    'test-ws-' || left(p_workspace_id::text, 8),
+    'test-ws-' || p_workspace_id::text,
     p_owner_id
   )
   on conflict (id) do nothing;

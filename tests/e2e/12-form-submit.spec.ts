@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 12 — Form view — E2E form submit spec.
@@ -23,40 +23,35 @@ import { expect, test } from "@playwright/test";
 // ---------------------------------------------------------------------------
 // Constants — replace with seed-script output in epic 15
 // ---------------------------------------------------------------------------
-const USER_A_EMAIL = "user-a+e2e@donezo.local";
-const USER_A_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
-const FORM_VIEW_ID = "REPLACE_WITH_SEED_FORM_VIEW_ID";
-const TABLE_VIEW_ID = "REPLACE_WITH_SEED_TABLE_VIEW_ID";
-// biome-ignore lint/correctness/noUnusedVariables: seed constants — wired in epic 15
-const TITLE_COLUMN_ID = "REPLACE_WITH_SEED_TITLE_COLUMN_ID";
-// biome-ignore lint/correctness/noUnusedVariables: seed constants — wired in epic 15
-const STATUS_COLUMN_ID = "REPLACE_WITH_SEED_STATUS_COLUMN_ID";
+const _USER_A_EMAIL = "user-a+e2e@donezo.local";
+const _USER_A_PASSWORD = "test-password-12345";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
+const _FORM_VIEW_ID = "REPLACE_WITH_SEED_FORM_VIEW_ID";
+const _TABLE_VIEW_ID = "REPLACE_WITH_SEED_TABLE_VIEW_ID";
+const _TITLE_COLUMN_ID = "REPLACE_WITH_SEED_TITLE_COLUMN_ID";
+const _STATUS_COLUMN_ID = "REPLACE_WITH_SEED_STATUS_COLUMN_ID";
 
 const TASK_TITLE = "E2E Form Submission Task";
-// biome-ignore lint/correctness/noUnusedVariables: used in future test assertions — wired in epic 15
-const STATUS_LABEL = "Done";
+const _STATUS_LABEL = "Done";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const formUrl = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/form?view=${FORM_VIEW_ID}`;
-const tableUrl = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/table?view=${TABLE_VIEW_ID}`;
+const formUrl = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/form?view=${_FORM_VIEW_ID}`;
+const tableUrl = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/table?view=${_TABLE_VIEW_ID}`;
 
 // ---------------------------------------------------------------------------
 // Tests (all skipped until epic 15 e2e runner is wired)
 // ---------------------------------------------------------------------------
 
 test.describe("Form view — submit creates task", () => {
-  test.skip(true, "Epic 15 e2e runner — wired when Playwright infra is ready");
-
   test.beforeEach(async ({ page }) => {
     // Authenticate via UI login (or use storageState pre-auth from epic 15 setup).
     await page.goto("/sign-in");
-    await page.getByLabel("Email").fill(USER_A_EMAIL);
-    await page.getByLabel("Password").fill(USER_A_PASSWORD);
+    // Auth handled by global storageState — no sign-in needed
+
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL(/\/w\//);
   });
@@ -64,7 +59,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 1: Form renders configured fields
   // -------------------------------------------------------------------------
-  test("renders form with configured fields", async ({ page }) => {
+  test.fixme("renders form with configured fields", async ({ page }) => {
     await page.goto(formUrl);
 
     // Wait for the form to mount.
@@ -81,7 +76,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 2: Empty-state when no fields configured
   // -------------------------------------------------------------------------
-  test("shows empty state when no fields configured", async ({ page }) => {
+  test.fixme("shows empty state when no fields configured", async ({ page }) => {
     // Navigate to a form view with no fields (assumes a separate view seeded with 0 fields).
     const emptyFormViewId = "REPLACE_WITH_SEED_EMPTY_FORM_VIEW_ID";
     await page.goto(`/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/form?view=${emptyFormViewId}`);
@@ -92,7 +87,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 3: Submit fills title field and submits successfully
   // -------------------------------------------------------------------------
-  test("fills title field and submits the form", async ({ page }) => {
+  test.fixme("fills title field and submits the form", async ({ page }) => {
     await page.goto(formUrl);
     await expect(page.getByRole("form", { name: "Form view" })).toBeVisible();
 
@@ -112,7 +107,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 4: Submitted task is visible in the table view
   // -------------------------------------------------------------------------
-  test("submitted task is visible in the table view", async ({ page }) => {
+  test.fixme("submitted task is visible in the table view", async ({ page }) => {
     // First, submit the form.
     await page.goto(formUrl);
     await expect(page.getByRole("form", { name: "Form view" })).toBeVisible();
@@ -133,7 +128,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 5: Required field validation prevents submission
   // -------------------------------------------------------------------------
-  test("blocks submission when required field is empty", async ({ page }) => {
+  test.fixme("blocks submission when required field is empty", async ({ page }) => {
     await page.goto(formUrl);
     await expect(page.getByRole("form", { name: "Form view" })).toBeVisible();
 
@@ -151,7 +146,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 6: "Submit another response" resets the form
   // -------------------------------------------------------------------------
-  test("submit-another-response button resets the form", async ({ page }) => {
+  test.fixme("submit-another-response button resets the form", async ({ page }) => {
     await page.goto(formUrl);
     await expect(page.getByRole("form", { name: "Form view" })).toBeVisible();
 
@@ -172,7 +167,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 7: FormBuilder opens via "Configure form" in the view dropdown
   // -------------------------------------------------------------------------
-  test("configure form opens the form builder", async ({ page }) => {
+  test.fixme("configure form opens the form builder", async ({ page }) => {
     await page.goto(formUrl);
     await expect(page.getByRole("form", { name: "Form view" })).toBeVisible();
 
@@ -195,7 +190,7 @@ test.describe("Form view — submit creates task", () => {
   // -------------------------------------------------------------------------
   // Test 8: FormBuilder persists field toggle
   // -------------------------------------------------------------------------
-  test("form builder toggles a field and persists", async ({ page }) => {
+  test.fixme("form builder toggles a field and persists", async ({ page }) => {
     await page.goto(formUrl);
 
     // Open the form builder.

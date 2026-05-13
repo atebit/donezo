@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// Server-only env vars are inlined as `undefined` in the client bundle, so the
+// production-only refines below would always fail on the browser. They are only
+// meaningful on the server, where the values actually exist.
+const onServer = typeof window === "undefined";
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -16,15 +21,21 @@ const EnvSchema = z
     SUPABASE_DB_WEBHOOK_SECRET: z.string().min(32).optional(),
     // Observability
     SENTRY_DSN: z.string().url().optional(),
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+    SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+    SENTRY_ORG: z.string().min(1).optional(),
+    SENTRY_PROJECT: z.string().min(1).optional(),
   })
   .refine(
     (data) =>
+      !onServer ||
       data.NODE_ENV !== "production" ||
       (data.RESEND_API_KEY !== undefined && data.RESEND_API_KEY.length > 0),
     { message: "RESEND_API_KEY is required in production", path: ["RESEND_API_KEY"] },
   )
   .refine(
     (data) =>
+      !onServer ||
       data.NODE_ENV !== "production" ||
       (data.INTERNAL_CRON_SECRET !== undefined && data.INTERNAL_CRON_SECRET.length >= 32),
     {
@@ -34,12 +45,30 @@ const EnvSchema = z
   )
   .refine(
     (data) =>
+      !onServer ||
       data.NODE_ENV !== "production" ||
       (data.SUPABASE_DB_WEBHOOK_SECRET !== undefined &&
         data.SUPABASE_DB_WEBHOOK_SECRET.length >= 32),
     {
       message: "SUPABASE_DB_WEBHOOK_SECRET (min 32 chars) is required in production",
       path: ["SUPABASE_DB_WEBHOOK_SECRET"],
+    },
+  )
+  .refine(
+    (data) => {
+      // In production, NEXT_PUBLIC_SENTRY_DSN and SENTRY_AUTH_TOKEN must both
+      // be set or both be absent — one without the other is a misconfiguration.
+      // SENTRY_AUTH_TOKEN is server-only, so skip on the client.
+      if (!onServer) return true;
+      if (data.NODE_ENV !== "production") return true;
+      const hasDsn = !!data.NEXT_PUBLIC_SENTRY_DSN;
+      const hasToken = !!data.SENTRY_AUTH_TOKEN;
+      return hasDsn === hasToken;
+    },
+    {
+      message:
+        "NEXT_PUBLIC_SENTRY_DSN and SENTRY_AUTH_TOKEN must both be set (or both absent) in production",
+      path: ["NEXT_PUBLIC_SENTRY_DSN"],
     },
   );
 
@@ -61,6 +90,10 @@ const parsed = EnvSchema.safeParse({
   INTERNAL_CRON_SECRET: process.env.INTERNAL_CRON_SECRET,
   SUPABASE_DB_WEBHOOK_SECRET: process.env.SUPABASE_DB_WEBHOOK_SECRET,
   SENTRY_DSN: process.env.SENTRY_DSN,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+  SENTRY_ORG: process.env.SENTRY_ORG,
+  SENTRY_PROJECT: process.env.SENTRY_PROJECT,
 });
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 

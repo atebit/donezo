@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 12 — Cross-kind view-switching E2E spec.
@@ -35,10 +35,10 @@ import { expect, test } from "@playwright/test";
 // ---------------------------------------------------------------------------
 // Constants — replace with seed-script output in epic 15
 // ---------------------------------------------------------------------------
-const USER_A_EMAIL = "user-a+e2e@donezo.local";
-const USER_A_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
+const _USER_A_EMAIL = "user-a+e2e@donezo.local";
+const _USER_A_PASSWORD = "test-password-12345";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
 const TABLE_VIEW_ID = "REPLACE_WITH_SEED_TABLE_VIEW_ID";
 const KANBAN_VIEW_ID = "REPLACE_WITH_SEED_KANBAN_VIEW_ID";
 const CALENDAR_VIEW_ID = "REPLACE_WITH_SEED_CALENDAR_VIEW_ID";
@@ -52,14 +52,10 @@ const CALENDAR_URL = `${BOARD_ROOT_URL}/calendar?view=${CALENDAR_VIEW_ID}`;
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-// @ts-expect-error playwright wired in epic 15
-async function signIn(page, email: string, password: string) {
+async function _signIn(page: import("@playwright/test").Page, email: string, password: string) {
   await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await page.waitForURL(`**/w/${WORKSPACE_SLUG}/**`);
 }
 
 // ---------------------------------------------------------------------------
@@ -67,10 +63,8 @@ async function signIn(page, email: string, password: string) {
 // ---------------------------------------------------------------------------
 
 test.describe("Epic 12 — cross-kind view switching", () => {
-  test.skip(true, "Epic 15 e2e runner — wired when Playwright infra is ready");
-
-  test.beforeEach(async ({ page }) => {
-    await signIn(page, USER_A_EMAIL, USER_A_PASSWORD);
+  test.beforeEach(async () => {
+    // Auth handled by global storageState
   });
 
   /**
@@ -80,7 +74,9 @@ test.describe("Epic 12 — cross-kind view switching", () => {
    *     Contract: board/page.tsx calls loadBoardSnapshot, resolves active view,
    *     and calls redirect() to /<kind>?view=<id>.
    */
-  test("T1: bare board URL redirects to per-kind route with ?view param", async ({ page }) => {
+  test.fixme("T1: bare board URL redirects to per-kind route with ?view param", async ({
+    page,
+  }) => {
     // Navigate to the bare board index route.
     await page.goto(BOARD_ROOT_URL);
 
@@ -106,7 +102,9 @@ test.describe("Epic 12 — cross-kind view switching", () => {
    *     Contract: useBoardView.switchView() clears draft, determines target
    *     kind from the target view row, and calls router.push for cross-kind.
    */
-  test("T2: switchView from table → kanban updates URL to /kanban?view=<id>", async ({ page }) => {
+  test.fixme("T2: switchView from table → kanban updates URL to /kanban?view=<id>", async ({
+    page,
+  }) => {
     // Start on the table view.
     await page.goto(TABLE_URL);
     await page.waitForLoadState("networkidle");
@@ -145,7 +143,7 @@ test.describe("Epic 12 — cross-kind view switching", () => {
    *     Draft state (unsaved URL params like ?f=, ?s=) is cleared on switchView
    *     per Slice A's switchView contract.
    */
-  test("T3: switchView kanban → table restores table URL; draft state cleared", async ({
+  test.fixme("T3: switchView kanban → table restores table URL; draft state cleared", async ({
     page,
   }) => {
     // Start on the kanban view with a filter draft in the URL
@@ -186,7 +184,7 @@ test.describe("Epic 12 — cross-kind view switching", () => {
    *     Contract: CalendarView reads effective.calendar.dateColumnId from the
    *     store (which is hydrated from the view row's config on page load).
    */
-  test("T4: direct load of /calendar?view=<id> renders calendar with dateColumnId", async ({
+  test.fixme("T4: direct load of /calendar?view=<id> renders calendar with dateColumnId", async ({
     page,
   }) => {
     // Navigate directly to the calendar view (CALENDAR_VIEW_ID is seeded with

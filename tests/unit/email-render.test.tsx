@@ -11,7 +11,6 @@
  */
 
 import { render } from "@react-email/render";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 import { AssignedEmail } from "@/emails/assigned/Assigned";
 import { CommentOnFollowedEmail } from "@/emails/comment-on-followed/CommentOnFollowed";

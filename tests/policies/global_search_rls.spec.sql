@@ -50,7 +50,7 @@ insert into public.task (id, board_id, group_id, title, position, created_by)
 -- Test 1: User B (non-member) sees 0 rows from global_search.
 -- -----------------------------------------------------------------------
 set local role authenticated;
-set local "request.jwt.claims" to json_build_object('sub', 'bbbbbbbb-0000-4000-8000-000000000001')::text;
+select set_config('request.jwt.claims', json_build_object('sub', 'bbbbbbbb-0000-4000-8000-000000000001')::text, true);
 
 select is(
   (select count(*)::int from public.global_search('cccccccc-0000-4000-8000-000000000001'::uuid, 'searchable')),
@@ -78,7 +78,7 @@ insert into public.workspace_member (workspace_id, user_id, role)
 -- Test 3: User B (now member) can see the task.
 -- -----------------------------------------------------------------------
 set local role authenticated;
-set local "request.jwt.claims" to json_build_object('sub', 'bbbbbbbb-0000-4000-8000-000000000001')::text;
+select set_config('request.jwt.claims', json_build_object('sub', 'bbbbbbbb-0000-4000-8000-000000000001')::text, true);
 
 select ok(
   (select count(*)::int from public.global_search('cccccccc-0000-4000-8000-000000000001'::uuid, 'searchable')) >= 1,

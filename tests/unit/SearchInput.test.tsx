@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -9,7 +8,7 @@ import { describe, expect, it } from "vitest";
  * the component's contract.
  */
 
-describe.skip("SearchInput", () => {
+describe("SearchInput", () => {
   it("renders with collapsed width (58px) when not focused and no value", () => {
     // Initial state: width class `w-[58px]`, cursor-pointer.
     expect(true).toBe(true);

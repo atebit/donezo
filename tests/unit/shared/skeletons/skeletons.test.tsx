@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -55,7 +54,7 @@ describe("Skeletons — module contract", () => {
 // Render tests (require RTL + jsdom — skip until epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("Skeletons — render (requires RTL + jsdom, epic 15)", () => {
+describe("Skeletons — render (requires RTL + jsdom, epic 15)", () => {
   /**
    * For each skeleton, verify it renders at least one element with
    * data-slot="skeleton" (the Skeleton primitive adds this attribute).
@@ -71,10 +70,11 @@ describe.skip("Skeletons — render (requires RTL + jsdom, epic 15)", () => {
 
   for (const [name, modulePath] of skeletonComponents) {
     it(`${name} renders at least one <Skeleton /> instance`, async () => {
-      const { render, container } = await import("@testing-library/react");
+      const { render } = await import("@testing-library/react");
       const mod = await import(modulePath);
       const Component = mod[name];
-      render(<Component />);
+      // container comes from render(), not from the RTL module.
+      const { container } = render(<Component />);
       const skeletonEls = container.querySelectorAll('[data-slot="skeleton"]');
       expect(skeletonEls.length).toBeGreaterThan(0);
     });

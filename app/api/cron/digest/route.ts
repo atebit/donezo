@@ -3,10 +3,6 @@
  *
  * Digest email cron handler — fires every 15 minutes (see vercel.json).
  *
- * Authentication:
- *   - Authorization: Bearer ${INTERNAL_CRON_SECRET}
- *   - x-vercel-cron: 1  (sanity check; not a security boundary)
- *
  * Logic per run:
  *   1. Find all users whose configured digest hour-in-their-TZ falls within
  *      [now, now + 15 minutes) via findUsersDueForDigest().
@@ -31,41 +27,18 @@
  *     this is safe because buildDigest already fetches exactly those rows.
  */
 
-import { timingSafeEqual } from "node:crypto";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createElement } from "react";
 import { DigestEmail } from "@/emails/digest/Digest";
 import { buildDigest } from "@/lib/email/digest";
 import { findUsersDueForDigest } from "@/lib/email/digest-due-users";
 import { sendEmail } from "@/lib/email/send";
+import { withCronAuth } from "@/lib/jobs/wrap-cron";
 import { logger } from "@/lib/logger";
 import { NOTIFICATION_KIND_LIST, type NotificationKind } from "@/lib/notifications/kinds";
 import { getPreferenceFor } from "@/lib/notifications/preferences";
 // biome-ignore lint/style/noRestrictedImports: service-role for digested_at marking.
 import { adminClient } from "@/lib/supabase/admin";
-
-function getCronSecret(): string | undefined {
-  return process.env.INTERNAL_CRON_SECRET;
-}
-
-function verifyAuth(request: NextRequest): boolean {
-  const secret = getCronSecret();
-  if (!secret) {
-    logger.warn("[digest-cron] INTERNAL_CRON_SECRET not set — running in open mode");
-    return true;
-  }
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return false;
-  const provided = authHeader.slice(7);
-  try {
-    const a = Buffer.from(provided);
-    const b = Buffer.from(secret);
-    if (a.length !== b.length) return false;
-    return timingSafeEqual(a, b);
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Resolves the kinds whose email preference is 'digest' for this user.
@@ -102,70 +75,59 @@ async function markDigested(userId: string): Promise<void> {
   }
 }
 
-export async function GET(request: NextRequest) {
-  if (!verifyAuth(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = withCronAuth(
+  async (_req) => {
+    const now = new Date();
 
-  const cronHeader = request.headers.get("x-vercel-cron");
-  // Sanity check — not a security boundary (Bearer token is the real auth).
-  if (process.env.NODE_ENV === "production" && cronHeader !== "1") {
-    logger.warn("[digest-cron] missing x-vercel-cron header in production");
-  }
-
-  const now = new Date();
-
-  logger.info({ now: now.toISOString() }, "[digest-cron] run started");
-
-  // 1. Find users whose digest window starts now.
-  let dueUsers: string[];
-  try {
-    dueUsers = await findUsersDueForDigest(now);
-  } catch (err) {
-    logger.error({ err }, "[digest-cron] findUsersDueForDigest failed");
-    return NextResponse.json({ error: "scheduling query failed" }, { status: 500 });
-  }
-
-  logger.info({ count: dueUsers.length }, "[digest-cron] users due for digest");
-
-  let sent = 0;
-  let skipped = 0;
-  let errors = 0;
-
-  for (const userId of dueUsers) {
+    // 1. Find users whose digest window starts now.
+    let dueUsers: string[];
     try {
-      // 2a. Build digest payload.
-      const data = await buildDigest(userId);
-
-      if (!data) {
-        // No pending digest rows — skip without sending.
-        skipped++;
-        continue;
-      }
-
-      // 2b. Render template.
-      const react = createElement(DigestEmail, { data });
-
-      // 2c. Send email (logs envelope when RESEND_API_KEY is unset).
-      await sendEmail({
-        to: data.recipient.email,
-        subject: `Your Donezo digest — ${data.counts.total} notification${data.counts.total !== 1 ? "s" : ""}`,
-        react,
-        tag: "digest",
-      });
-
-      // 2d. Mark rows as digested.
-      await markDigested(userId);
-
-      logger.info({ userId, total: data.counts.total }, "[digest-cron] digest sent and marked");
-      sent++;
+      dueUsers = await findUsersDueForDigest(now);
     } catch (err) {
-      logger.error({ userId, err }, "[digest-cron] error processing user");
-      errors++;
+      logger.error({ err }, "[digest-cron] findUsersDueForDigest failed");
+      return NextResponse.json({ error: "scheduling query failed" }, { status: 500 });
     }
-  }
 
-  logger.info({ sent, skipped, errors }, "[digest-cron] run complete");
+    logger.info({ count: dueUsers.length }, "[digest-cron] users due for digest");
 
-  return NextResponse.json({ ok: true, sent, skipped, errors });
-}
+    let sent = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    for (const userId of dueUsers) {
+      try {
+        // 2a. Build digest payload.
+        const data = await buildDigest(userId);
+
+        if (!data) {
+          // No pending digest rows — skip without sending.
+          skipped++;
+          continue;
+        }
+
+        // 2b. Render template.
+        const react = createElement(DigestEmail, { data });
+
+        // 2c. Send email (logs envelope when RESEND_API_KEY is unset).
+        await sendEmail({
+          to: data.recipient.email,
+          subject: `Your Donezo digest — ${data.counts.total} notification${data.counts.total !== 1 ? "s" : ""}`,
+          react,
+          tag: "digest",
+        });
+
+        // 2d. Mark rows as digested.
+        await markDigested(userId);
+
+        logger.info({ userId, total: data.counts.total }, "[digest-cron] digest sent and marked");
+        sent++;
+      } catch (err) {
+        logger.error({ userId, err }, "[digest-cron] error processing user");
+        errors++;
+      }
+    }
+
+    return NextResponse.json({ ok: true, sent, skipped, errors });
+  },
+  { name: "digest" },
+);

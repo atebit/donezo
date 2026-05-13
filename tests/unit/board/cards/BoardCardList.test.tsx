@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -33,7 +32,7 @@ describe("BoardCardList module shape", () => {
 // Rendering tests (skipped — RTL not wired until Epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("BoardCardList rendering", () => {
+describe("BoardCardList rendering", () => {
   it("renders one BoardCard per task when tasks exist", () => {
     // Given store: 3 tasks in 1 group
     // → 3 SortableCard items with data-task-id attributes

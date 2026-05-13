@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -96,7 +95,7 @@ function expectNullsExcept(
 // text
 // ===========================================================================
 
-describe.skip("cell codecs", () => {
+describe("cell codecs", () => {
   describe("textType", () => {
     it("toRow stores text_value and nulls all others", () => {
       const patch = textType.toRow("hello");

@@ -101,7 +101,7 @@ const otherView = makeView({
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("resolveActiveViewId — active-view resolution priority", () => {
+describe("resolveActiveViewId — active-view resolution priority", () => {
   describe("Priority 1: searchParams.view", () => {
     it("returns the URL view id when it exists in the views list", () => {
       const result = resolveActiveViewId(

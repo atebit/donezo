@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it, vi } from "vitest";
 import { THEME_OPTIONS } from "@/components/shared/theme/ThemeToggle";
 
@@ -76,7 +75,7 @@ describe("ThemeToggle setTheme interaction", () => {
 // DOM rendering tests — deferred to Epic 15
 // ---------------------------------------------------------------------------
 
-describe.skip("ThemeToggle rendering (Epic 15 wiring)", () => {
+describe("ThemeToggle rendering (Epic 15 wiring)", () => {
   it("renders a non-interactive placeholder before mount (SSR guard)", () => {
     // TODO(epic-15): render ThemeToggle in a node env where useState(false)
     // never flips and assert the placeholder div is rendered (not the Menu).

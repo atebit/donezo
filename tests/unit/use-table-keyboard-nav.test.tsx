@@ -1,6 +1,4 @@
-// @ts-expect-error vitest is wired in epic 15
 import { act, renderHook } from "@testing-library/react";
-// @ts-expect-error vitest is wired in epic 15
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { EditableTitleHandle } from "../../components/shared/EditableTitle";
@@ -29,7 +27,7 @@ function makeHandle(): EditableTitleHandle {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe.skip("useTableKeyboardNav", () => {
+describe("useTableKeyboardNav", () => {
   let container: HTMLDivElement;
   let containerRef: React.RefObject<HTMLDivElement | null>;
 

@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 12 — Alternate-views performance smoke tests.
@@ -33,12 +33,12 @@ import { expect, test } from "@playwright/test";
 // ---------------------------------------------------------------------------
 // Constants — replace with seed-script output in epic 15
 // ---------------------------------------------------------------------------
-const USER_PERF_EMAIL = "user-perf+e2e@donezo.local";
-const USER_PERF_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
+const _USER_PERF_EMAIL = "user-perf+e2e@donezo.local";
+const _USER_PERF_PASSWORD = "test-password-12345";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
 
 /** Board seeded with 1,000 tasks. */
-const PERF_BOARD_ID = "REPLACE_WITH_SEED_PERF_BOARD_ID";
+const PERF_BOARD_ID = E2E_BOARD_ID;
 const KANBAN_VIEW_ID = "REPLACE_WITH_SEED_PERF_KANBAN_VIEW_ID";
 const CALENDAR_VIEW_ID = "REPLACE_WITH_SEED_PERF_CALENDAR_VIEW_ID";
 const TIMELINE_VIEW_ID = "REPLACE_WITH_SEED_PERF_TIMELINE_VIEW_ID";
@@ -48,14 +48,10 @@ const BASE = `/w/${WORKSPACE_SLUG}/b/${PERF_BOARD_ID}`;
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-// @ts-expect-error playwright wired in epic 15
-async function signIn(page, email: string, password: string) {
+async function _signIn(page: import("@playwright/test").Page, email: string, password: string) {
   await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: /sign in/i }).click();
-  await page.waitForURL(`**/w/${WORKSPACE_SLUG}/**`);
 }
 
 /**
@@ -66,7 +62,6 @@ async function signIn(page, email: string, password: string) {
  * explodes into the thousands on initial render indicates repeated forced
  * synchronous layouts which will degrade paint performance.
  */
-// @ts-expect-error playwright wired in epic 15
 async function measureLayoutCount(page): Promise<number | null> {
   try {
     // biome-ignore lint/suspicious/noExplicitAny: CDP session type not available without playwright import
@@ -88,10 +83,8 @@ async function measureLayoutCount(page): Promise<number | null> {
 // ---------------------------------------------------------------------------
 
 test.describe("Epic 12 @perf — 1k-task alternate-view smoke", () => {
-  test.skip(true, "Epic 15 e2e runner — wired when Playwright infra is ready");
-
-  test.beforeEach(async ({ page }) => {
-    await signIn(page, USER_PERF_EMAIL, USER_PERF_PASSWORD);
+  test.beforeEach(async () => {
+    // Auth handled by global storageState
   });
 
   /**
@@ -106,7 +99,9 @@ test.describe("Epic 12 @perf — 1k-task alternate-view smoke", () => {
    * are in the DOM; this test verifies the virtualizer is working (DOM
    * count should be << 1000 even with 1k tasks).
    */
-  test("P1 @perf: kanban with 1k tasks — lanes render; cards virtualized", async ({ page }) => {
+  test.fixme("P1 @perf: kanban with 1k tasks — lanes render; cards virtualized", async ({
+    page,
+  }) => {
     const url = `${BASE}/kanban?view=${KANBAN_VIEW_ID}`;
     await page.goto(url);
     await page.waitForLoadState("networkidle");
@@ -156,7 +151,9 @@ test.describe("Epic 12 @perf — 1k-task alternate-view smoke", () => {
    * This is by-design; the structural assertion verifies at least some events
    * render within a reasonable timeout.
    */
-  test("P2 @perf: calendar with 1k tasks — events render; no layout thrash", async ({ page }) => {
+  test.fixme("P2 @perf: calendar with 1k tasks — events render; no layout thrash", async ({
+    page,
+  }) => {
     const url = `${BASE}/calendar?view=${CALENDAR_VIEW_ID}`;
     await page.goto(url);
     await page.waitForLoadState("networkidle");
@@ -199,7 +196,9 @@ test.describe("Epic 12 @perf — 1k-task alternate-view smoke", () => {
    * With a typical viewport height of ~700px and ROW_HEIGHT=36, ~19 rows are
    * visible. DOM count should be ~19 + overscan(10) = ~29 max.
    */
-  test("P3 @perf: timeline with 1k tasks — rows virtualized; bars render", async ({ page }) => {
+  test.fixme("P3 @perf: timeline with 1k tasks — rows virtualized; bars render", async ({
+    page,
+  }) => {
     const url = `${BASE}/timeline?view=${TIMELINE_VIEW_ID}`;
     await page.goto(url);
     await page.waitForLoadState("networkidle");

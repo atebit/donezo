@@ -1,6 +1,4 @@
-// @ts-expect-error RTL wired in epic 15
 import { render, screen } from "@testing-library/react";
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 import { WorkspaceSidebar } from "@/components/shared/sidebar/WorkspaceSidebar";
 import type { SidebarBoards } from "@/lib/workspace-context";
@@ -17,7 +15,7 @@ const boards: SidebarBoards = {
 // workspace role — stored as variable to avoid aria-role lint false positive
 const memberRole = "member" as const;
 
-describe.skip("WorkspaceSidebar", () => {
+describe("WorkspaceSidebar", () => {
   it("renders 'Select a workspace' copy when rendered outside a WorkspaceProvider", () => {
     render(<WorkspaceSidebar workspaces={[]} />);
     expect(screen.getByText("Select a workspace to see your boards")).toBeTruthy();

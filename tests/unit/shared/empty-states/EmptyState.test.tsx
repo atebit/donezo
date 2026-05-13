@@ -1,4 +1,3 @@
-// @ts-expect-error vitest runner wired in epic 15
 import { describe, expect, it } from "vitest";
 
 /**
@@ -44,7 +43,7 @@ describe("EmptyState — module contract", () => {
 // Render tests (require RTL + jsdom — skip until epic 15)
 // ---------------------------------------------------------------------------
 
-describe.skip("EmptyState — render (requires RTL + jsdom, epic 15)", () => {
+describe("EmptyState — render (requires RTL + jsdom, epic 15)", () => {
   it("renders title text", async () => {
     const { render, screen } = await import("@testing-library/react");
     const { Star } = await import("lucide-react");

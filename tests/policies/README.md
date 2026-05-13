@@ -133,10 +133,84 @@ Asserts:
    (`a1…`, `b1…` for file 10; `a2…`, `b2…` for file 20; etc.) to ensure
    no cross-file collisions in case tests are concatenated.
 
-## Running the suite
+## Running locally
 
-**Epic 15 wires the `pnpm test:policies` script** that calls `pg_prove` against
-an ephemeral database. Until then, you can run the tests manually:
+### Prerequisites
+
+1. **Perl** — ships with macOS and most Linux distros. Verify: `perl --version`.
+
+2. **pg_prove** — installed via the CPAN module `TAP::Parser::SourceHandler::pgTAP`,
+   which also places the `pg_prove` binary on your `PATH`.
+
+   **macOS:**
+   ```bash
+   brew install cpanminus          # skip if cpanm is already installed
+   cpanm TAP::Parser::SourceHandler::pgTAP
+   ```
+
+   **Linux (Debian / Ubuntu):**
+   ```bash
+   apt-get install libtap-parser-sourcehandler-pgtap-perl
+   ```
+
+   **Any platform via cpanm:**
+   ```bash
+   cpanm TAP::Parser::SourceHandler::pgTAP
+   ```
+
+   Verify: `pg_prove --version`
+
+3. **Supabase CLI** — version `2.98.2` (pinned as a dev dependency).
+   Already available after `pnpm install`.
+
+### Quick start
+
+```bash
+# 1. Start the local Supabase stack (Docker must be running)
+supabase start
+
+# 2. Apply all migrations so RLS policies are in place
+supabase db push
+
+# 3. Run all pgTAP policy tests (uses the default local port)
+pnpm test:policies:ci
+```
+
+`pnpm test:policies:ci` sets `DATABASE_URL` to
+`postgresql://postgres:postgres@localhost:54322/postgres` automatically.
+
+To use a custom URL:
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres \
+  pnpm test:policies
+```
+
+Or read the URL from `supabase status`:
+
+```bash
+DATABASE_URL=$(supabase status --output env | grep "^DB_URL" | cut -d= -f2-) \
+  pnpm test:policies
+```
+
+### Running a single file
+
+```bash
+pg_prove -d postgresql://postgres:postgres@localhost:54322/postgres \
+  tests/policies/10_workspace.sql
+```
+
+### Notes
+
+- `00_setup.sql` is `\i`-included by each spec file; the runner skips it
+  automatically.
+- Tests run inside `BEGIN … ROLLBACK` and leave no state in the database.
+- `40_invitation.sql` requires the invitation-gated policies migration. It
+  will fail until that migration has been applied.
+- The `tests` schema helpers are created inside the transaction and are
+  rolled back automatically.
+
+## Legacy run options
 
 ### Option A — Supabase SQL Editor (scratch project)
 
@@ -166,12 +240,3 @@ pg_prove -d "$DATABASE_URL" tests/policies/*.sql
 
 Replace `$DATABASE_URL` with the local Supabase connection string printed by
 `supabase status`.
-
-### Important notes
-
-- The `invitation` table and the invitation-gated `wsm_insert`/`bm_insert`
-  policies are defined in Slice D's migration. File `40_invitation.sql` will
-  fail until Slice D's migration has been applied.
-- Tests use `begin … rollback` so they leave no state behind in the database.
-- The `tests` schema helpers are created inside the transaction, so they are
-  also rolled back automatically.
