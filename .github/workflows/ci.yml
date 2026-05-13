@@ -126,6 +126,14 @@ jobs:
         env:
           CI: "true"
           NEXT_TELEMETRY_DISABLED: "1"
+          # `pnpm build && pnpm start` sets NODE_ENV=production, which triggers
+          # lib/env.ts production-only refinements requiring these keys. The
+          # E2E suite never sends real email / hits the cron path / receives a
+          # Supabase webhook, so stub 32-char placeholders are sufficient to
+          # satisfy validation and boot the server.
+          RESEND_API_KEY: "ci-e2e-stub-not-used-for-real-sending"
+          INTERNAL_CRON_SECRET: "ci-e2e-stub-internal-cron-secret-32chars-min"
+          SUPABASE_DB_WEBHOOK_SECRET: "ci-e2e-stub-supabase-db-webhook-secret-32chars"
 
       - name: Upload Playwright report
         if: failure()

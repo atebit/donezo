@@ -101,6 +101,17 @@ begin
 end $$;
 
 -- ------------------------------------------------------------
+-- Permissions: tests switch the active role to `authenticated`
+-- via set_jwt_user. Subsequent calls to set_jwt_user / reset_to_service_role
+-- from inside a test must therefore be callable by `authenticated`.
+-- Other helpers (make_user, seed_*) stay restricted to the seeding context
+-- because the test files only invoke them before the first set_jwt_user.
+-- ------------------------------------------------------------
+grant usage on schema tests to authenticated;
+grant execute on function tests.set_jwt_user(uuid) to authenticated;
+grant execute on function tests.reset_to_service_role() to authenticated;
+
+-- ------------------------------------------------------------
 -- seed_workspace(p_workspace_id, p_owner_id)
 -- Insert a workspace row. Always call in service-role context.
 -- ------------------------------------------------------------
