@@ -101,9 +101,7 @@ describe("applySearch", () => {
   it("cell match is case-insensitive", () => {
     const col = makeColumn({ id: "00000000-0000-0000-0000-000000000001" });
     const t1 = makeTask({ id: "t1", title: "no match" });
-    const cells = new Map<string, Cell>([
-      [`t1:${col.id}`, makeCell("t1", col.id, "FINDME")],
-    ]);
+    const cells = new Map<string, Cell>([[`t1:${col.id}`, makeCell("t1", col.id, "FINDME")]]);
 
     const result = applySearch([t1], cells, [col], "findme");
     expect(result).toHaveLength(1);
@@ -114,9 +112,7 @@ describe("applySearch", () => {
     // caller is responsible for passing all columns, not just visible ones.
     const col = makeColumn({ id: "00000000-0000-0000-0000-000000000001" });
     const t1 = makeTask({ id: "t1", title: "no match" });
-    const cells = new Map<string, Cell>([
-      [`t1:${col.id}`, makeCell("t1", col.id, "hidden-value")],
-    ]);
+    const cells = new Map<string, Cell>([[`t1:${col.id}`, makeCell("t1", col.id, "hidden-value")]]);
 
     const result = applySearch([t1], cells, [col], "hidden-value");
     expect(result).toHaveLength(1);

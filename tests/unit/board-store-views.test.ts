@@ -168,9 +168,9 @@ describe("board-store view slice", () => {
 
   describe("setSortKeys", () => {
     it("replaces sortKeys", () => {
-      useBoardStore.getState().setSortKeys([
-        { columnId: "00000000-0000-0000-0000-000000000001", direction: "asc" },
-      ]);
+      useBoardStore
+        .getState()
+        .setSortKeys([{ columnId: "00000000-0000-0000-0000-000000000001", direction: "asc" }]);
       const { sortKeys } = useBoardStore.getState();
       expect(sortKeys).toHaveLength(1);
       expect(sortKeys[0]?.direction).toBe("asc");
@@ -314,7 +314,7 @@ describe("migrateLegacyColumnPrefs", () => {
     expect(columnWidths["col-c"]).toBeUndefined(); // no width set
 
     expect(columnVisibility["col-a"]).toBe(false); // hidden=true → visible=false
-    expect(columnVisibility["col-b"]).toBe(true);  // hidden=false → visible=true
+    expect(columnVisibility["col-b"]).toBe(true); // hidden=false → visible=true
     expect(columnVisibility["col-c"]).toBe(false); // hidden=true → visible=false
   });
 

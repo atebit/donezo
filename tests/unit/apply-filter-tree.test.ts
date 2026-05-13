@@ -140,8 +140,14 @@ describe("applyFilterTree", () => {
     const tree: FilterTree = {
       kind: "and",
       clauses: [
-        { kind: "comparison", comparison: { columnId: col1.id, operator: "equals", operand: "alpha" } },
-        { kind: "comparison", comparison: { columnId: col2.id, operator: "equals", operand: "beta" } },
+        {
+          kind: "comparison",
+          comparison: { columnId: col1.id, operator: "equals", operand: "alpha" },
+        },
+        {
+          kind: "comparison",
+          comparison: { columnId: col2.id, operator: "equals", operand: "beta" },
+        },
       ],
     };
 
@@ -164,8 +170,14 @@ describe("applyFilterTree", () => {
     const tree: FilterTree = {
       kind: "or",
       clauses: [
-        { kind: "comparison", comparison: { columnId: col.id, operator: "equals", operand: "alpha" } },
-        { kind: "comparison", comparison: { columnId: col.id, operator: "equals", operand: "beta" } },
+        {
+          kind: "comparison",
+          comparison: { columnId: col.id, operator: "equals", operand: "alpha" },
+        },
+        {
+          kind: "comparison",
+          comparison: { columnId: col.id, operator: "equals", operand: "beta" },
+        },
       ],
     };
 
@@ -221,15 +233,27 @@ describe("applyFilterTree", () => {
         {
           kind: "or",
           clauses: [
-            { kind: "comparison", comparison: { columnId: col.id, operator: "equals", operand: "a" } },
-            { kind: "comparison", comparison: { columnId: col.id, operator: "equals", operand: "b" } },
+            {
+              kind: "comparison",
+              comparison: { columnId: col.id, operator: "equals", operand: "a" },
+            },
+            {
+              kind: "comparison",
+              comparison: { columnId: col.id, operator: "equals", operand: "b" },
+            },
           ],
         },
         {
           kind: "or",
           clauses: [
-            { kind: "comparison", comparison: { columnId: col.id, operator: "equals", operand: "a" } },
-            { kind: "comparison", comparison: { columnId: col.id, operator: "equals", operand: "c" } },
+            {
+              kind: "comparison",
+              comparison: { columnId: col.id, operator: "equals", operand: "a" },
+            },
+            {
+              kind: "comparison",
+              comparison: { columnId: col.id, operator: "equals", operand: "c" },
+            },
           ],
         },
       ],
