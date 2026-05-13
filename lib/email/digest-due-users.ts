@@ -8,30 +8,55 @@
  *     1. Convert `now` to the user's preferred timezone.
  *     2. Derive the scheduled fire time for today: midnight + digest_hour hours in that TZ.
  *     3. If `now` ∈ [scheduled, scheduled + 15 minutes) → the user is due.
- *     4. Additionally, the user must have pending digest rows
- *        (digested_at IS NULL AND read_at IS NULL AND kind with pref.email = 'digest').
- *        Step 4 is handled by the caller (buildDigest returns null when nothing to send),
- *        so here we only apply the timing gate.
+ *     4. The caller (buildDigest) returns null when there are no pending digest rows,
+ *        so the timing gate here is sufficient — no double-query needed.
  *
- * TZ math:
- *   - `date-fns-tz` is used for TZ-aware date arithmetic.
- *   - `toZonedTime(now, tz)` converts the UTC instant to a wall-clock Date in `tz`.
- *   - We reconstruct the scheduled instant by building a Date in the same TZ at
- *     hour=digest_hour, minute=0, second=0, then converting back to UTC for comparison.
- *   - DST caveat: on DST transitions one window (spring-forward: gap) is skipped and
- *     one (fall-back: overlap) fires twice. This is acceptable for v1 and documented
- *     in docs/conversion-plan/_dispatch/epic-13.md (risk notes).
+ * TZ math uses `@date-fns/tz` (TZDate) — the native v4 TZ companion library.
  *
- * This function is service-role only (adminClient) — it reads all preference rows.
+ * DST caveat: on spring-forward the window is skipped; on fall-back it fires twice
+ * (idempotent because buildDigest marks digested_at before returning). Acceptable for v1.
  */
 
-import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { TZDate } from "@date-fns/tz";
 import { logger } from "@/lib/logger";
 // biome-ignore lint/style/noRestrictedImports: service-role path for digest scheduling.
 import { adminClient } from "@/lib/supabase/admin";
 
 /** Window size in milliseconds (15 minutes). */
 const WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Returns the scheduled digest instant (UTC ms) for the given preference row
+ * on the same calendar day as `now` in `tz`.
+ *
+ * Throws if `tz` is invalid (caller should catch and skip).
+ */
+function scheduledMs(now: Date, digestHour: number, tz: string): number {
+  // Build a TZDate for `now` in the user's timezone.
+  // TZDate(date, tz) returns NaN getTime() when tz is invalid — we treat that as an error.
+  const nowInTz = new TZDate(now, tz);
+  if (Number.isNaN(nowInTz.getTime())) {
+    throw new RangeError(`Invalid timezone: ${tz}`);
+  }
+
+  // Reconstruct the scheduled fire time: same year/month/day, digestHour:00:00 in tz.
+  const sched = new TZDate(
+    nowInTz.getFullYear(),
+    nowInTz.getMonth(),
+    nowInTz.getDate(),
+    digestHour,
+    0,
+    0,
+    0,
+    tz,
+  );
+
+  if (Number.isNaN(sched.getTime())) {
+    throw new RangeError(`Could not compute scheduled time in timezone: ${tz}`);
+  }
+
+  return sched.getTime();
+}
 
 /**
  * Returns the list of user IDs whose digest should fire during the 15-minute
@@ -43,7 +68,6 @@ const WINDOW_MS = 15 * 60 * 1000;
 export async function findUsersDueForDigest(now: Date): Promise<string[]> {
   const admin = adminClient();
 
-  // Fetch all rows where digest is enabled.
   const { data: prefs, error } = await admin
     .from("notification_preference")
     .select("user_id, digest_hour, digest_timezone")
@@ -64,24 +88,12 @@ export async function findUsersDueForDigest(now: Date): Promise<string[]> {
     const hour = pref.digest_hour ?? 9;
 
     try {
-      // Convert `now` to the user's timezone wall clock.
-      const zonedNow = toZonedTime(now, tz);
+      const fireMs = scheduledMs(now, hour, tz);
 
-      // Build the scheduled fire instant for TODAY in the user's TZ:
-      // same year/month/day, at hour:00:00.
-      const scheduledZoned = new Date(zonedNow);
-      scheduledZoned.setHours(hour, 0, 0, 0);
-
-      // Convert scheduled wall-clock time back to UTC for comparison.
-      const scheduledUtc = fromZonedTime(scheduledZoned, tz);
-      const scheduledMs = scheduledUtc.getTime();
-
-      // Check: now ∈ [scheduled, scheduled + 15 minutes)
-      if (nowMs >= scheduledMs && nowMs < scheduledMs + WINDOW_MS) {
+      if (nowMs >= fireMs && nowMs < fireMs + WINDOW_MS) {
         due.push(pref.user_id);
       }
     } catch (err) {
-      // Invalid TZ string — skip the user, log a warning.
       logger.warn(
         { userId: pref.user_id, tz, err },
         "[findUsersDueForDigest] invalid timezone — skipping user",
