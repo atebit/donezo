@@ -37,3 +37,6 @@ supabase/.temp/
 
 # Claude Code harness worktrees
 .claire/
+
+# Claude Code scheduled-task runtime lock
+.claude/scheduled_tasks.lock
