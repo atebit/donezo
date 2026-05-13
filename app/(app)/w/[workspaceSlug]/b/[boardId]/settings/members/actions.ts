@@ -1,7 +1,9 @@
 "use server";
 import { revalidateTag } from "next/cache";
+import { InviteEmail } from "@/emails/invite/Invite";
 import { withUser } from "@/lib/actions";
 import { requireBoardRole } from "@/lib/authorization";
+import { sendEmail } from "@/lib/email/send";
 import { logger } from "@/lib/logger";
 import {
   emitBoardInviteNotification,
@@ -78,10 +80,10 @@ export const inviteToBoard = withUser(async ({ supabase, userId }, raw) => {
   // 1. Verify actor has admin+ on the board.
   await requireBoardRole(input.boardId, "admin");
 
-  // 2. Load board to get workspace_id (required by invitation table).
+  // 2. Load board to get workspace_id (required by invitation table) and name (for email).
   const { data: board, error: boardError } = await supabase
     .from("board")
-    .select("id, workspace_id")
+    .select("id, name, workspace_id")
     .eq("id", input.boardId)
     .maybeSingle();
 
@@ -114,11 +116,37 @@ export const inviteToBoard = withUser(async ({ supabase, userId }, raw) => {
     actorId: userId,
   });
 
-  // TODO epic 13 (slice 2C): send board invitation email via Resend.
-  logger.info(
-    { token, email: input.email, boardId: input.boardId },
-    "board invitation created (email send not yet wired — epic 13 slice 2C)",
-  );
+  // 5. Send board invitation email (best-effort).
+  void (async () => {
+    try {
+      const [wsResult, inviterResult] = await Promise.all([
+        supabase.from("workspace").select("name").eq("id", board.workspace_id).maybeSingle(),
+        supabase.from("profile").select("display_name, email").eq("id", userId).maybeSingle(),
+      ]);
+      const workspaceName = wsResult.data?.name ?? "a workspace";
+      const inviterName =
+        inviterResult.data?.display_name ?? inviterResult.data?.email ?? "A teammate";
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://app.donezo.app";
+      const boardName = board.name;
+      await sendEmail({
+        to: input.email,
+        subject: `You've been invited to the "${boardName}" board on Donezo`,
+        react: InviteEmail({
+          inviterName,
+          workspaceName,
+          boardName,
+          acceptHref: `${siteUrl}/join/${token}`,
+          isExistingUser: false,
+        }),
+        tag: "board_invite",
+      });
+    } catch (err) {
+      logger.warn(
+        { err, email: input.email, boardId: input.boardId },
+        "board invitation email send failed (best-effort — invitation row already created)",
+      );
+    }
+  })();
 
   return data;
 });

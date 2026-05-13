@@ -26,6 +26,7 @@ The dev server starts on `http://localhost:3000`.
 | `pnpm test` | Run Vitest unit tests |
 | `pnpm test:watch` | Run Vitest in watch mode |
 | `pnpm test:e2e` | Run Playwright e2e tests (wired in epic 15) |
+| `pnpm email:preview` | Start React Email dev server for visual template preview |
 
 ## Schema migrations
 
@@ -128,6 +129,52 @@ Reactions have no `updated_at` — store idempotency keys on the PK tuple `(comm
 The task drawer uses Next.js intercepting routes (`@modal/(.)t/[taskId]`). Direct URL navigation hits the full-page route at `t/[taskId]`. Both render the same `<TaskDrawer />`; only the shell differs.
 
 `@everyone` on public boards expands to explicit `board_member` rows only (Option A from followup Q-A1). Workspace members with implicit access are not notified. Documented as intended behavior.
+
+## Email (Resend + React Email) — epic 13
+
+### Environment variables
+
+| Variable | Required in prod | Description |
+|---|---|---|
+| `RESEND_API_KEY` | Yes | Resend API key. Without it, `sendEmail` logs envelopes and returns `{ skipped: true }`. |
+| `EMAIL_FROM` | No | Sender address. Default: `Donezo <noreply@donezo.app>`. |
+| `EMAIL_SAFE_LIST` | No | Comma-separated whitelist of recipient addresses. Set on preview deploys to prevent accidental sends to real users. |
+| `INTERNAL_CRON_SECRET` | Yes (≥32 chars) | Shared secret for cron route handlers. |
+| `SUPABASE_DB_WEBHOOK_SECRET` | Yes (≥32 chars) | Shared secret for the Supabase DB webhook. |
+
+### Instant email path
+
+1. **Primary:** Supabase database webhook fires on `notification` INSERT → `app/api/webhooks/notifications/route.ts` → renders template + calls Resend.
+2. **Polling fallback:** `app/api/cron/notifications-mailer/route.ts` runs every 5 minutes, picking up rows the webhook missed (lookback: 30 min).
+
+### Supabase database webhook setup (manual — dashboard config)
+
+The Supabase local CLI (v2.98.2) does not yet support a `[db.webhooks]` block in `supabase/config.toml`. Configure the webhook manually in the Supabase dashboard:
+
+1. Open **Supabase Dashboard → Database → Webhooks**.
+2. Click **Create a new hook**.
+3. Fill in:
+   - **Name:** `notification_email`
+   - **Table:** `public.notification`
+   - **Events:** `INSERT`
+   - **URL:** `${NEXT_PUBLIC_SITE_URL}/api/webhooks/notifications`
+   - **HTTP method:** `POST`
+   - **HTTP headers:** `Authorization: Bearer ${SUPABASE_DB_WEBHOOK_SECRET}`
+4. Save.
+
+In local dev (without `SUPABASE_DB_WEBHOOK_SECRET` set), the route runs in open mode and skips auth — this is intentional for developer convenience. Production requires the secret to be set.
+
+### Vercel Cron tiers
+
+The cron schedules in `vercel.json` require **Vercel Pro** (or higher). On the Hobby tier, crons fire at most hourly. If deploying on Hobby:
+
+- The polling fallback (`*/5 * * * *`) will not fire at 5-minute intervals.
+- The digest cron (`*/15 * * * *`) will not fire at 15-minute intervals.
+- Adjust the schedule in `vercel.json` to `0 * * * *` (hourly) before deploying to Hobby.
+
+### Email preview
+
+Run `pnpm email:preview` to start the React Email dev server. Templates live under `emails/`.
 
 ## Realtime & writes
 

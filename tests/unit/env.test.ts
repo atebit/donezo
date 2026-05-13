@@ -52,8 +52,12 @@ describe("env schema", () => {
     mutableEnv.NODE_ENV = "production";
     mutableEnv.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
     mutableEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY = "anon-key";
+    mutableEnv.NEXT_PUBLIC_SITE_URL = "https://app.example.com";
     mutableEnv.SUPABASE_SERVICE_ROLE_KEY = "service-role-key";
+    // Epic 13: these are required in production.
     mutableEnv.RESEND_API_KEY = "resend-key";
+    mutableEnv.INTERNAL_CRON_SECRET = "a-very-long-internal-cron-secret-32c";
+    mutableEnv.SUPABASE_DB_WEBHOOK_SECRET = "a-very-long-webhook-secret-value-32";
     mutableEnv.SENTRY_DSN = "https://sentry.example.com/123";
     const { env } = await import("../../lib/env");
     expect(env.NODE_ENV).toBe("production");
