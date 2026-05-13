@@ -13,7 +13,6 @@ import { AssignedEmail } from "@/emails/assigned/Assigned";
 import { CommentOnFollowedEmail } from "@/emails/comment-on-followed/CommentOnFollowed";
 import { CommentReplyEmail } from "@/emails/comment-reply/CommentReply";
 import { DueSoonEmail } from "@/emails/due-soon/DueSoon";
-import { InviteEmail } from "@/emails/invite/Invite";
 import { MentionEmail } from "@/emails/mention/Mention";
 import { RoleChangedEmail } from "@/emails/role-changed/RoleChanged";
 import { StatusChangedEmail } from "@/emails/status-changed/StatusChanged";
@@ -169,21 +168,15 @@ export function renderNotificationEmail(
         tag: "due_overdue",
       };
 
-    case "board_invite": {
-      const boardNameForInvite = boardTitle !== "a board" ? boardTitle : undefined;
-      return {
-        subject: `You've been invited to join ${workspaceName} on Donezo`,
-        react: InviteEmail({
-          inviterName: actorName,
-          workspaceName,
-          // token is in the payload; acceptHref is constructed by the mailer
-          acceptHref: `${siteUrl()}/join/`, // mailer appends token from payload
-          isExistingUser: true, // mailer resolves this from the invitation row
-          ...(boardNameForInvite ? { boardName: boardNameForInvite } : {}),
-        }),
-        tag: "board_invite",
-      };
-    }
+    case "board_invite":
+      // board_invite emails are sent inline by the inviteToWorkspace /
+      // inviteToBoard / resendInvitation actions, which have access to the
+      // invitation token. The webhook/mailer skip this kind to avoid duplicate
+      // sends with a broken accept URL (the notification payload carries only
+      // invitation_id, not the token). The claim in processNotification /
+      // processRow still runs before this point, so email_sent_at is marked as
+      // a soft suppression that prevents infinite re-polling.
+      return null;
 
     case "role_changed":
       return {

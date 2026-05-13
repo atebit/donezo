@@ -138,6 +138,24 @@ describe("renderNotificationEmail", () => {
     expect(result).toBeNull();
   });
 
+  it("returns null for 'board_invite' — action-side send is source of truth", async () => {
+    // board_invite emails are sent inline by inviteToWorkspace / inviteToBoard /
+    // resendInvitation (which have the token). The webhook and mailer must NOT
+    // call sendEmail for this kind — they rely on the null return + the
+    // already-claimed email_sent_at to suppress infinite re-polling.
+    const { renderNotificationEmail } = await import("@/lib/email/render-notification");
+    const ctx = {
+      recipient: { id: "u1", email: "r@example.com", displayName: "Recipient" },
+      actor: { id: "u2", email: null, displayName: "Inviter" },
+      board: { id: "b1", title: "Engineering", workspaceId: "ws1", workspaceSlug: "acme" },
+      workspace: { id: "ws1", name: "Acme", slug: "acme" },
+      task: null,
+      comment: null,
+    };
+    const result = renderNotificationEmail("board_invite", ctx);
+    expect(result).toBeNull();
+  });
+
   it("returns an envelope for 'mention' kind", async () => {
     const { renderNotificationEmail } = await import("@/lib/email/render-notification");
     const ctx = {
@@ -169,6 +187,41 @@ describe("renderNotificationEmail", () => {
     const result = renderNotificationEmail("assigned", ctx);
     expect(result).not.toBeNull();
     expect(result?.tag).toBe("assigned");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// board_invite null-renderer skip: claim-before-render ordering assurance
+// ---------------------------------------------------------------------------
+
+describe("board_invite suppression ordering (processRow / processNotification)", () => {
+  it("renderNotificationEmail returns null for board_invite so webhook and mailer skip sendEmail", async () => {
+    // Both processNotification (webhook) and processRow (mailer) follow the
+    // same pattern:
+    //   1. claim email_sent_at via UPDATE … WHERE email_sent_at IS NULL
+    //   2. call renderNotificationEmail
+    //   3. if (!envelope) return / return "skipped"
+    //
+    // The claim happens BEFORE the renderer, so when renderNotificationEmail
+    // returns null for board_invite the row's email_sent_at is already marked,
+    // preventing infinite re-polling. sendEmail is never reached.
+    const { renderNotificationEmail } = await import("@/lib/email/render-notification");
+    const minimalCtx = {
+      recipient: { id: "u1", email: "r@example.com", displayName: "Recipient" },
+      actor: { id: "u2", email: null, displayName: "Inviter" },
+      board: null,
+      workspace: { id: "ws1", name: "Acme", slug: "acme" },
+      task: null,
+      comment: null,
+    };
+    // The renderer must return null — that's the only gate needed; the claim
+    // is a DB-side operation tested in integration.
+    expect(
+      renderNotificationEmail(
+        "board_invite",
+        minimalCtx as Parameters<typeof renderNotificationEmail>[1],
+      ),
+    ).toBeNull();
   });
 });
 
