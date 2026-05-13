@@ -28,7 +28,7 @@
 import { useEffect, useState } from "react";
 import { FollowToggle } from "@/components/board/FollowToggle";
 import type { MemberOption } from "@/components/comments/CommentEditor";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTaskDrawerPresence } from "@/hooks/use-task-drawer-presence";
 import type { Role } from "@/lib/authorization";
@@ -177,6 +177,9 @@ export function TaskDrawer({
   // controls unmounting via router.back(), so the Sheet is always open while
   // this component is mounted.  showCloseButton=false because the parent
   // provides Esc-key + backdrop-click close behaviour.
+  //
+  // SheetTitle (visually hidden via sr-only) gives the Base UI Dialog an
+  // accessible name, satisfying AT discoverability (WCAG 4.1.2 / Base UI req).
   if (!isDesktop) {
     return (
       <Sheet open defaultOpen>
@@ -186,6 +189,7 @@ export function TaskDrawer({
           className="h-[100dvh] w-full rounded-none p-0 flex flex-col bg-white"
           data-testid="task-drawer"
         >
+          <SheetTitle className="sr-only">{task.title || "Untitled"}</SheetTitle>
           {innerContent}
         </SheetContent>
       </Sheet>
