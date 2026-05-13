@@ -64,7 +64,7 @@ begin
 
   -- Workspace-scoped invitation for invitee@test4.example (valid, not yet accepted)
   perform tests.seed_invitation(
-    'i4000000-0000-0000-0000-000000000001'::uuid,
+    '94000000-0000-0000-0000-000000000001'::uuid,
     'b4000000-0000-0000-0000-000000000001'::uuid,
     null,                                            -- workspace-scoped
     'invitee@test4.example',
@@ -76,7 +76,7 @@ begin
 
   -- Workspace-scoped invitation for invitee@test4.example (EXPIRED)
   perform tests.seed_invitation(
-    'i4000000-0000-0000-0000-000000000002'::uuid,
+    '94000000-0000-0000-0000-000000000002'::uuid,
     'b4000000-0000-0000-0000-000000000001'::uuid,
     null,
     'invitee@test4.example',
@@ -88,7 +88,7 @@ begin
 
   -- Board-scoped invitation for board-invitee@test4.example (valid)
   perform tests.seed_invitation(
-    'i4000000-0000-0000-0000-000000000003'::uuid,
+    '94000000-0000-0000-0000-000000000003'::uuid,
     'b4000000-0000-0000-0000-000000000001'::uuid,
     'c4000000-0000-0000-0000-000000000001'::uuid,    -- board-scoped
     'board-invitee@test4.example',
@@ -100,7 +100,7 @@ begin
 
   -- Already-accepted workspace invitation for invitee@test4.example
   perform tests.seed_invitation(
-    'i4000000-0000-0000-0000-000000000004'::uuid,
+    '94000000-0000-0000-0000-000000000004'::uuid,
     'b4000000-0000-0000-0000-000000000001'::uuid,
     null,
     'invitee@test4.example',
@@ -112,7 +112,7 @@ begin
   -- Mark it accepted
   update public.invitation
      set accepted_at = now() - interval '1 hour'
-   where id = 'i4000000-0000-0000-0000-000000000004';
+   where id = '94000000-0000-0000-0000-000000000004';
 end $$;
 
 -- ============================================================
@@ -167,7 +167,7 @@ select tests.set_jwt_user('a4000000-0000-0000-0000-000000000004'::uuid);
 
 select is(
   (select count(*)::int from public.invitation
-   where id = 'i4000000-0000-0000-0000-000000000001'),
+   where id = '94000000-0000-0000-0000-000000000001'),
   1,
   'invitee can SELECT their own non-accepted invitation'
 );
@@ -178,7 +178,7 @@ select is(
 
 select is(
   (select count(*)::int from public.invitation
-   where id = 'i4000000-0000-0000-0000-000000000003'),  -- belongs to board-invitee
+   where id = '94000000-0000-0000-0000-000000000003'),  -- belongs to board-invitee
   0,
   'invitee cannot SELECT another invitee invitation'
 );
@@ -190,7 +190,7 @@ select is(
 with updated as (
   update public.invitation
     set accepted_at = now()
-  where id = 'i4000000-0000-0000-0000-000000000001'
+  where id = '94000000-0000-0000-0000-000000000001'
   returning id
 )
 select count(*)::int as rcnt from updated \gset
@@ -206,14 +206,14 @@ select is(:rcnt::int, 1, 'invitee can set accepted_at on own invitation');
 select tests.reset_to_service_role();
 update public.invitation
    set accepted_at = null
- where id = 'i4000000-0000-0000-0000-000000000001';
+ where id = '94000000-0000-0000-0000-000000000001';
 
 select tests.set_jwt_user('a4000000-0000-0000-0000-000000000004'::uuid);
 
 select throws_ok(
   $$update public.invitation
       set email = 'hacked@evil.example'
-    where id = 'i4000000-0000-0000-0000-000000000001'$$,
+    where id = '94000000-0000-0000-0000-000000000001'$$,
   '42501',
   null::text,
   'invitation trigger blocks updating email column (only accepted_at allowed)'
@@ -228,7 +228,7 @@ select throws_ok(
 select tests.reset_to_service_role();
 update public.invitation
    set accepted_at = null
- where id = 'i4000000-0000-0000-0000-000000000001';
+ where id = '94000000-0000-0000-0000-000000000001';
 
 select tests.set_jwt_user('a4000000-0000-0000-0000-000000000004'::uuid);
 
@@ -256,7 +256,7 @@ delete from public.workspace_member
 -- otherwise the wsm_insert policy still admits via i4...001.
 update public.invitation
    set accepted_at = now()
- where id = 'i4000000-0000-0000-0000-000000000001';
+ where id = '94000000-0000-0000-0000-000000000001';
 
 select tests.set_jwt_user('a4000000-0000-0000-0000-000000000004'::uuid);
 
@@ -360,7 +360,7 @@ select throws_ok(
 select tests.reset_to_service_role();
 update public.invitation
    set accepted_at = null
- where id = 'i4000000-0000-0000-0000-000000000001';
+ where id = '94000000-0000-0000-0000-000000000001';
 delete from public.workspace_member
   where workspace_id = 'b4000000-0000-0000-0000-000000000001'
     and user_id = 'a4000000-0000-0000-0000-000000000004';

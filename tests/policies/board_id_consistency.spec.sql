@@ -100,7 +100,7 @@ select is(
 
 insert into public.comment (id, task_id, author_id, board_id, body, body_text)
 values (
-  'g8000000-0000-0000-0000-000000000001'::uuid,
+  '98000000-0000-0000-0000-000000000001'::uuid,
   'e8000000-0000-0000-0000-000000000001'::uuid,
   'a8000000-0000-0000-0000-000000000001'::uuid,
   'c8000000-0000-0000-0000-000000000002'::uuid,  -- intentionally wrong
@@ -111,7 +111,7 @@ values (
 select is(
   (select board_id::text
      from public.comment
-    where id = 'g8000000-0000-0000-0000-000000000001'),
+    where id = '98000000-0000-0000-0000-000000000001'),
   'c8000000-0000-0000-0000-000000000001',
   'comment_board_id_consistency trigger overwrites wrong board_id with task''s board_id on insert'
 );

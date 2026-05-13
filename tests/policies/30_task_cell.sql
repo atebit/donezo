@@ -104,7 +104,7 @@ begin
 
   -- Comment by member on public board task
   perform tests.seed_comment(
-    'g3000000-0000-0000-0000-000000000001'::uuid,
+    '93000000-0000-0000-0000-000000000001'::uuid,
     'e3000000-0000-0000-0000-000000000001'::uuid,
     'a3000000-0000-0000-0000-000000000003'::uuid
   );
@@ -265,7 +265,7 @@ select tests.set_jwt_user('a3000000-0000-0000-0000-000000000003'::uuid);
 with updated as (
   update public.comment
     set body_text = 'edited text'
-  where id = 'g3000000-0000-0000-0000-000000000001'
+  where id = '93000000-0000-0000-0000-000000000001'
   returning id
 )
 select count(*)::int as rcnt from updated \gset
@@ -282,7 +282,7 @@ select tests.reset_to_service_role();
 do $$
 begin
   perform tests.seed_comment(
-    'g3000000-0000-0000-0000-000000000002'::uuid,
+    '93000000-0000-0000-0000-000000000002'::uuid,
     'e3000000-0000-0000-0000-000000000001'::uuid,
     'a3000000-0000-0000-0000-000000000002'::uuid  -- admin is the author
   );
@@ -292,7 +292,7 @@ select tests.set_jwt_user('a3000000-0000-0000-0000-000000000003'::uuid);
 
 with deleted as (
   delete from public.comment
-    where id = 'g3000000-0000-0000-0000-000000000002'
+    where id = '93000000-0000-0000-0000-000000000002'
   returning id
 )
 select count(*)::int as rcnt from deleted \gset
@@ -307,7 +307,7 @@ select tests.set_jwt_user('a3000000-0000-0000-0000-000000000003'::uuid);
 
 with deleted as (
   delete from public.comment
-    where id = 'g3000000-0000-0000-0000-000000000001'
+    where id = '93000000-0000-0000-0000-000000000001'
   returning id
 )
 select count(*)::int as rcnt from deleted \gset
@@ -324,7 +324,7 @@ select tests.set_jwt_user('a3000000-0000-0000-0000-000000000002'::uuid);
 
 with deleted as (
   delete from public.comment
-    where id = 'g3000000-0000-0000-0000-000000000002'
+    where id = '93000000-0000-0000-0000-000000000002'
   returning id
 )
 select count(*)::int as rcnt from deleted \gset
