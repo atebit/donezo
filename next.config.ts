@@ -1,5 +1,7 @@
 import { execSync } from "node:child_process";
+import withBundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 function resolveBuildSha(): string {
   try {
@@ -39,4 +41,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with next-intl plugin. The default i18n request config path is
+// `./i18n/request.ts` (also checked as `./src/i18n/request.ts`).
+// Single-locale v1 — no locale routing prefixes.
+const withNextIntl = createNextIntlPlugin();
+
+// Bundle analyzer — enabled when ANALYZE=true (see epic-14-bundle-audit.md).
+// Usage: ANALYZE=true pnpm build
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withAnalyzer(withNextIntl(nextConfig));

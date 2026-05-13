@@ -105,6 +105,11 @@ export type BoardState = {
   setDraggingGroup: (groupId: string | null) => void;
   setEditingTask: (taskId: string | null) => void;
 
+  // Epic 14 — Mobile reorder mode
+  /** True while the user is in touch reorder mode (long-press to enter, "Done" pill to exit). */
+  reorderMode: boolean;
+  setReorderMode: (enabled: boolean) => void;
+
   // Epic 08 — Realtime + outbox state
   // Transient fields
   connection: ConnectionStatus;
@@ -200,6 +205,8 @@ const transientInitial = {
   collapsedGroupIds: new Set<string>(),
   editingTaskId: null,
   tempIdMap: new Map<string, string>(),
+  // Epic 14 — Mobile reorder mode (transient)
+  reorderMode: false,
 
   // Epic 08 — Realtime + outbox state (transient portion)
   connection: "connected" as ConnectionStatus,
@@ -761,6 +768,13 @@ export const useBoardStore = create<BoardState>()(
 
       setEditingTask(taskId) {
         set({ editingTaskId: taskId });
+      },
+
+      // ================================================================
+      // Epic 14 — Mobile reorder mode
+      // ================================================================
+      setReorderMode(enabled) {
+        set({ reorderMode: enabled });
       },
 
       // ================================================================

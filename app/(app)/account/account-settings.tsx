@@ -69,11 +69,13 @@ function ProfileSection({ user }: { user: CurrentUser }) {
             id="displayName"
             type="text"
             autoComplete="name"
+            required
             aria-invalid={!!errors.displayName}
+            aria-describedby={errors.displayName ? "account-displayName-error" : undefined}
             {...register("displayName")}
           />
           {errors.displayName && (
-            <p className="text-sm text-destructive" role="alert">
+            <p id="account-displayName-error" className="text-sm text-destructive" role="alert">
               {errors.displayName.message}
             </p>
           )}
@@ -220,11 +222,13 @@ function EmailSection({ user }: { user: CurrentUser }) {
               id="email"
               type="email"
               autoComplete="email"
+              required
               aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "account-email-error" : undefined}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-sm text-destructive" role="alert">
+              <p id="account-email-error" className="text-sm text-destructive" role="alert">
                 {errors.email.message}
               </p>
             )}
@@ -280,11 +284,13 @@ function PasswordSection() {
             id="password"
             type="password"
             autoComplete="new-password"
+            required
             aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "account-password-error" : undefined}
             {...register("password")}
           />
           {errors.password && (
-            <p className="text-sm text-destructive" role="alert">
+            <p id="account-password-error" className="text-sm text-destructive" role="alert">
               {errors.password.message}
             </p>
           )}

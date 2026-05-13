@@ -120,13 +120,19 @@ export function InviteModal({ workspaceId, boardId, open, onOpenChange }: Invite
                 id="invite-emails"
                 type="text"
                 placeholder="jane@example.com, bob@example.com"
+                required
                 aria-invalid={!!errors.emails}
+                aria-describedby={errors.emails ? "invite-emails-error" : "invite-emails-hint"}
                 {...register("emails")}
               />
-              <p className="text-xs text-[color:var(--color-fg-muted)]">
+              <p id="invite-emails-hint" className="text-xs text-[color:var(--color-fg-muted)]">
                 Separate multiple addresses with commas.
               </p>
-              {errors.emails && <p className="text-sm text-destructive">{errors.emails.message}</p>}
+              {errors.emails && (
+                <p id="invite-emails-error" className="text-sm text-destructive" role="alert">
+                  {errors.emails.message}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -134,7 +140,9 @@ export function InviteModal({ workspaceId, boardId, open, onOpenChange }: Invite
               <select
                 id="invite-role"
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                required
                 aria-invalid={!!errors.role}
+                aria-describedby={errors.role ? "invite-role-error" : undefined}
                 {...register("role")}
               >
                 {ROLES.map((r) => (
@@ -143,7 +151,11 @@ export function InviteModal({ workspaceId, boardId, open, onOpenChange }: Invite
                   </option>
                 ))}
               </select>
-              {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
+              {errors.role && (
+                <p id="invite-role-error" className="text-sm text-destructive" role="alert">
+                  {errors.role.message}
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-2">

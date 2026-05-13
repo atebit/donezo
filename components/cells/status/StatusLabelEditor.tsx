@@ -24,6 +24,7 @@
  * responsible for gating the callback.
  */
 
+import { labelTextColor } from "@/lib/cells/label-text-color";
 import { useBoardStore } from "@/stores/board-store";
 import type { StatusCellValue } from "./Cell";
 
@@ -82,8 +83,8 @@ export function StatusLabelEditor({
           <button
             key={label.id}
             type="button"
-            className="h-8 rounded-[var(--radius-xs)] flex items-center justify-center text-xs font-medium text-white cursor-pointer hover:opacity-90 transition-opacity duration-[var(--motion-fast)] truncate px-2"
-            style={{ backgroundColor: label.color }}
+            className="h-8 rounded-[var(--radius-xs)] flex items-center justify-center text-xs font-medium cursor-pointer hover:opacity-90 transition-opacity duration-[var(--motion-fast)] truncate px-2"
+            style={{ backgroundColor: label.color, color: labelTextColor(label.color) }}
             onClick={() => handleSelect(label.id)}
             role="option"
             aria-selected={false}

@@ -68,10 +68,16 @@ export function SignInForm() {
             id="email"
             type="email"
             autoComplete="email"
+            required
             aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "sign-in-email-error" : undefined}
             {...register("email")}
           />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+          {errors.email && (
+            <p id="sign-in-email-error" className="text-sm text-destructive" role="alert">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -88,10 +94,16 @@ export function SignInForm() {
             id="password"
             type="password"
             autoComplete="current-password"
+            required
             aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "sign-in-password-error" : undefined}
             {...register("password")}
           />
-          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+          {errors.password && (
+            <p id="sign-in-password-error" className="text-sm text-destructive" role="alert">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         <Button type="submit" disabled={pending} className="w-full">

@@ -53,14 +53,14 @@ export function BoardArchiveConfirmModal({
             the trash. You can restore it from the workspace trash.
           </p>
           <div className="flex justify-end gap-2">
-            <Dialog.Close className="rounded-md px-3 py-1.5 text-sm font-medium text-[color:var(--color-fg)] hover:bg-[color:var(--color-surface-hover)] focus-visible:outline-none">
+            <Dialog.Close className="rounded-md px-3 py-1.5 text-sm font-medium text-[color:var(--color-fg)] hover:bg-[color:var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]">
               Cancel
             </Dialog.Close>
             <button
               type="button"
               disabled={isPending}
               onClick={handleArchive}
-              className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-white hover:bg-destructive/90 focus-visible:outline-none disabled:opacity-50"
+              className="rounded-md bg-destructive px-3 py-1.5 text-sm font-medium text-white hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive disabled:opacity-50"
             >
               {isPending ? "Archiving…" : "Archive"}
             </button>

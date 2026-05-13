@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "home": "Home",
+    "notifications": "Notifications",
+    "account": "Account",
+    "signOut": "Sign out"
+  },
+  "account": {
+    "theme": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "add": "Add"
+  },
+  "empty": {
+    "noBoards": {
+      "title": "No boards yet",
+      "description": "Create your first board to get started."
+    },
+    "noTasks": {
+      "title": "No tasks yet",
+      "description": "Add your first task to get started."
+    },
+    "noNotifications": {
+      "title": "No notifications",
+      "description": "When teammates @mention you or assign you a task, you'll see it here."
+    },
+    "noGroups": {
+      "title": "No groups yet",
+      "description": "Add your first group to start organizing tasks.",
+      "addGroup": "Add group"
+    }
+  }
+}

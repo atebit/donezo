@@ -1,6 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { EmptyState } from "@/components/shared/empty-states/EmptyState";
 import { Button } from "@/components/ui/button";
+import { IconLayers } from "@/lib/icons";
 
 // ---------------------------------------------------------------------------
 // NoGroupsEmptyState
@@ -11,15 +14,14 @@ interface NoGroupsEmptyStateProps {
 }
 
 export function NoGroupsEmptyState({ onAddGroup }: NoGroupsEmptyStateProps) {
+  const t = useTranslations("empty.noGroups");
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6">
-      <div className="flex flex-col items-center gap-4 max-w-xs text-center p-8 rounded-xl border border-[color:var(--color-border-solid)] bg-[color:var(--color-surface)]">
-        <p className="text-sm text-[color:var(--color-fg-muted)]">
-          Add your first group to start organizing tasks.
-        </p>
-        <Button onClick={onAddGroup}>Add group</Button>
-      </div>
-    </div>
+    <EmptyState
+      icon={IconLayers}
+      title={t("title")}
+      description={t("description")}
+      action={<Button onClick={onAddGroup}>{t("addGroup")}</Button>}
+    />
   );
 }
 
