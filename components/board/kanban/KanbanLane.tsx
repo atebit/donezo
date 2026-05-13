@@ -80,9 +80,11 @@ export function KanbanLane({
 
   return (
     <div
-      className="flex flex-col shrink-0 rounded-lg border border-[color:var(--color-border)]"
+      className="flex flex-col shrink-0 rounded-lg border border-[color:var(--color-border)] min-w-full md:min-w-0 snap-start"
       style={{
-        minWidth: 260,
+        // Desktop: 260px. Mobile: min-w-full (= 100vw in a scroll container) overrides this.
+        // snap-start enables CSS scroll snapping; the container's md:snap-none removes the
+        // snap context on desktop so lanes don't snap when the multi-column layout is active.
         width: 260,
         // Lane bg must be --color-surface-rail (#F6F7FB) per component-system §7.1.
         backgroundColor: "var(--color-surface-rail, #F6F7FB)",

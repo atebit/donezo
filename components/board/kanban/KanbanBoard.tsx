@@ -356,8 +356,16 @@ export function KanbanBoard({ boardId: _boardId, initial }: KanbanBoardProps) {
         onDragStart={handleDragStart}
         onDragEnd={(e) => void handleDragEnd(e)}
       >
+        {/*
+         * Mobile (<md): horizontal snap-scroll so users swipe between lanes
+         * one at a time.  Each lane is min-w-full (100vw) so exactly one lane
+         * is visible at a time.  scroll-snap-type: x mandatory is applied via
+         * the `snap-x snap-mandatory` utility classes.
+         *
+         * Desktop (≥md): existing multi-column flex layout unchanged.
+         */}
         <div
-          className="flex flex-row gap-4 p-4 overflow-x-auto flex-1 min-h-0"
+          className="flex flex-row gap-0 md:gap-4 p-0 md:p-4 overflow-x-auto flex-1 min-h-0 snap-x snap-mandatory md:snap-none"
           style={{ alignItems: "flex-start" }}
         >
           {lanes.map((lane) => (

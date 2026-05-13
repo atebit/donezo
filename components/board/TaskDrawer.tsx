@@ -19,11 +19,17 @@
  *   position: fixed; top: 0; right: 0; height: 100vh; min-width: 570px
  *   Bg white, border-inline-start: 1px solid #ccc
  *   Header: padding 20px 20px 6px 24px, height 53px, font-size 18px
+ *
+ * Mobile (< 768px): rendered as a full-viewport Sheet (shadcn/Base UI Dialog)
+ * so the drawer occupies the entire screen instead of sliding over the board.
+ * Desktop (≥ 768px): existing overlay behaviour unchanged.
  */
 
 import { useEffect, useState } from "react";
 import { FollowToggle } from "@/components/board/FollowToggle";
 import type { MemberOption } from "@/components/comments/CommentEditor";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTaskDrawerPresence } from "@/hooks/use-task-drawer-presence";
 import type { Role } from "@/lib/authorization";
 import type { Database } from "@/lib/supabase/types";
@@ -69,6 +75,9 @@ export function TaskDrawer({
 }: TaskDrawerProps) {
   const [activeTab, setActiveTab] = useState<TaskDrawerTab>("updates");
 
+  // true once hydrated on the client; false on SSR (useMediaQuery is SSR-safe)
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
   // Hydrate the board store with pre-fetched server data
   const hydrateCommentsForTask = useBoardStore((s) => s.hydrateCommentsForTask);
   const hydrateReactionsForComments = useBoardStore((s) => s.hydrateReactionsForComments);
@@ -109,16 +118,9 @@ export function TaskDrawer({
     ]),
   );
 
-  return (
-    <div
-      className="flex flex-col bg-white"
-      style={{
-        borderInlineStart: "1px solid #ccc",
-        minWidth: 570,
-        height: "100vh",
-      }}
-      data-testid="task-drawer"
-    >
+  /** Shared inner content — same markup for mobile Sheet and desktop overlay. */
+  const innerContent = (
+    <>
       {/* Header */}
       <div
         className="flex-shrink-0 flex items-center gap-2"
@@ -167,6 +169,42 @@ export function TaskDrawer({
           )}
         </div>
       </div>
+    </>
+  );
+
+  // Mobile (<768px): render as a full-viewport Sheet so the drawer fills the
+  // entire screen.  `open` is always true — the parent (TaskDrawerModalShell)
+  // controls unmounting via router.back(), so the Sheet is always open while
+  // this component is mounted.  showCloseButton=false because the parent
+  // provides Esc-key + backdrop-click close behaviour.
+  if (!isDesktop) {
+    return (
+      <Sheet open defaultOpen>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="h-[100dvh] w-full rounded-none p-0 flex flex-col bg-white"
+          data-testid="task-drawer"
+        >
+          {innerContent}
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  // Desktop (≥ 768px): existing overlay behaviour — plain div positioned by
+  // TaskDrawerModalShell.
+  return (
+    <div
+      className="flex flex-col bg-white"
+      style={{
+        borderInlineStart: "1px solid #ccc",
+        minWidth: 570,
+        height: "100vh",
+      }}
+      data-testid="task-drawer"
+    >
+      {innerContent}
     </div>
   );
 }
