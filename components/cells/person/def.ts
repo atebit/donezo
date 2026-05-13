@@ -13,6 +13,7 @@ import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
 import { Cell } from "./Cell";
 import { Editor } from "./Editor";
+import { OperandEditor } from "./OperandEditor";
 
 export type PersonCellValue = { userIds: string[] };
 
@@ -49,6 +50,7 @@ export const personType: CellTypeDef<PersonCellValue, Record<string, never>> = {
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => {
     const raw = row?.json_value;
@@ -98,6 +100,11 @@ export const personType: CellTypeDef<PersonCellValue, Record<string, never>> = {
     }
     return "—";
   },
+
+  // v1 fallback: person values are arrays of user_ids. Resolving to display
+  // names requires the member roster which isn't accessible from a pure function.
+  // v1.5 will pass a resolveUser ctx into toSearchString.
+  toSearchString: () => "",
 
   compare: (a, b) => {
     const aLen = a?.userIds.length ?? 0;

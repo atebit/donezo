@@ -95,6 +95,8 @@ export const numberType: CellTypeDef<number, NumberConfig> = {
     return "—";
   },
 
+  toSearchString: (value) => (value == null ? "" : String(value)),
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return -1;

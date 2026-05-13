@@ -26,6 +26,7 @@ import {
   aggregatePercentByLabel,
 } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
+import { OperandEditor } from "./OperandEditor";
 
 /** All value columns in the `cell` table — every toRow must set all 7 explicitly. */
 const NULL_VALUE_PATCH = {
@@ -48,6 +49,7 @@ export const priorityType: CellTypeDef<StatusCellValue, Record<string, never>> =
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => (row?.label_id ? { labelId: row.label_id } : null),
 
@@ -86,6 +88,15 @@ export const priorityType: CellTypeDef<StatusCellValue, Record<string, never>> =
       return aggregatePercentByLabel(values, []);
     }
     return "—";
+  },
+
+  // v1: same label-resolution pattern as status. Config is Record<string, never>
+  // in the type but the store may pass `{ labels: [...] }` at runtime.
+  toSearchString: (value, config) => {
+    if (!value?.labelId) return "";
+    const cfg = config as unknown as { labels?: Array<{ id: string; title: string }> };
+    const lbl = cfg?.labels?.find((l) => l.id === value.labelId);
+    return lbl?.title ?? "";
   },
 
   compare: (a, b) => {

@@ -68,6 +68,8 @@ export const ratingType: CellTypeDef<number, RatingConfig> = {
     return "—";
   },
 
+  toSearchString: (value) => (value == null ? "" : String(value)),
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return -1;

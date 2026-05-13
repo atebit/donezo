@@ -61,6 +61,8 @@ export const emailType: CellTypeDef<string, Record<string, never>> = {
     return "—";
   },
 
+  toSearchString: (value) => value ?? "",
+
   compare: (a, b) => {
     if (a == null && b == null) return 0;
     if (a == null) return -1;

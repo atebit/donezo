@@ -11,6 +11,35 @@ import type { FilterOperator } from "./types";
 
 export type { FilterOperator } from "./types";
 
+/**
+ * How many operand inputs a filter row needs for this operator.
+ *
+ *   "none"   → is_empty, is_not_empty, today, this_week, this_month
+ *   "one"    → equals, not_equals, contains, not_contains, starts_with,
+ *              ends_with, lt, lte, gt, gte, before, after
+ *   "many"   → in, not_in
+ *   "range"  → between
+ */
+export type OperatorArity = "none" | "one" | "many" | "range";
+
+export function getOperatorArity(op: FilterOperator): OperatorArity {
+  switch (op) {
+    case "is_empty":
+    case "is_not_empty":
+    case "today":
+    case "this_week":
+    case "this_month":
+      return "none";
+    case "in":
+    case "not_in":
+      return "many";
+    case "between":
+      return "range";
+    default:
+      return "one";
+  }
+}
+
 /** Human-readable labels for every `FilterOperator` value. Used in filter-builder UIs. */
 export const FILTER_OPERATOR_LABELS: Record<FilterOperator, string> = {
   equals: "is",

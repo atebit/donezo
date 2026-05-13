@@ -352,18 +352,10 @@ export function ColumnHeaderMenu({ column, editableRef, children }: ColumnHeader
   const { role } = useBoard();
   const isAdmin = ROLE_RANK[role] >= ROLE_RANK.admin;
 
-  const {
-    columns,
-    sortColumnId,
-    sortDirection,
-    labelsByColumn,
-    applyColumnUpsert,
-    applyLabelUpsert,
-  } = useBoardStore(
+  const { columns, sortKeys, labelsByColumn, applyColumnUpsert, applyLabelUpsert } = useBoardStore(
     useShallow((s) => ({
       columns: s.columns,
-      sortColumnId: s.sortColumnId,
-      sortDirection: s.sortDirection,
+      sortKeys: s.sortKeys,
       labelsByColumn: s.labelsByColumn,
       applyColumnUpsert: s.applyColumnUpsert,
       applyLabelUpsert: s.applyLabelUpsert,
@@ -378,9 +370,10 @@ export function ColumnHeaderMenu({ column, editableRef, children }: ColumnHeader
   const cells = useBoardStore((s) => s.cells);
   const cellCount = Array.from(cells.keys()).filter((k) => k.endsWith(`:${column.id}`)).length;
 
-  // Current sort state for this column
-  const isActiveSortColumn = sortColumnId === column.id;
-  const currentSortDir = isActiveSortColumn ? sortDirection : null;
+  // Current sort state for this column — reads the first sort key (quick-sort from header).
+  const activeSortKey = sortKeys[0]?.columnId === column.id ? sortKeys[0] : null;
+  const isActiveSortColumn = activeSortKey !== null;
+  const currentSortDir = activeSortKey?.direction ?? null;
 
   // Hidden state from prefs
   const columnPrefsByBoard = useBoardStore((s) => s.columnPrefsByBoard);
@@ -420,15 +413,15 @@ export function ColumnHeaderMenu({ column, editableRef, children }: ColumnHeader
   }
 
   function handleSortAsc() {
-    useBoardStore.getState().setSort(column.id, "asc");
+    useBoardStore.getState().setSortKeys([{ columnId: column.id, direction: "asc" }]);
   }
 
   function handleSortDesc() {
-    useBoardStore.getState().setSort(column.id, "desc");
+    useBoardStore.getState().setSortKeys([{ columnId: column.id, direction: "desc" }]);
   }
 
   function handleSortNone() {
-    useBoardStore.getState().setSort(null, null);
+    useBoardStore.getState().setSortKeys([]);
   }
 
   function handleToggleHidden() {
