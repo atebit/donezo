@@ -173,7 +173,11 @@ export function FilterBuilder({ filter, columns, onChange }: FilterBuilderProps)
   );
 
   return (
-    <div className="flex flex-col gap-0" style={{ minWidth: 420, maxWidth: 600 }}>
+    <div
+      data-testid="filter-builder"
+      className="flex flex-col gap-0"
+      style={{ minWidth: 420, maxWidth: 600 }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-3 pt-3 pb-2 border-b border-[color:var(--color-border-strong)]">
         <span className="text-sm font-semibold text-[color:var(--color-fg)]">

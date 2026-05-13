@@ -104,6 +104,7 @@ function SortableColumnRow({ column, isVisible, isLocked, onToggle }: SortableCo
       <input
         type="checkbox"
         id={`col-vis-${column.id}`}
+        data-testid={`col-visibility-${column.id}`}
         checked={isVisible}
         disabled={isLocked}
         onChange={onToggle}
@@ -190,7 +191,11 @@ export function ColumnVisibilityPanel({
   const sortableIds = orderedColumns.map((c) => c.id);
 
   return (
-    <div className="flex flex-col" style={{ minWidth: 240, maxWidth: 320 }}>
+    <div
+      data-testid="column-visibility-panel"
+      className="flex flex-col"
+      style={{ minWidth: 240, maxWidth: 320 }}
+    >
       {/* Header */}
       <div className="px-3 pt-3 pb-2 border-b border-[color:var(--color-border-strong)]">
         <span className="text-sm font-semibold text-[color:var(--color-fg)]">Columns</span>

@@ -101,6 +101,7 @@ function ViewTab({ view, isActive, onSwitch }: ViewTabProps) {
           {/* Trigger button rendered inside ViewTabDropdown */}
           <button
             type="button"
+            data-testid="view-tab-chevron"
             className={cn(
               "flex items-center justify-center w-4 h-4 ml-0.5 rounded",
               "text-[color:var(--color-fg-muted)] hover:text-[color:var(--color-fg)]",
@@ -137,6 +138,7 @@ export function ViewTabs() {
 
   return (
     <div
+      data-testid="view-tabs"
       className="flex items-end border-b border-[color:var(--color-border)] px-[38px] overflow-x-auto"
       role="tablist"
       aria-label="Board views"
