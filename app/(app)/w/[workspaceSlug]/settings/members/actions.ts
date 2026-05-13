@@ -4,24 +4,44 @@ import { revalidateTag } from "next/cache";
 import { withUser } from "@/lib/actions";
 import { requireBoardRole, requireWorkspaceRole } from "@/lib/authorization";
 import { logger } from "@/lib/logger";
+import { emitRoleChangedNotification } from "@/lib/notifications/emitters";
 import { ResendInvitationSchema, RevokeInvitationSchema } from "@/lib/validations/invitation";
 import {
   RemoveWorkspaceMemberSchema,
   SetWorkspaceMemberRoleSchema,
 } from "@/lib/validations/workspace";
 
-export const setWorkspaceMemberRole = withUser(async ({ supabase }, raw) => {
+export const setWorkspaceMemberRole = withUser(async ({ supabase, userId }, raw) => {
   const input = SetWorkspaceMemberRoleSchema.parse(raw);
   await requireWorkspaceRole(input.workspaceId, "admin");
   if (input.role === "owner") {
     await requireWorkspaceRole(input.workspaceId, "owner");
   }
+
+  // Fetch old role for the notification payload.
+  const { data: existing } = await supabase
+    .from("workspace_member")
+    .select("role")
+    .eq("workspace_id", input.workspaceId)
+    .eq("user_id", input.userId)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("workspace_member")
     .update({ role: input.role })
     .eq("workspace_id", input.workspaceId)
     .eq("user_id", input.userId);
   if (error) throw { code: "DB", message: error.message };
+
+  // Emit role_changed notification (best-effort).
+  void emitRoleChangedNotification({
+    targetUserId: input.userId,
+    actorId: userId,
+    workspaceId: input.workspaceId,
+    fromRole: existing?.role ?? null,
+    toRole: input.role,
+  });
+
   revalidateTag(`workspace-members:${input.workspaceId}`);
 });
 

@@ -38,6 +38,10 @@ import { withUser } from "@/lib/actions";
 import { logActivity } from "@/lib/activity";
 import { requireBoardRole } from "@/lib/authorization";
 import { getCellDef } from "@/lib/cells/registry";
+import {
+  emitAssignmentNotifications,
+  emitStatusChangeNotifications,
+} from "@/lib/notifications/emitters";
 import { BulkSetCellValueSchema, SetCellValueSchema } from "@/lib/validations/cell";
 
 // ---------------------------------------------------------------------------
@@ -102,7 +106,34 @@ export const setCellValue = withUser(async ({ supabase, userId }, raw) => {
   if (error) throw { code: "DB", message: error.message };
   if (!data) throw { code: "NOT_FOUND", message: "Cell not found after upsert." };
 
-  // 6. Log activity (best-effort — never throws).
+  // 6. Notification fan-out (best-effort — never throws).
+  if (col.type === "person") {
+    // Assignment notifications: diff previous vs new assignee sets.
+    const prevUserIds = (prevValue as { userIds?: string[] } | null | undefined)?.userIds ?? [];
+    const nextUserIds = (input.value as { userIds?: string[] } | null | undefined)?.userIds ?? [];
+    void emitAssignmentNotifications({
+      supabase,
+      boardId: col.board_id,
+      taskId: input.taskId,
+      prevUserIds,
+      nextUserIds,
+      actorId: userId,
+    });
+  } else if (col.type === "status") {
+    // Status-change notifications: assignees + followers.
+    const fromLabelId = (prevValue as { labelId?: string } | null | undefined)?.labelId ?? null;
+    const toLabelId = (input.value as { labelId?: string } | null | undefined)?.labelId ?? null;
+    void emitStatusChangeNotifications({
+      supabase,
+      boardId: col.board_id,
+      taskId: input.taskId,
+      fromLabelId,
+      toLabelId,
+      actorId: userId,
+    });
+  }
+
+  // 7. Log activity (best-effort — never throws).
   //    Resolve the task's board_id from the column (we already have it).
   await logActivity({
     boardId: col.board_id,
@@ -201,7 +232,37 @@ export const bulkSetCellValue = withUser(async ({ supabase, userId }, raw) => {
 
   const cells = data ?? [];
 
-  // Step 8: Log activity (best-effort — never throws).
+  // Step 8: Notification fan-out (best-effort — never throws).
+  //   For person columns: emit assignment notifications per task (prev is unknown in
+  //   bulk context — treat all next assignees as newly assigned).
+  //   For status columns: emit status-change notifications per task.
+  if (col.type === "person") {
+    const nextUserIds = (input.value as { userIds?: string[] } | null | undefined)?.userIds ?? [];
+    for (const taskId of input.taskIds) {
+      void emitAssignmentNotifications({
+        supabase,
+        boardId: tasksBoardId,
+        taskId,
+        prevUserIds: [], // Bulk context: no prev state; all nextUserIds treated as added.
+        nextUserIds,
+        actorId: userId,
+      });
+    }
+  } else if (col.type === "status") {
+    const toLabelId = (input.value as { labelId?: string } | null | undefined)?.labelId ?? null;
+    for (const taskId of input.taskIds) {
+      void emitStatusChangeNotifications({
+        supabase,
+        boardId: tasksBoardId,
+        taskId,
+        fromLabelId: null, // Bulk context: prev state not fetched.
+        toLabelId,
+        actorId: userId,
+      });
+    }
+  }
+
+  // Step 9: Log activity (best-effort — never throws).
   await logActivity({
     boardId: tasksBoardId,
     actorId: userId,
@@ -214,6 +275,6 @@ export const bulkSetCellValue = withUser(async ({ supabase, userId }, raw) => {
     },
   });
 
-  // Step 9: Return count and updated cell rows.
+  // Step 10: Return count and updated cell rows.
   return { count: input.taskIds.length, cells };
 });

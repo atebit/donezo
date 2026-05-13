@@ -18,12 +18,17 @@
  *   the intent clearly. (The user-client would also work given the current policy.)
  */
 
-import { type ActionContext, withUser } from "@/lib/actions";
+import { withUser } from "@/lib/actions";
 import { logActivity } from "@/lib/activity";
 import { requireBoardRole } from "@/lib/authorization";
 import { extractMentions } from "@/lib/comments/mentions";
 import type { TiptapDoc } from "@/lib/comments/types";
-import { notifyUsers } from "@/lib/notifications/notify";
+import {
+  emitCommentOnFollowedNotifications,
+  emitCommentReplyNotifications,
+  emitMentionNotifications,
+} from "@/lib/notifications/emitters";
+import { autoFollowOnComment } from "@/lib/notifications/followers";
 // biome-ignore lint/style/noRestrictedImports: admin-delete of others' comments bypasses RLS author check.
 import { adminClient } from "@/lib/supabase/admin";
 import {
@@ -71,8 +76,11 @@ export const createComment = withUser(async ({ supabase, userId }, raw) => {
   if (insertError) throw { code: "DB", message: insertError.message };
   if (!comment) throw { code: "NOT_FOUND", message: "Comment not found after insert." };
 
-  // 4. Mention fan-out (best-effort).
-  await _fanOutMentions({
+  // 4. Notification fan-out (best-effort — all emitters swallow errors).
+  //    Auto-follow: commenter follows the task.
+  void autoFollowOnComment(input.taskId, userId);
+  //    Mention notifications (single source of truth in emitters.ts).
+  void emitMentionNotifications({
     doc: input.body as TiptapDoc,
     boardId: task.board_id,
     taskId: input.taskId,
@@ -81,6 +89,24 @@ export const createComment = withUser(async ({ supabase, userId }, raw) => {
     supabase,
     previousMentionIds: [],
     previousEveryone: false,
+  });
+  //    Comment-reply notifications (heuristic: blockquote mention = reply target).
+  void emitCommentReplyNotifications({
+    doc: input.body as TiptapDoc,
+    boardId: task.board_id,
+    taskId: input.taskId,
+    commentId: comment.id,
+    actorId: userId,
+    supabase,
+  });
+  //    Comment-on-followed notifications (followers minus actor minus mentions).
+  void emitCommentOnFollowedNotifications({
+    doc: input.body as TiptapDoc,
+    boardId: task.board_id,
+    taskId: input.taskId,
+    commentId: comment.id,
+    actorId: userId,
+    supabase,
   });
 
   // 5. Log activity (best-effort).
@@ -128,7 +154,7 @@ export const editComment = withUser(async ({ supabase, userId }, raw) => {
 
   // 3. Notify only newly-added mentions (diff against old body).
   const oldMentions = extractMentions(existing.body as unknown as TiptapDoc);
-  await _fanOutMentions({
+  void emitMentionNotifications({
     doc: input.body as TiptapDoc,
     boardId: existing.board_id,
     taskId: existing.task_id,
@@ -137,6 +163,15 @@ export const editComment = withUser(async ({ supabase, userId }, raw) => {
     supabase,
     previousMentionIds: oldMentions.userIds,
     previousEveryone: oldMentions.everyone,
+  });
+  //    Comment-reply notifications for newly-introduced reply targets.
+  void emitCommentReplyNotifications({
+    doc: input.body as TiptapDoc,
+    boardId: existing.board_id,
+    taskId: existing.task_id,
+    commentId: existing.id,
+    actorId: userId,
+    supabase,
   });
 
   // 4. Log activity (best-effort).
@@ -286,100 +321,5 @@ export const unreactComment = withUser(async ({ supabase, userId }, raw) => {
   return { ok: true } as const;
 });
 
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Fan-out mention notifications for a comment create/edit.
- *
- * - Extracts mentions from `doc`.
- * - For edits: only notifies users who are newly added (not in `previousMentionIds`).
- * - Expands `@everyone` to all board members (excluding the actor).
- * - Skips the actor (no self-notify).
- * - Verifies board access for each target (no-op for @everyone expansion as all
- *   board members already have access, but check kept for safety).
- * - Calls `notifyUsers` (best-effort; never throws).
- */
-async function _fanOutMentions({
-  doc,
-  boardId,
-  taskId,
-  commentId,
-  actorId,
-  supabase,
-  previousMentionIds,
-  previousEveryone,
-}: {
-  doc: TiptapDoc | null | undefined;
-  boardId: string;
-  taskId: string;
-  commentId: string;
-  actorId: string;
-  supabase: ActionContext["supabase"];
-  /** Previously mentioned user IDs (for edit diff — skip already-notified). */
-  previousMentionIds: string[];
-  /**
-   * Whether `@everyone` was present in the previous version of the comment body.
-   * When true, board members were already notified by the prior create/edit and
-   * should not be re-notified on this edit (even if @everyone is still present).
-   */
-  previousEveryone: boolean;
-}): Promise<void> {
-  try {
-    const { userIds: rawUserIds, everyone } = extractMentions(doc);
-
-    let targetIds = new Set<string>(rawUserIds);
-
-    // Only expand @everyone when it's newly added.
-    // If it was present on the previous version too, the prior createComment /
-    // editComment already fanned out to every board member; re-expanding would
-    // re-notify them on every subsequent edit.
-    // NOTE: For public boards, workspace members with implicit access are NOT
-    // expanded here. Confirmed Option A per followup-1 Q-A1: only explicit
-    // board_member rows are expanded.
-    if (everyone && !previousEveryone) {
-      const { data: members } = await supabase
-        .from("board_member")
-        .select("user_id")
-        .eq("board_id", boardId);
-
-      if (members) {
-        for (const m of members) {
-          targetIds.add(m.user_id);
-        }
-      }
-    }
-
-    // Remove the actor (no self-notify).
-    targetIds.delete(actorId);
-
-    // For edits: only notify newly-added mentions.
-    const previousSet = new Set(previousMentionIds);
-    targetIds = new Set([...targetIds].filter((id) => !previousSet.has(id)));
-
-    if (targetIds.size === 0) return;
-
-    // Verify board access for each target and build notification rows.
-    const notificationRows = await Promise.all(
-      [...targetIds].map(async (targetUserId) => {
-        const { data: role } = await supabase.rpc("role_for_board", {
-          p_board_id: boardId,
-          p_user_id: targetUserId,
-        });
-        if (!role) return null; // Not a board member — skip.
-        return {
-          user_id: targetUserId,
-          kind: "mention" as const,
-          payload: { board_id: boardId, task_id: taskId, comment_id: commentId, actor_id: actorId },
-        };
-      }),
-    );
-
-    const validRows = notificationRows.filter((r): r is NonNullable<typeof r> => r !== null);
-
-    await notifyUsers(validRows);
-  } catch {
-    // Best-effort — never propagate mention errors to the caller.
-  }
-}
+// Note: mention fan-out moved to lib/notifications/emitters.ts (emitMentionNotifications).
+// Single source of truth; this file no longer contains inline notification logic.
