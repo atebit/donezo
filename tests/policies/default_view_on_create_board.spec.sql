@@ -28,7 +28,11 @@ insert into public.workspace_member (workspace_id, user_id, role)
 -- -----------------------------------------------------------------------
 -- Call create_board as user 11111111.
 -- -----------------------------------------------------------------------
-set local "request.jwt.claims" to json_build_object('sub', '11111111-0000-4000-8000-000000000001')::text;
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '11111111-0000-4000-8000-000000000001')::text,
+  true
+);
 
 -- create_board is SECURITY DEFINER, so auth.uid() reads from request.jwt.claims.
 select lives_ok(
