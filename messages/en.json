@@ -30,6 +30,11 @@
     "noNotifications": {
       "title": "No notifications",
       "description": "When teammates @mention you or assign you a task, you'll see it here."
+    },
+    "noGroups": {
+      "title": "No groups yet",
+      "description": "Add your first group to start organizing tasks.",
+      "addGroup": "Add group"
     }
   }
 }
