@@ -1,11 +1,13 @@
+"use client";
+
 /**
  * Dashboard view page — /w/[workspaceSlug]/b/[boardId]/dashboard
  *
- * RSC shell. Data is hydrated by the board layout via <BoardDataProvider>.
- * This page dynamically imports <Dashboard /> with `ssr: false` because
- * react-grid-layout references `window` at import time.
- *
- * Mirror of the other per-kind pages (kanban/page.tsx, calendar/page.tsx).
+ * Client page (not RSC) because `next/dynamic` with `ssr: false` is only
+ * allowed in Client Components in Next.js 15. react-grid-layout references
+ * `window` at import time, so the underlying <Dashboard /> must be loaded
+ * client-only. Data is still hydrated by the board layout via
+ * <BoardDataProvider>; this page is a thin client shell.
  *
  * Epic 12, Slice E — E.1.
  */
