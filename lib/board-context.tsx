@@ -16,11 +16,17 @@ export type BoardContextValue = {
   isStarred: boolean;
   /** Current authenticated user's id — used by cursor broadcast (Epic 08 S6). */
   userId: string;
+  /**
+   * The workspace id for this board — exposed so the topbar global-search
+   * palette (Slice G) can pass it to `globalSearch` without re-reading the
+   * URL or making an extra server round-trip.
+   */
+  workspaceId: string;
 };
 
 export const BoardContext = createContext<BoardContextValue | null>(null);
 
-/** Provides board identity, role, star state, and current user id to the subtree. */
+/** Provides board identity, role, star state, current user id, and workspace id to the subtree. */
 export function BoardProvider({
   board,
   role,
@@ -35,7 +41,9 @@ export function BoardProvider({
   children: ReactNode;
 }) {
   return (
-    <BoardContext.Provider value={{ board, role, isStarred, userId }}>
+    <BoardContext.Provider
+      value={{ board, role, isStarred, userId, workspaceId: board.workspace_id }}
+    >
       {children}
     </BoardContext.Provider>
   );
