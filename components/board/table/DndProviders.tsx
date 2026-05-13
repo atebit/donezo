@@ -21,12 +21,14 @@ import {
   DndContext,
   type DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import type { ReactNode } from "react";
+import { useBoardStore } from "@/stores/board-store";
 
 // ---------------------------------------------------------------------------
 // Prop types
@@ -62,8 +64,23 @@ export function DndProviders({
   onTaskReorder,
   onColumnReorder,
 }: DndProvidersProps) {
+  // Epic 14 — reorderMode: TouchSensor is only active when the user has
+  // long-pressed to enter touch reorder mode. This prevents accidental drags
+  // during scroll. MouseSensor replaces PointerSensor to avoid double-fire
+  // on hybrid (pointer + touch) devices — see epic-14 dispatch risk note.
+  const reorderMode = useBoardStore((s) => s.reorderMode);
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    // Mouse drag: always active (desktop and hybrid pointer events).
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    // Touch drag: only when reorderMode is true (long-press activates it).
+    useSensor(TouchSensor, {
+      activationConstraint: reorderMode
+        ? { delay: 250, tolerance: 5 }
+        : // Setting a very large delay effectively disables the sensor without
+          // unregistering it. We cannot conditionally call useSensor (hooks rules).
+          { delay: 999999, tolerance: 0 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 

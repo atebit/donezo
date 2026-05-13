@@ -44,6 +44,7 @@
         "app/**/loading.tsx",
         "app/**/route.ts",
         "next.config.ts",
+        "playwright.config.ts",
         "postcss.config.mjs",
         "vitest.config.ts",
         "components/ui/**",

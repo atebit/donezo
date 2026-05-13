@@ -65,6 +65,19 @@
   --color-label-critical: #333333;
   --color-label-black: #333333; /* status/priority label color (S0) */
 
+  /* Label text colors — correct foreground per WCAG AA (see epic-14-contrast-audit.md).
+     All label backgrounds except critical-black fail the 4.5:1 ratio with white text;
+     they require black text. StatusCell.tsx still uses text-white (tracked as followup). */
+  --color-label-green-text: #000000;
+  --color-label-yellow-text: #000000;
+  --color-label-blue-text: #000000;
+  --color-label-gray-text: #000000;
+  --color-label-orange-text: #000000;
+  --color-label-red-text: #000000;
+  --color-label-purple-text: #000000;
+  --color-label-pending-text: #000000;
+  --color-label-critical-text: #ffffff;
+
   /* Group accents (12) */
   --color-group-1: #a25ddc;
   --color-group-2: #fbbc04;

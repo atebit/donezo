@@ -66,11 +66,15 @@ export function SignUpForm() {
             id="displayName"
             type="text"
             autoComplete="name"
+            required
             aria-invalid={!!errors.displayName}
+            aria-describedby={errors.displayName ? "sign-up-displayName-error" : undefined}
             {...register("displayName")}
           />
           {errors.displayName && (
-            <p className="text-sm text-destructive">{errors.displayName.message}</p>
+            <p id="sign-up-displayName-error" className="text-sm text-destructive" role="alert">
+              {errors.displayName.message}
+            </p>
           )}
         </div>
 
@@ -80,10 +84,16 @@ export function SignUpForm() {
             id="email"
             type="email"
             autoComplete="email"
+            required
             aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "sign-up-email-error" : undefined}
             {...register("email")}
           />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+          {errors.email && (
+            <p id="sign-up-email-error" className="text-sm text-destructive" role="alert">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -92,10 +102,16 @@ export function SignUpForm() {
             id="password"
             type="password"
             autoComplete="new-password"
+            required
             aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "sign-up-password-error" : undefined}
             {...register("password")}
           />
-          {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+          {errors.password && (
+            <p id="sign-up-password-error" className="text-sm text-destructive" role="alert">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         <Button type="submit" disabled={pending} className="w-full">

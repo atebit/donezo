@@ -83,10 +83,16 @@ function RenameSection({ boardId, boardName }: { boardId: string; boardName: str
             id="board-name"
             type="text"
             autoComplete="off"
+            required
             aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? "board-settings-name-error" : undefined}
             {...register("name")}
           />
-          {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+          {errors.name && (
+            <p id="board-settings-name-error" className="text-sm text-destructive" role="alert">
+              {errors.name.message}
+            </p>
+          )}
         </div>
         <div>
           <Button type="submit" disabled={pending} size="sm">
@@ -150,12 +156,15 @@ function DescriptionSection({
             rows={4}
             autoComplete="off"
             aria-invalid={!!errors.description}
+            aria-describedby={errors.description ? "board-settings-desc-error" : undefined}
             className="w-full rounded-md border border-[color:var(--color-border-strong)] bg-surface px-3 py-2 text-sm text-[color:var(--color-fg)] placeholder:text-[color:var(--color-fg-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)] resize-y disabled:opacity-50"
             placeholder="Add a short description for this board…"
             {...register("description")}
           />
           {errors.description && (
-            <p className="text-sm text-destructive">{errors.description.message}</p>
+            <p id="board-settings-desc-error" className="text-sm text-destructive" role="alert">
+              {errors.description.message}
+            </p>
           )}
         </div>
         <div>
