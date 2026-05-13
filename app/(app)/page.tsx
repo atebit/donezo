@@ -8,7 +8,7 @@ export default async function HomePage() {
   const supabase = await createClient();
 
   // 1. Try the last-visited workspace.
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profile")
     .select("last_workspace_id")
     .eq("id", user.id)
@@ -28,7 +28,7 @@ export default async function HomePage() {
   }
 
   // 2. Fall back to any workspace the user is a member of (oldest first).
-  const { data: memberships } = await supabase
+  const { data: memberships, error: membershipsError } = await supabase
     .from("workspace_member")
     .select("workspace:workspace_id(id, slug, name, deleted_at, created_at)")
     .eq("user_id", user.id)
@@ -47,6 +47,17 @@ export default async function HomePage() {
         created_at: string;
       } => w !== null && (w as { deleted_at: string | null }).deleted_at === null,
     );
+
+  // biome-ignore lint/suspicious/noConsole: temporary CI diagnostic for epic-15 e2e
+  console.log("[home-page] redirect-check", {
+    userId: user.id,
+    profile,
+    profileError: profileError?.message,
+    membershipsLen: memberships?.length ?? null,
+    membershipsError: membershipsError?.message,
+    activeLen: active.length,
+    firstSlug: active[0]?.slug ?? null,
+  });
 
   const first = active[0];
   if (first) {
