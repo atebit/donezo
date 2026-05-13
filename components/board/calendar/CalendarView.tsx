@@ -83,7 +83,16 @@ function DroppableDayOverlay({ date }: { date: Date }) {
 // CalendarView
 // ---------------------------------------------------------------------------
 
-export function CalendarView() {
+interface CalendarViewProps {
+  /**
+   * When true (mobile <768px), override the persisted view mode and force the
+   * calendar into agenda view so the layout degrades gracefully on small screens.
+   * Default: false (desktop behaviour — respect user's persisted view mode).
+   */
+  forceMobileAgenda?: boolean;
+}
+
+export function CalendarView({ forceMobileAgenda = false }: CalendarViewProps) {
   const { board, workspaceSlug } = useBoard();
   const { effective, applyDraft } = useBoardView();
 
@@ -100,7 +109,11 @@ export function CalendarView() {
   const dateColumnId = calendarConfig?.dateColumnId ?? null;
   // Our schema uses "month"|"week"|"day"|"agenda"; RBC also supports "work_week"
   // but we don't expose it in config. Cast is safe.
-  const calendarView = (calendarConfig?.viewMode ?? "month") as View;
+  // On mobile (<768px), forceMobileAgenda overrides the user's persisted view
+  // and forces the agenda layout which renders well on small screens.
+  const calendarView = (
+    forceMobileAgenda ? "agenda" : (calendarConfig?.viewMode ?? "month")
+  ) as View;
 
   // Find the active date column.
   const dateColumn = useMemo(
@@ -355,6 +368,9 @@ export function CalendarView() {
               localizer={calendarLocalizer}
               events={events}
               view={calendarView}
+              defaultView={
+                forceMobileAgenda ? "agenda" : ((calendarConfig?.viewMode ?? "month") as View)
+              }
               onView={handleViewChange}
               onSelectSlot={handleSelectSlot}
               onSelectEvent={handleSelectEvent}

@@ -44,7 +44,9 @@ import { setCellValue } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/cells/ac
 import type { Task } from "@/components/board/table/types";
 import { useBoard } from "@/hooks/use-board";
 import { useBoardView } from "@/hooks/use-board-view";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useBoardStore } from "@/stores/board-store";
+import { BoardTimelineMobile } from "./BoardTimelineMobile";
 import { TimelineColumnPicker } from "./TimelineColumnPicker";
 import { TimelineHeader } from "./TimelineHeader";
 import { LABEL_COL_WIDTH, ROW_HEIGHT, TimelineRow } from "./TimelineRow";
@@ -75,7 +77,29 @@ function defaultDuration(scale: Scale): number {
 // TimelineView
 // ---------------------------------------------------------------------------
 
+/**
+ * TimelineView — mobile/desktop router.
+ *
+ * On mobile (<768px): renders <BoardTimelineMobile> (an EmptyState).
+ * On desktop (≥768px): renders <TimelineViewDesktop> with the full Gantt chart.
+ *
+ * The split avoids calling the heavy desktop hooks on mobile devices.
+ */
 export function TimelineView() {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  if (!isDesktop) {
+    return <BoardTimelineMobile />;
+  }
+
+  return <TimelineViewDesktop />;
+}
+
+// ---------------------------------------------------------------------------
+// TimelineViewDesktop — the full Gantt chart (desktop only)
+// ---------------------------------------------------------------------------
+
+function TimelineViewDesktop() {
   const { board, workspaceSlug } = useBoard();
   const { effective, applyDraft, save } = useBoardView();
 
