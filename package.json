@@ -22,6 +22,8 @@
     "start": "next start",
     "test": "vitest run --passWithNoTests",
     "test:e2e": "echo 'playwright wired in epic 15' && exit 0",
+    "test:policies": "tests/policies/run.sh",
+    "test:policies:ci": "DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres tests/policies/run.sh",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
