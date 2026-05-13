@@ -321,3 +321,16 @@
     padding: 0;
   }
 }
+
+/* === reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion override intentionally uses !important to cap all animation durations */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion override intentionally uses !important to cap all transition durations */
+    transition-duration: 0.01ms !important;
+  }
+}
+/* === end reduced motion === */
