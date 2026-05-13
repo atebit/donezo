@@ -5,18 +5,24 @@
  *
  * submitForm — called when a visitor submits the published form view.
  *
- * Auth model (Q24 default):
- *   A viewer-role user CAN submit a form. The role check is
- *   `requireBoardRole(boardId, 'viewer')`.
+ * Auth model (Q24 resolution — orchestrator decision, autonomous run 2026-05-12):
+ *   A `member` role is required to submit a form. The role check is
+ *   `requireBoardRole(boardId, 'member')`.
  *
- *   NOTE: This default was chosen per the dispatch plan's Q24 ruling.
- *   The orchestrator should confirm this decision with the product owner.
- *   If the decision is reversed to "member", change the minRole below and
- *   invert the pgTAP assertion in tests/policies/submit_form_role.spec.sql.
+ *   The dispatch plan's Q24 default was "viewer can submit", but Epic 04's
+ *   existing `task_insert` RLS policy requires `role_rank >= member` for INSERT
+ *   on `public.task`. A viewer would pass the application check and then get
+ *   42501 from Postgres. Three options were considered: (A) new RLS policy
+ *   permitting form-mediated viewer inserts (requires migration + a way to tag
+ *   inserts as form-submits), (B) match the app check to RLS at `member`,
+ *   (C) use adminClient() to bypass RLS after the app-level auth check.
+ *   Option B chosen for MVP — it aligns with current RLS architecture and
+ *   doesn't cut corners. Option A is the right long-term answer if the product
+ *   wants viewer-form-submit; that's deferred to a later epic.
  *
  * Steps inside submitForm:
  *   1. Validate raw input via SubmitFormSchema.
- *   2. Role check: viewer is sufficient (Q24 default).
+ *   2. Role check: member required (per Q24 resolution).
  *   3. Resolve the view row → parse form config.
  *   4. Resolve target groupId: config.targetGroupId OR first non-deleted group.
  *   5. Compute insertion position (append after last task in the group).
@@ -41,8 +47,8 @@ import { FormConfigSchema } from "@/lib/views/config-schema";
 export const submitForm = withUser(async ({ supabase, userId }, raw) => {
   const input = SubmitFormSchema.parse(raw);
 
-  // 1. Role check: viewer is sufficient per Q24 default.
-  await requireBoardRole(input.boardId, "viewer");
+  // 1. Role check: member required (per Q24 resolution — matches Epic 04 RLS).
+  await requireBoardRole(input.boardId, "member");
 
   // 2. Resolve the view row and parse its form config.
   const { data: viewRow, error: viewError } = await supabase

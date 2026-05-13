@@ -4,26 +4,17 @@
 --
 -- Assertion count: 5
 --
--- Q24 design note:
---   The dispatch plan's default is that a viewer-role user CAN submit a form
---   (application-level check: requireBoardRole(boardId, 'viewer')).
+-- Q24 resolution (orchestrator decision, autonomous run 2026-05-12):
+--   Option B selected — the application-level check in submitForm is `member`
+--   (matching Epic 04's existing task_insert RLS, which requires role_rank >= 2).
 --
---   HOWEVER: the existing task_insert RLS policy requires role_rank >= member
---   for INSERT on public.task. This policy was established in Epic 04 and is
---   in forbidden scope for this slice. A viewer calling submitForm will pass
---   the application-level role check but will receive a 42501 (insufficient
---   privilege) error when the INSERT on task fires.
---
---   Resolution: the pgTAP tests below reflect the actual runtime behavior:
+--   The assertions below reflect the agreed behavior and the actual runtime:
 --     - Member (role_rank >= 2) CAN insert a task (positive case).
 --     - Viewer (role_rank = 1) CANNOT insert a task (negative case; 42501).
 --     - Non-member CANNOT insert a task (negative case; 42501).
 --
---   The orchestrator must decide one of:
---     A) Add a new task_insert_via_form RLS policy that allows viewer inserts.
---     B) Change the application-level role check to 'member' (matching the
---        existing RLS behavior).
---   See the Slice F done report for the full escalation note.
+--   Viewer-form-submit (Option A — new RLS policy permitting form-mediated
+--   viewer inserts) is deferred to a later epic if the product wants it.
 --
 -- UUID prefix: af... for users, bf... for workspaces, cf... for boards, etc.
 -- ============================================================
@@ -111,10 +102,8 @@ select lives_ok(
 
 -- ============================================================
 -- Test 3: Viewer CANNOT insert a task.
--- This reflects the actual runtime behavior: the task_insert RLS policy
--- (Epic 04) requires role_rank >= member. The application-level check in
--- submitForm uses requireBoardRole('viewer') — this is an application/RLS
--- mismatch that the orchestrator must resolve (see Q24 in the done report).
+-- task_insert RLS (Epic 04) requires role_rank >= member, and submitForm's
+-- application check matches at 'member' (Q24 resolution, Option B).
 -- ============================================================
 
 select tests.set_jwt_user('af000000-0000-0000-0000-000000000003'::uuid);
@@ -131,7 +120,7 @@ select throws_ok(
   $$,
   '42501',
   null,
-  'viewer CANNOT INSERT task — task_insert RLS requires member role (Q24 mismatch — see done report)'
+  'viewer CANNOT INSERT task — task_insert RLS and submitForm both require member'
 );
 
 -- ============================================================
