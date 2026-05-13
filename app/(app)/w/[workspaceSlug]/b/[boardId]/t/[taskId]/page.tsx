@@ -50,8 +50,8 @@ export default async function TaskPage({
 
   if (!board) notFound();
 
-  // Parallel fetches: comments + activity + workspace members + attachments
-  const [commentsRes, activityRes, membersRes, attachmentsRes] = await Promise.all([
+  // Parallel fetches: comments + activity + workspace members + attachments + follow state
+  const [commentsRes, activityRes, membersRes, attachmentsRes, followerRes] = await Promise.all([
     supabase
       .from("comment")
       .select("*")
@@ -74,11 +74,18 @@ export default async function TaskPage({
       .eq("task_id", taskId)
       .eq("is_uploaded", true)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("task_follower")
+      .select("user_id")
+      .eq("task_id", taskId)
+      .eq("user_id", currentUser.id)
+      .maybeSingle(),
   ]);
 
   const comments = commentsRes.data ?? [];
   const activity = activityRes.data ?? [];
   const attachments = attachmentsRes.data ?? [];
+  const isFollowing = followerRes.data !== null;
 
   // Second round-trip for reactions — needs comment ids (spec F.4 risk note 6)
   const commentIds = comments.map((c) => c.id);
@@ -112,6 +119,7 @@ export default async function TaskPage({
         currentUserId={currentUser.id}
         boardRole={boardRole}
         variant="full"
+        isFollowing={isFollowing}
       />
     </div>
   );

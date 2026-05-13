@@ -571,6 +571,8 @@ export type Database = {
       notification: {
         Row: {
           created_at: string
+          digested_at: string | null
+          email_sent_at: string | null
           id: string
           kind: string
           payload: Json
@@ -579,6 +581,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          digested_at?: string | null
+          email_sent_at?: string | null
           id?: string
           kind: string
           payload: Json
@@ -587,10 +591,39 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          digested_at?: string | null
+          email_sent_at?: string | null
           id?: string
           kind?: string
           payload?: Json
           read_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_preference: {
+        Row: {
+          digest_enabled: boolean
+          digest_hour: number
+          digest_timezone: string
+          prefs: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          digest_enabled?: boolean
+          digest_hour?: number
+          digest_timezone?: string
+          prefs?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          digest_enabled?: boolean
+          digest_hour?: number
+          digest_timezone?: string
+          prefs?: Json
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -683,6 +716,58 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_follower: {
+        Row: {
+          followed_at: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          followed_at?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          followed_at?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_follower_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "task"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_reminder_sent: {
+        Row: {
+          kind: string
+          sent_at: string
+          task_id: string
+        }
+        Insert: {
+          kind: string
+          sent_at?: string
+          task_id: string
+        }
+        Update: {
+          kind?: string
+          sent_at?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_reminder_sent_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "task"
             referencedColumns: ["id"]
           },
         ]

@@ -22,6 +22,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { FollowToggle } from "@/components/board/FollowToggle";
 import type { MemberOption } from "@/components/comments/CommentEditor";
 import { useTaskDrawerPresence } from "@/hooks/use-task-drawer-presence";
 import type { Role } from "@/lib/authorization";
@@ -50,6 +51,8 @@ export interface TaskDrawerProps {
   boardRole: Role;
   /** "modal" = slide-in over board; "full" = standalone full-page view. */
   variant: "modal" | "full";
+  /** Whether the current user is following this task. Loaded server-side. */
+  isFollowing?: boolean;
 }
 
 export function TaskDrawer({
@@ -62,6 +65,7 @@ export function TaskDrawer({
   mentionableMembers,
   currentUserId,
   boardRole,
+  isFollowing = false,
 }: TaskDrawerProps) {
   const [activeTab, setActiveTab] = useState<TaskDrawerTab>("updates");
 
@@ -117,15 +121,16 @@ export function TaskDrawer({
     >
       {/* Header */}
       <div
-        className="flex-shrink-0 flex items-center"
+        className="flex-shrink-0 flex items-center gap-2"
         style={{ padding: "20px 20px 6px 24px", minHeight: 53 }}
       >
         <h2
-          className="text-lg font-semibold text-[color:var(--color-fg-strong)] truncate"
+          className="text-lg font-semibold text-[color:var(--color-fg-strong)] truncate flex-1"
           style={{ fontSize: 18 }}
         >
           {task.title || "Untitled"}
         </h2>
+        <FollowToggle taskId={taskId} initialFollowing={isFollowing} />
       </div>
 
       {/* Tab strip */}

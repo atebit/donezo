@@ -1,14 +1,47 @@
 import { z } from "zod";
 
-const EnvSchema = z.object({
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  NEXT_PUBLIC_SITE_URL: z.string().url(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  RESEND_API_KEY: z.string().min(1).optional(),
-  SENTRY_DSN: z.string().url().optional(),
-});
+const EnvSchema = z
+  .object({
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+    NEXT_PUBLIC_SITE_URL: z.string().url(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
+    // Email (Resend + React Email)
+    RESEND_API_KEY: z.string().min(1).optional(),
+    EMAIL_FROM: z.string().min(1).optional(),
+    EMAIL_SAFE_LIST: z.string().optional(),
+    // Cron + webhook auth
+    INTERNAL_CRON_SECRET: z.string().min(32).optional(),
+    SUPABASE_DB_WEBHOOK_SECRET: z.string().min(32).optional(),
+    // Observability
+    SENTRY_DSN: z.string().url().optional(),
+  })
+  .refine(
+    (data) =>
+      data.NODE_ENV !== "production" ||
+      (data.RESEND_API_KEY !== undefined && data.RESEND_API_KEY.length > 0),
+    { message: "RESEND_API_KEY is required in production", path: ["RESEND_API_KEY"] },
+  )
+  .refine(
+    (data) =>
+      data.NODE_ENV !== "production" ||
+      (data.INTERNAL_CRON_SECRET !== undefined && data.INTERNAL_CRON_SECRET.length >= 32),
+    {
+      message: "INTERNAL_CRON_SECRET (min 32 chars) is required in production",
+      path: ["INTERNAL_CRON_SECRET"],
+    },
+  )
+  .refine(
+    (data) =>
+      data.NODE_ENV !== "production" ||
+      (data.SUPABASE_DB_WEBHOOK_SECRET !== undefined &&
+        data.SUPABASE_DB_WEBHOOK_SECRET.length >= 32),
+    {
+      message: "SUPABASE_DB_WEBHOOK_SECRET (min 32 chars) is required in production",
+      path: ["SUPABASE_DB_WEBHOOK_SECRET"],
+    },
+  );
 
 export type Env = z.infer<typeof EnvSchema>;
 
@@ -23,6 +56,10 @@ const parsed = EnvSchema.safeParse({
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
+  EMAIL_FROM: process.env.EMAIL_FROM,
+  EMAIL_SAFE_LIST: process.env.EMAIL_SAFE_LIST,
+  INTERNAL_CRON_SECRET: process.env.INTERNAL_CRON_SECRET,
+  SUPABASE_DB_WEBHOOK_SECRET: process.env.SUPABASE_DB_WEBHOOK_SECRET,
   SENTRY_DSN: process.env.SENTRY_DSN,
 });
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
