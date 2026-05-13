@@ -17,6 +17,7 @@ import { useShallow } from "zustand/react/shallow";
 import { reorderColumn } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/columns/actions";
 import { reorderGroup } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
 import { moveTask } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/tasks/actions";
+import { MigrateLegacyColumnPrefs } from "@/components/board/MigrateLegacyColumnPrefs";
 import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
 import { useBoard } from "@/hooks/use-board";
@@ -31,7 +32,6 @@ import { positionBetween } from "@/lib/positions";
 import { flushOutbox } from "@/lib/realtime/outbox";
 import { wrappedRenameGroup } from "@/lib/realtime/wrapped-actions";
 import { useBoardStore } from "@/stores/board-store";
-
 import { AddGroupFooter } from "./AddGroupFooter";
 import { AddTaskFooter } from "./AddTaskFooter";
 import { BulkActionBar } from "./BulkActionBar";
@@ -270,6 +270,8 @@ interface BoardTableProps {
 }
 
 export function BoardTable({ boardId, initial }: BoardTableProps) {
+  // currentUserId is sourced from the initial data (set by page.tsx / layout.tsx).
+  const currentUserId = initial.currentUserId;
   const hydratedRef = useRef(false);
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [, startTransition] = useTransition();
@@ -329,6 +331,13 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
       });
       // Epic 10 — hydrate board-level attachments (idempotent, filters non-uploaded)
       useBoardStore.getState().hydrateAttachmentsForBoard(initial.attachments ?? []);
+      // Epic 11 / Slice F — hydrate server-resolved views and the initial active view id.
+      if (initial.views && initial.views.length > 0) {
+        useBoardStore.getState().hydrateViewsForBoard(boardId, initial.views);
+      }
+      if (initial.activeViewId !== undefined) {
+        useBoardStore.getState().setActiveViewId(initial.activeViewId ?? null);
+      }
     }
 
     return () => {
@@ -856,6 +865,8 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   if (groups.length === 0) {
     return (
       <>
+        {/* Still run the migration component on the empty-state path. */}
+        <MigrateLegacyColumnPrefs boardId={boardId} currentUserId={currentUserId} />
         <NoGroupsEmptyState onAddGroup={() => setIsAddGroupOpen(true)} />
         <AddGroupFooter
           boardId={boardId}
@@ -897,6 +908,9 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
         focusGroupTitle,
       }}
     >
+      {/* Epic 11 / Slice F — one-shot migration of legacy columnPrefsByBoard
+          into the personal view config. Renders null; runs on first mount. */}
+      <MigrateLegacyColumnPrefs boardId={boardId} currentUserId={currentUserId} />
       {/* containerRef is on the outermost div so keydown events from any focused
           row (inside the tree) bubble up to the single listener attached by the
           keyboard nav hook. */}

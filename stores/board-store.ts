@@ -91,6 +91,8 @@ export type BoardState = {
   setDraftConfig: (next: ViewConfig | null) => void;
   setSortKeys: (keys: SortKey[]) => void;
   setInBoardSearch: (query: string) => void;
+  /** Epic 11 / Slice F — clear the legacy columnPrefsByBoard entry for a single board. */
+  clearLegacyColumnPrefsForBoard: (boardId: string) => void;
 
   // UI actions
   toggleGroupCollapse: (groupId: string) => void;
@@ -662,6 +664,19 @@ export const useBoardStore = create<BoardState>()(
       // ------------------------------------------------------------------
       setInBoardSearch(query) {
         set({ inBoardSearch: query });
+      },
+
+      // ------------------------------------------------------------------
+      // clearLegacyColumnPrefsForBoard — Epic 11 / Slice F.
+      // Removes a single board's entry from columnPrefsByBoard after the
+      // one-shot migration has folded the prefs into the personal view.
+      // ------------------------------------------------------------------
+      clearLegacyColumnPrefsForBoard(boardId) {
+        const { columnPrefsByBoard } = get();
+        if (!columnPrefsByBoard[boardId]) return; // already absent
+        const next = { ...columnPrefsByBoard };
+        delete next[boardId];
+        set({ columnPrefsByBoard: next });
       },
 
       // ------------------------------------------------------------------
