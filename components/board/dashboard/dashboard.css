@@ -1,0 +1,135 @@
+/**
+ * dashboard.css — Minimal overrides on top of react-grid-layout's stylesheet.
+ *
+ * Import order in Dashboard.tsx:
+ *   import "react-grid-layout/css/styles.css";
+ *   import "@/components/board/dashboard/dashboard.css";
+ *
+ * Visual contract (must-match per component-system Visual fidelity — Dashboard):
+ *   - Widget border: 2px solid var(--color-border-strong)
+ *   - Widget hover border: var(--color-primary)
+ *   - Widget header separator: 1px solid var(--color-border-strong)
+ */
+
+/* ---- react-grid-layout placeholder chrome overrides ---- */
+
+.react-grid-item.react-grid-placeholder {
+  background: var(--color-primary) !important;
+  opacity: 0.15 !important;
+  border-radius: 8px;
+}
+
+.react-grid-item > .react-resizable-handle {
+  /* Use a subdued resize handle that appears on hover */
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.react-grid-item:hover > .react-resizable-handle {
+  opacity: 0.5;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  border-color: var(--color-fg-muted) !important;
+}
+
+/* ---- Widget chrome ---- */
+
+.dashboard-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 8px;
+  background: var(--color-surface);
+  overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+.dashboard-widget:hover {
+  border-color: var(--color-primary);
+}
+
+.dashboard-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 40px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.widget-drag-handle {
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  color: var(--color-fg-muted);
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.widget-drag-handle:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-fg);
+}
+
+.widget-drag-handle:active {
+  cursor: grabbing;
+}
+
+.dashboard-widget-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-widget-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dashboard-widget-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Number widget ---- */
+
+.number-widget-value {
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--color-fg);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.number-widget-label {
+  font-size: 12px;
+  color: var(--color-fg-muted);
+}
+
+/* ---- Empty dashboard placeholder ---- */
+
+.dashboard-empty-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
+  color: var(--color-fg-muted);
+  gap: 12px;
+}
