@@ -4,6 +4,8 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Database } from "@/lib/supabase/types";
+import type { SortKey, ViewConfig } from "@/lib/views/config-schema";
+import { parseViewConfig } from "@/lib/views/config-schema";
 import type { AttachmentRow } from "@/stores/types/attachments";
 import type { ActivityRow, CommentReactionRow, CommentRow } from "@/stores/types/comments";
 import type {
@@ -13,6 +15,7 @@ import type {
   PresenceState,
   TypingPayload,
 } from "@/stores/types/realtime";
+import type { ViewRow } from "@/stores/types/views";
 
 type Group = Database["public"]["Tables"]["group"]["Row"];
 type Task = Database["public"]["Tables"]["task"]["Row"];
@@ -27,9 +30,9 @@ export type BoardState = {
   cells: Map<string, Cell>; // key: `${task_id}:${column_id}`
   columns: Column[]; // sorted by position
   labelsByColumn: Map<string, Label[]>; // key: column_id; values sorted by position
-  columnPrefsByBoard: Record<string, Record<string, { width?: number; hidden?: boolean }>>; // persisted
-  sortColumnId: string | null; // ephemeral per-tab sort (per Q30)
-  sortDirection: "asc" | "desc" | null;
+  columnPrefsByBoard: Record<string, Record<string, { width?: number; hidden?: boolean }>>; // persisted — fallback until Slice F migration
+  lastViewByBoard: Record<string, string>; // persisted — last active viewId per board
+  sortKeys: SortKey[]; // replaces sortColumnId / sortDirection (Epic 11)
   selection: Set<string>; // task ids
   draggingTaskId: string | null;
   draggingGroupId: string | null;
@@ -72,8 +75,22 @@ export type BoardState = {
   setColumnWidth: (columnId: string, width: number) => void;
   toggleColumnHidden: (columnId: string) => void;
 
-  // Ephemeral sort (per Q30 — not persisted, clears on tab close)
-  setSort: (columnId: string | null, direction: "asc" | "desc" | null) => void;
+  // ============================================================================
+  // Epic 11 — Views, filtering, sorting, grouping, visibility, density, search
+  // ============================================================================
+  viewsByBoard: Map<string, ViewRow[]>; // key: board_id; sorted by position
+  activeViewId: string | null; // resolved from URL → last → default
+  draftConfig: ViewConfig | null; // null when active === view.config; set when user has edits
+  inBoardSearch: string; // ephemeral; URL ?q owns the truth via the hook
+
+  // Hydration / mutations
+  hydrateViewsForBoard: (boardId: string, rows: ViewRow[]) => void;
+  applyViewUpsert: (row: ViewRow) => void;
+  applyViewDelete: (viewId: string) => void;
+  setActiveViewId: (viewId: string | null) => void;
+  setDraftConfig: (next: ViewConfig | null) => void;
+  setSortKeys: (keys: SortKey[]) => void;
+  setInBoardSearch: (query: string) => void;
 
   // UI actions
   toggleGroupCollapse: (groupId: string) => void;
@@ -169,8 +186,12 @@ const transientInitial = {
   cells: new Map<string, Cell>(),
   columns: [] as Column[],
   labelsByColumn: new Map<string, Label[]>(),
-  sortColumnId: null,
-  sortDirection: null as "asc" | "desc" | null,
+  sortKeys: [] as SortKey[],
+  // Epic 11 — transient view state (re-hydrated from server on mount)
+  viewsByBoard: new Map<string, ViewRow[]>(),
+  activeViewId: null as string | null,
+  draftConfig: null as ViewConfig | null,
+  inBoardSearch: "",
   selection: new Set<string>(),
   draggingTaskId: null,
   draggingGroupId: null,
@@ -203,6 +224,8 @@ export const useBoardStore = create<BoardState>()(
         string,
         Record<string, { width?: number; hidden?: boolean }>
       >,
+      // Epic 11 — persisted last-view-per-board map. Debounced writes, flush on pagehide.
+      lastViewByBoard: {} as Record<string, string>,
       // Epic 08 — persisted outbox (additive; older entries hydrate with outbox: [])
       outbox: [] as OutboxEntry[],
 
@@ -249,24 +272,25 @@ export const useBoardStore = create<BoardState>()(
           draggingGroupId: null,
           editingTaskId: null,
           tempIdMap: new Map(),
-          sortColumnId: null,
-          sortDirection: null,
+          sortKeys: [],
         });
       },
 
       // ------------------------------------------------------------------
       // reset — clears transient state but PRESERVES collapsedByBoard,
-      // columnPrefsByBoard, AND outbox (all persisted slices).
+      // columnPrefsByBoard, lastViewByBoard, AND outbox (all persisted slices).
       // Navigating boards must not drop a queued offline mutation.
       // Epic 09: also clears commentsByTask, reactionsByComment, activityByTask.
       // Epic 10: also clears attachmentsByTask.
+      // Epic 11: also clears Epic 11 transient view state (viewsByBoard, etc.).
       // ------------------------------------------------------------------
       reset() {
-        const { collapsedByBoard, columnPrefsByBoard, outbox } = get();
+        const { collapsedByBoard, columnPrefsByBoard, lastViewByBoard, outbox } = get();
         set({
           ...transientInitial,
           collapsedByBoard,
           columnPrefsByBoard,
+          lastViewByBoard,
           outbox,
         });
       },
@@ -552,12 +576,92 @@ export const useBoardStore = create<BoardState>()(
         set({ columnPrefsByBoard: { ...columnPrefsByBoard, [boardId]: boardPrefs } });
       },
 
+      // ================================================================
+      // Epic 11 — Views, filtering, sorting, grouping, visibility, density, search
+      // ================================================================
+
       // ------------------------------------------------------------------
-      // setSort — ephemeral per-tab sort state (per Q30).
-      // Not persisted; clears on tab close / store re-create.
+      // hydrateViewsForBoard — bulk-sets views for a board, sorted by position.
+      // Idempotent — safe to call on re-mount.
       // ------------------------------------------------------------------
-      setSort(columnId, direction) {
-        set({ sortColumnId: columnId, sortDirection: direction });
+      hydrateViewsForBoard(boardId, rows) {
+        const { viewsByBoard } = get();
+        const sorted = [...rows].sort((a, b) => a.position - b.position);
+        const next = new Map(viewsByBoard);
+        next.set(boardId, sorted);
+        set({ viewsByBoard: next });
+      },
+
+      // ------------------------------------------------------------------
+      // applyViewUpsert — upserts a single view row into viewsByBoard.
+      // Sorts by position after upsert.
+      // ------------------------------------------------------------------
+      applyViewUpsert(row) {
+        const { viewsByBoard } = get();
+        const existing = viewsByBoard.get(row.board_id) ?? [];
+        const idx = existing.findIndex((v) => v.id === row.id);
+        let next: ViewRow[];
+        if (idx === -1) {
+          next = [...existing, row];
+        } else {
+          next = [...existing];
+          next[idx] = row;
+        }
+        next.sort((a, b) => a.position - b.position);
+        const nextMap = new Map(viewsByBoard);
+        nextMap.set(row.board_id, next);
+        set({ viewsByBoard: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // applyViewDelete — removes a view from viewsByBoard by id.
+      // Scans all boards (the viewId is globally unique).
+      // ------------------------------------------------------------------
+      applyViewDelete(viewId) {
+        const { viewsByBoard } = get();
+        const nextMap = new Map(viewsByBoard);
+        for (const [boardId, views] of nextMap) {
+          const filtered = views.filter((v) => v.id !== viewId);
+          if (filtered.length !== views.length) {
+            nextMap.set(boardId, filtered);
+            break;
+          }
+        }
+        set({ viewsByBoard: nextMap });
+      },
+
+      // ------------------------------------------------------------------
+      // setActiveViewId — updates the active view and persists to lastViewByBoard.
+      // ------------------------------------------------------------------
+      setActiveViewId(viewId) {
+        const { boardId, lastViewByBoard } = get();
+        const updates: Partial<BoardState> = { activeViewId: viewId };
+        if (boardId && viewId) {
+          updates.lastViewByBoard = { ...lastViewByBoard, [boardId]: viewId };
+        }
+        set(updates);
+      },
+
+      // ------------------------------------------------------------------
+      // setDraftConfig — sets the draft config overlay. null = no unsaved changes.
+      // ------------------------------------------------------------------
+      setDraftConfig(next) {
+        set({ draftConfig: next });
+      },
+
+      // ------------------------------------------------------------------
+      // setSortKeys — multi-key sort (Epic 11). Replaces legacy setSort.
+      // ------------------------------------------------------------------
+      setSortKeys(keys) {
+        set({ sortKeys: keys });
+      },
+
+      // ------------------------------------------------------------------
+      // setInBoardSearch — ephemeral in-board search query.
+      // URL ?q owns the truth; the hook syncs this field on URL change.
+      // ------------------------------------------------------------------
+      setInBoardSearch(query) {
+        set({ inBoardSearch: query });
       },
 
       // ------------------------------------------------------------------
@@ -1101,6 +1205,7 @@ export const useBoardStore = create<BoardState>()(
       partialize: (state) => ({
         collapsedByBoard: state.collapsedByBoard,
         columnPrefsByBoard: state.columnPrefsByBoard,
+        lastViewByBoard: state.lastViewByBoard,
         outbox: state.outbox,
       }),
       // On rehydration, re-derive collapsedGroupIds for the active board (if any).
@@ -1109,6 +1214,9 @@ export const useBoardStore = create<BoardState>()(
       onRehydrateStorage: () => (state) => {
         if (state && !Array.isArray(state.outbox)) {
           state.outbox = [];
+        }
+        if (state && !state.lastViewByBoard) {
+          state.lastViewByBoard = {};
         }
         if (!state?.boardId) return;
         const ids = state.collapsedByBoard[state.boardId] ?? [];
@@ -1176,6 +1284,97 @@ export function selectGroupedReactions(
 /** Activity events for a task, newest-first. */
 export function selectTaskActivity(state: BoardState, taskId: string): ActivityRow[] {
   return state.activityByTask.get(taskId) ?? [];
+}
+
+// ============================================================================
+// Selectors — Epic 11: Views, filtering, sorting, grouping, visibility, density
+// ============================================================================
+
+/** Stable empty sentinels — prevent new reference on every render. */
+const EMPTY_VIEWS: ViewRow[] = [];
+const EMPTY_CONFIG: ViewConfig = {};
+
+/**
+ * Returns the resolved active ViewRow for the current boardId, or null if not
+ * yet hydrated.
+ */
+export function selectActiveView(state: BoardState): ViewRow | null {
+  if (!state.boardId || !state.activeViewId) return null;
+  const views = state.viewsByBoard.get(state.boardId);
+  if (!views) return null;
+  return views.find((v) => v.id === state.activeViewId) ?? null;
+}
+
+/**
+ * Returns the effective ViewConfig: draftConfig if set, else the parsed
+ * active view's config jsonb. Falls back to `{}` when neither is available
+ * (board has no views yet, or view has no config).
+ *
+ * Never returns undefined. Always returns a stable empty object when empty
+ * (EMPTY_CONFIG sentinel).
+ */
+export function selectEffectiveConfig(state: BoardState): ViewConfig {
+  if (state.draftConfig !== null) return state.draftConfig;
+  const active = selectActiveView(state);
+  if (!active) return EMPTY_CONFIG;
+  const parsed = parseViewConfig(active.config);
+  // Return EMPTY_CONFIG sentinel when the parsed config is empty
+  // (all keys undefined) so stable-reference comparison works.
+  const hasAnyKey = Object.keys(parsed).length > 0;
+  return hasAnyKey ? parsed : EMPTY_CONFIG;
+}
+
+/**
+ * Returns true iff the user has unsaved draft edits (draftConfig !== null).
+ */
+export function selectHasDraftEdits(state: BoardState): boolean {
+  return state.draftConfig !== null;
+}
+
+/**
+ * Returns all views for a board, sorted by position.
+ * Returns the stable EMPTY_VIEWS sentinel when the board has no views.
+ */
+export function selectViewsForBoard(state: BoardState, boardId: string): ViewRow[] {
+  return state.viewsByBoard.get(boardId) ?? EMPTY_VIEWS;
+}
+
+// ============================================================================
+// Migration helper — Epic 11 / Slice F
+// ============================================================================
+
+/**
+ * Extracts column widths and hidden flags from `columnPrefsByBoard[boardId]`
+ * and formats them as `view.config` shape fields.
+ *
+ * Called by Slice F (page wiring) on first Epic-11 board mount when:
+ *   - `columnPrefsByBoard[boardId]` has entries, AND
+ *   - a personal view exists for the user.
+ *
+ * Returns the config patch to pass to the `saveView` server action.
+ * After saving, Slice F clears the `columnPrefsByBoard[boardId]` entry.
+ *
+ * Slice B exposes this helper; Slice E (server actions) and Slice F (page wiring)
+ * call it.
+ */
+export function migrateLegacyColumnPrefs(
+  state: BoardState,
+  boardId: string,
+): { columnWidths: Record<string, number>; columnVisibility: Record<string, boolean> } {
+  const prefs = state.columnPrefsByBoard[boardId] ?? {};
+  const columnWidths: Record<string, number> = {};
+  const columnVisibility: Record<string, boolean> = {};
+
+  for (const [columnId, pref] of Object.entries(prefs)) {
+    if (pref.width !== undefined) {
+      columnWidths[columnId] = pref.width;
+    }
+    if (pref.hidden !== undefined) {
+      columnVisibility[columnId] = !pref.hidden; // hidden=true → visible=false
+    }
+  }
+
+  return { columnWidths, columnVisibility };
 }
 
 // ============================================================================

@@ -53,11 +53,12 @@ export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
   const [, startTransition] = useTransition();
   const editableRef = useRef<EditableTitleHandle>(null);
 
-  const sortColumnId = useBoardStore((s) => s.sortColumnId);
-  const sortDirection = useBoardStore((s) => s.sortDirection);
+  const sortKeys = useBoardStore((s) => s.sortKeys);
   const applyColumnUpsert = useBoardStore((s) => s.applyColumnUpsert);
 
-  const isActiveSortColumn = sortColumnId === column.id;
+  // Read the first sort key for the single-column indicator (quick-sort from column header menu).
+  const activeSortKey = sortKeys[0]?.columnId === column.id ? sortKeys[0] : null;
+  const isActiveSortColumn = activeSortKey !== null;
   const TypeIcon = CELL_TYPE_ICONS[column.type as CellTypeId];
 
   const handleRename = async (nextName: string) => {
@@ -117,13 +118,13 @@ export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
         />
       </div>
 
-      {/* Sort indicator — shown only when this column is sorted */}
-      {isActiveSortColumn && sortDirection && (
+      {/* Sort indicator — shown only when this column is the first sort key */}
+      {isActiveSortColumn && activeSortKey && (
         <span
           className="shrink-0 text-xs text-[color:var(--color-fg-muted)]"
-          title={sortDirection === "asc" ? "Sorted ascending" : "Sorted descending"}
+          title={activeSortKey.direction === "asc" ? "Sorted ascending" : "Sorted descending"}
         >
-          {sortDirection === "asc" ? "↑" : "↓"}
+          {activeSortKey.direction === "asc" ? "↑" : "↓"}
         </span>
       )}
 

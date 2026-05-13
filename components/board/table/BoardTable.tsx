@@ -3,7 +3,15 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
 import { reorderColumn } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/columns/actions";
@@ -13,7 +21,12 @@ import type { EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { EditableTitle } from "@/components/shared/EditableTitle";
 import { useBoard } from "@/hooks/use-board";
 import { useBoardRealtime } from "@/hooks/use-board-realtime";
+import { useBoardView } from "@/hooks/use-board-view";
 import { useTableKeyboardNav } from "@/hooks/use-table-keyboard-nav";
+import { applyFilterTree } from "@/lib/filtering/apply-filter-tree";
+import { applyGroupBy } from "@/lib/filtering/apply-group-by";
+import { applySearch } from "@/lib/filtering/apply-search";
+import { applySort } from "@/lib/filtering/apply-sort";
 import { positionBetween } from "@/lib/positions";
 import { flushOutbox } from "@/lib/realtime/outbox";
 import { wrappedRenameGroup } from "@/lib/realtime/wrapped-actions";
@@ -327,6 +340,15 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   const groups = useBoardStore((s) => s.groups);
   const tasks = useBoardStore((s) => s.tasks);
   const collapsedGroupIds = useBoardStore((s) => s.collapsedGroupIds);
+  const cells = useBoardStore((s) => s.cells);
+  const columns = useBoardStore(useShallow((s) => s.columns));
+
+  // Epic 11 — view state. The hook is client-only; it reads URL and syncs the store.
+  const { effective } = useBoardView();
+  // Wrap effective config in useDeferredValue so large-board filter derivations
+  // don't block interactivity (typing in search stays responsive).
+  // TODO(slice-G): audit first-paint row alignment if this causes visible mis-alignment.
+  const deferredEffective = useDeferredValue(effective);
 
   // Ref to the TableVirtualizer's imperative handle — used to implement
   // scrollToTaskId() in the context value below.
@@ -375,41 +397,97 @@ export function BoardTable({ boardId, initial }: BoardTableProps) {
   }, []);
 
   // ---------------------------------------------------------------------------
-  // Flattened rows array — rebuilt whenever groups, tasks, or collapse state
-  // changes. The virtualizer uses this single array for all row rendering.
+  // Flattened rows array — rebuilt whenever groups, tasks, collapse state,
+  // or the effective view config changes.
   //
-  // Row ordering per group:
+  // Epic 11 derivation pipeline (B.5):
+  //   1. applyFilterTree  — filter by active filter tree
+  //   2. applySearch      — case-insensitive in-board search
+  //   3. applySort        — multi-key stable sort
+  //   4. applyGroupBy     — (re-)bucket by native groups or a column value
+  //   5. Flatten buckets into RowEntry[]
+  //
+  // Row ordering per bucket:
   //   1. group-header
-  //   2. (if not collapsed) task rows (sorted by position)
-  //   3. (if not collapsed) add-task-footer
-  // After all groups:
-  //   4. add-group-footer
+  //   2. (if not collapsed) task rows
+  //   3. (if not collapsed) group-footer (aggregations)
+  //   4. (if not collapsed) add-task-footer (suppressed for column-based group-by)
+  // After all buckets:
+  //   5. add-group-footer (suppressed for column-based group-by)
+  //
+  // Sort + DnD: when sortKeys.length > 0, DnD reorder is DISABLED.
+  // TODO(slice-D): gate DragHandle render on sortKeys.length === 0.
+  // Column group-by + DnD: when effective.groupBy?.kind === "column", DnD disabled.
+  // TODO(slice-D): gate DragHandle render on effective.groupBy?.kind !== "column".
   // ---------------------------------------------------------------------------
   const rows = useMemo<RowEntry[]>(() => {
+    // Step 1: Filter tasks by active filter tree.
+    const filteredTasks = applyFilterTree(tasks, cells, columns, deferredEffective.filter);
+
+    // Step 2: Apply in-board search.
+    const searchedTasks = applySearch(
+      filteredTasks,
+      cells,
+      columns,
+      deferredEffective.search ?? "",
+    );
+
+    // Step 3: Sort — preserve natural position order first so sort is stable
+    // relative to the original task order.
+    const naturalOrder = [...searchedTasks].sort((a, b) => {
+      const gA = groups.find((g) => g.id === a.group_id);
+      const gB = groups.find((g) => g.id === b.group_id);
+      const gDiff = (gA?.position ?? 0) - (gB?.position ?? 0);
+      if (gDiff !== 0) return gDiff;
+      return a.position - b.position;
+    });
+    const sortedTasks = applySort(naturalOrder, cells, columns, deferredEffective.sort);
+
+    // Step 4: Group tasks into buckets.
+    const buckets = applyGroupBy(sortedTasks, cells, columns, deferredEffective.groupBy, groups);
+
+    const isColumnGroupBy = deferredEffective.groupBy?.kind === "column";
+
+    // Step 5: Flatten buckets into RowEntry[].
     const result: RowEntry[] = [];
 
-    for (const group of groups) {
-      result.push({ kind: "group-header", group });
+    for (const bucket of buckets) {
+      // For native grouping, use the real group object; for column grouping, use
+      // a synthetic group-like object that satisfies the GroupHeaderRow contract.
+      const groupObj = groups.find((g) => g.id === bucket.key) ?? {
+        id: bucket.key,
+        name: bucket.label,
+        color: bucket.color ?? "gray",
+        board_id: boardId,
+        position: 0,
+        created_at: "",
+        updated_at: "",
+        deleted_at: null,
+      };
 
-      if (!collapsedGroupIds.has(group.id)) {
-        const groupTasks = tasks
-          .filter((t) => t.group_id === group.id)
-          .sort((a, b) => a.position - b.position);
+      result.push({ kind: "group-header", group: groupObj });
 
-        for (const task of groupTasks) {
-          result.push({ kind: "task", task, group });
+      if (!collapsedGroupIds.has(bucket.key)) {
+        for (const task of bucket.tasks) {
+          result.push({ kind: "task", task, group: groupObj });
         }
 
-        // S21 — per-group aggregation footer between tasks and add-task row.
-        result.push({ kind: "group-footer", group });
-        result.push({ kind: "add-task-footer", group });
+        result.push({ kind: "group-footer", group: groupObj });
+
+        // Suppress "+ Add task" for column-based group-by buckets.
+        if (!isColumnGroupBy) {
+          result.push({ kind: "add-task-footer", group: groupObj });
+        }
       }
     }
 
-    result.push({ kind: "add-group-footer" });
+    // Suppress "+ Add group" footer for column-based group-by.
+    if (!isColumnGroupBy) {
+      result.push({ kind: "add-group-footer" });
+    }
 
     return result;
-  }, [groups, tasks, collapsedGroupIds]);
+  }, [groups, tasks, cells, columns, collapsedGroupIds, deferredEffective, boardId]);
 
   // ---------------------------------------------------------------------------
   // visibleTaskIds — tasks that are not in a collapsed group, in render order.

@@ -31,7 +31,7 @@
 
 import { Checkbox } from "@base-ui/react/checkbox";
 import { useShallow } from "zustand/react/shallow";
-import { useBoardStore } from "@/stores/board-store";
+import { selectEffectiveConfig, useBoardStore } from "@/stores/board-store";
 
 import { AddColumnButton } from "./AddColumnButton";
 import { ColumnHeader } from "./ColumnHeader";
@@ -117,12 +117,19 @@ export function StickyHeader() {
   );
   const columnPrefsByBoard = useBoardStore((s) => s.columnPrefsByBoard);
   const boardId = useBoardStore((s) => s.boardId);
+  // Epic 11: prefer effective view config for visibility/width; fall back to legacy prefs.
+  const effectiveConfig = useBoardStore(selectEffectiveConfig);
 
   // ---------------------------------------------------------------------------
-  // Hidden filter: exclude columns the user has toggled off
+  // Hidden filter: prefer view config visibility, fall back to legacy prefs.
   // ---------------------------------------------------------------------------
   const boardPrefs = boardId ? (columnPrefsByBoard[boardId] ?? {}) : {};
-  const visibleColumns = columns.filter((col) => !boardPrefs[col.id]?.hidden);
+  const visibleColumns = columns.filter((col) => {
+    if (effectiveConfig.columnVisibility && col.id in effectiveConfig.columnVisibility) {
+      return effectiveConfig.columnVisibility[col.id] !== false;
+    }
+    return !boardPrefs[col.id]?.hidden;
+  });
 
   // ---------------------------------------------------------------------------
   // Title column identification:
@@ -146,9 +153,14 @@ export function StickyHeader() {
     : visibleColumns;
 
   // ---------------------------------------------------------------------------
-  // Width resolver: pref → fallback (title=336, others=140)
+  // Width resolver: view config → legacy pref → fallback (title=336, others=140)
+  // Epic 11: prefer effectiveConfig.columnWidths; fall back to boardPrefs.
   // ---------------------------------------------------------------------------
   const getColumnWidth = (col: Column): number => {
+    if (effectiveConfig.columnWidths && col.id in effectiveConfig.columnWidths) {
+      const viewWidth = effectiveConfig.columnWidths[col.id];
+      if (viewWidth !== undefined) return viewWidth;
+    }
     const pref = boardPrefs[col.id]?.width;
     if (pref !== undefined) return pref;
     return col.id === titleColumn?.id ? DEFAULT_TITLE_WIDTH : DEFAULT_COLUMN_WIDTH;

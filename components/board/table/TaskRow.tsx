@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import { TableCell } from "@/components/cells/TableCell";
-import { selectUsersViewingTask, useBoardStore } from "@/stores/board-store";
+import { selectEffectiveConfig, selectUsersViewingTask, useBoardStore } from "@/stores/board-store";
 
 import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
 import { colorToToken } from "./group-color";
@@ -26,12 +26,24 @@ export function TaskRow({ task, group }: TaskRowProps) {
   // ---------------------------------------------------------------------------
   // Visible non-title columns — mirrors the identification logic in StickyHeader
   // (S19) so rows and headers stay in sync.
+  //
+  // Epic 11: prefer `effective.columnVisibility` from the active view config when
+  // present; fall back to the legacy `columnPrefsByBoard` path until Slice F
+  // completes the one-shot migration.
   // ---------------------------------------------------------------------------
   const columns = useBoardStore((s) => s.columns);
   const columnPrefsByBoard = useBoardStore((s) => s.columnPrefsByBoard);
   const boardId = useBoardStore((s) => s.boardId);
+  const effectiveConfig = useBoardStore(selectEffectiveConfig);
   const boardPrefs = boardId ? (columnPrefsByBoard[boardId] ?? {}) : {};
-  const visibleColumns = columns.filter((c) => !boardPrefs[c.id]?.hidden);
+
+  const visibleColumns = columns.filter((c) => {
+    // Prefer view config visibility when present; fallback to legacy prefs.
+    if (effectiveConfig.columnVisibility && c.id in effectiveConfig.columnVisibility) {
+      return effectiveConfig.columnVisibility[c.id] !== false;
+    }
+    return !boardPrefs[c.id]?.hidden;
+  });
 
   // Title column = first text-type column by position; same fallback as S19.
   const textColumns = visibleColumns.filter((c) => c.type === "text");
@@ -115,15 +127,19 @@ export function TaskRow({ task, group }: TaskRowProps) {
       </div>
 
       {/* Per-column data cells — one per visible non-title column, in position order */}
-      {otherColumns.map((col) => (
-        <div
-          key={col.id}
-          className="flex-shrink-0 overflow-hidden border-l border-[color:var(--color-border-strong)]"
-          style={{ width: boardPrefs[col.id]?.width ?? 140 }}
-        >
-          <TableCell task={task} column={col} />
-        </div>
-      ))}
+      {otherColumns.map((col) => {
+        // Prefer view config width; fall back to legacy prefs; default 140px.
+        const colWidth = effectiveConfig.columnWidths?.[col.id] ?? boardPrefs[col.id]?.width ?? 140;
+        return (
+          <div
+            key={col.id}
+            className="flex-shrink-0 overflow-hidden border-l border-[color:var(--color-border-strong)]"
+            style={{ width: colWidth }}
+          >
+            <TableCell task={task} column={col} />
+          </div>
+        );
+      })}
 
       {/* Presence dot — visible when at least one other user is viewing this task (Epic 09 F.3) */}
       {viewingUserIds.length > 0 && (
