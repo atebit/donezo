@@ -14,6 +14,7 @@ import type { CellTypeDef } from "@/lib/cells/types";
 import { Cell } from "./Cell";
 import { Editor } from "./Editor";
 import { findCountryByCode } from "./iso-list";
+import { OperandEditor } from "./OperandEditor";
 
 /** All value columns in the `cell` table — explicit null-out per Q35. */
 const NULL_VALUE_PATCH = {
@@ -36,6 +37,7 @@ export const countryType: CellTypeDef<string, Record<string, never>> = {
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => row?.text_value ?? null,
 

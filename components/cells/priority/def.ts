@@ -26,6 +26,7 @@ import {
   aggregatePercentByLabel,
 } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
+import { OperandEditor } from "./OperandEditor";
 
 /** All value columns in the `cell` table — every toRow must set all 7 explicitly. */
 const NULL_VALUE_PATCH = {
@@ -48,6 +49,7 @@ export const priorityType: CellTypeDef<StatusCellValue, Record<string, never>> =
 
   Cell,
   Editor,
+  OperandEditor,
 
   fromRow: (row) => (row?.label_id ? { labelId: row.label_id } : null),
 
