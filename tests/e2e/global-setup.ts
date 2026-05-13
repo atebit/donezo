@@ -56,30 +56,7 @@ export default async function globalSetup() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // Ensure the e2e seed user exists in auth.users.
-  // The seed.sql inserts the user via SQL; this is a safety net for environments
-  // where db:reset wasn't run or the user row was cleaned up.
-  const { data: existingUsers } = await admin.auth.admin.listUsers();
-  const userExists = existingUsers?.users?.some((u) => u.email === E2E_USER_EMAIL);
-
-  if (!userExists) {
-    const { error } = await admin.auth.admin.createUser({
-      email: E2E_USER_EMAIL,
-      password: E2E_USER_PASSWORD,
-      email_confirm: true,
-      user_metadata: { name: "E2E Test User" },
-    });
-    if (error) {
-      throw new Error(`globalSetup: failed to create e2e user: ${error.message}`);
-    }
-    // biome-ignore lint/suspicious/noConsole: setup script output is intentional
-    console.log("[global-setup] Created e2e user:", E2E_USER_EMAIL);
-  } else {
-    // biome-ignore lint/suspicious/noConsole: setup script output is intentional
-    console.log("[global-setup] E2e user already exists:", E2E_USER_EMAIL);
-  }
-
-  // Sign in via the anon key to get a session cookie the browser can use.
+  // Anon client for sign-in.
   const anon = createClient(
     SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
@@ -88,15 +65,50 @@ export default async function globalSetup() {
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 
-  const { data: session, error: signInError } = await anon.auth.signInWithPassword({
+  // Try to sign in first — supabase/seed.sql already inserts the e2e user
+  // into auth.users with a bcrypt password hash, so the normal path is
+  // sign-in succeeds without needing the admin createUser dance. Fall back
+  // to admin.createUser only when sign-in fails (clean DB without seed run).
+  let { data: session, error: signInError } = await anon.auth.signInWithPassword({
     email: E2E_USER_EMAIL,
     password: E2E_USER_PASSWORD,
   });
 
   if (signInError || !session.session) {
-    throw new Error(
-      `globalSetup: sign-in failed: ${signInError?.message ?? "no session returned"}`,
+    // biome-ignore lint/suspicious/noConsole: setup script output is intentional
+    console.log(
+      "[global-setup] Initial sign-in failed; creating user via admin API:",
+      signInError?.message ?? "no session returned",
     );
+    const { error: createErr } = await admin.auth.admin.createUser({
+      email: E2E_USER_EMAIL,
+      password: E2E_USER_PASSWORD,
+      email_confirm: true,
+      user_metadata: { name: "E2E Test User" },
+    });
+    // Treat "user already exists" / unique-violation as soft-success — the
+    // seed inserted via SQL won the race; retry sign-in regardless of how
+    // createUser concluded.
+    if (createErr) {
+      const msg = createErr.message.toLowerCase();
+      const alreadyExists =
+        msg.includes("already") || msg.includes("duplicate") || msg.includes("registered");
+      if (!alreadyExists) {
+        // biome-ignore lint/suspicious/noConsole: setup script output is intentional
+        console.warn(`[global-setup] admin.createUser error (will retry sign-in): ${createErr.message}`);
+      }
+    }
+    const retry = await anon.auth.signInWithPassword({
+      email: E2E_USER_EMAIL,
+      password: E2E_USER_PASSWORD,
+    });
+    session = retry.data;
+    signInError = retry.error;
+    if (signInError || !session.session) {
+      throw new Error(
+        `globalSetup: sign-in failed after admin.createUser fallback: ${signInError?.message ?? "no session returned"}`,
+      );
+    }
   }
 
   // biome-ignore lint/suspicious/noConsole: setup script output is intentional

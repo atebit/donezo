@@ -186,18 +186,16 @@ select lives_ok(
 -- Test 5: member can UPDATE cell
 -- ============================================================
 
-select is(
-  (with updated as (
-     update public.cell
-       set text_value = 'updated value'
-     where task_id = 'e3000000-0000-0000-0000-000000000001'
-       and column_id = 'f3000000-0000-0000-0000-000000000001'
-     returning task_id
-   )
-   select count(*)::int from updated),
-  1,
-  'member can UPDATE cell value'
-);
+with updated as (
+  update public.cell
+    set text_value = 'updated value'
+  where task_id = 'e3000000-0000-0000-0000-000000000001'
+    and column_id = 'f3000000-0000-0000-0000-000000000001'
+  returning task_id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'member can UPDATE cell value');
 
 -- ============================================================
 -- Test 6: viewer cannot INSERT cell (cell_modify for all uses with check)
@@ -233,16 +231,14 @@ select throws_ok(
 -- row is hidden, 0 rows affected)
 -- ============================================================
 
-select is(
-  (with deleted as (
-     delete from public."column"
-       where id = 'f3000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from deleted),
-  0,
-  'viewer cannot DELETE column (RLS blocks; 0 rows affected)'
-);
+with deleted as (
+  delete from public."column"
+    where id = 'f3000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 0, 'viewer cannot DELETE column (RLS blocks; 0 rows affected)');
 
 -- ============================================================
 -- Test 8: non-workspace-member cannot SELECT tasks on private board
@@ -264,17 +260,15 @@ select is(
 
 select tests.set_jwt_user('a3000000-0000-0000-0000-000000000003'::uuid);
 
-select is(
-  (with updated as (
-     update public.comment
-       set body_text = 'edited text'
-     where id = 'g3000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  1,
-  'comment author can UPDATE own comment'
-);
+with updated as (
+  update public.comment
+    set body_text = 'edited text'
+  where id = 'g3000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'comment author can UPDATE own comment');
 
 -- ============================================================
 -- Test 10: non-author member cannot DELETE another's comment
@@ -294,16 +288,14 @@ end $$;
 
 select tests.set_jwt_user('a3000000-0000-0000-0000-000000000003'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.comment
-       where id = 'g3000000-0000-0000-0000-000000000002'
-     returning id
-   )
-   select count(*)::int from deleted),
-  0,
-  'non-author member cannot DELETE another users comment (0 rows affected)'
-);
+with deleted as (
+  delete from public.comment
+    where id = 'g3000000-0000-0000-0000-000000000002'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 0, 'non-author member cannot DELETE another users comment (0 rows affected)');
 
 -- ============================================================
 -- Test 11: comment author can DELETE own comment
@@ -311,16 +303,14 @@ select is(
 
 select tests.set_jwt_user('a3000000-0000-0000-0000-000000000003'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.comment
-       where id = 'g3000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from deleted),
-  1,
-  'comment author can DELETE own comment'
-);
+with deleted as (
+  delete from public.comment
+    where id = 'g3000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 1, 'comment author can DELETE own comment');
 
 -- ============================================================
 -- Test 12: board admin can DELETE any comment
@@ -330,16 +320,14 @@ select is(
 
 select tests.set_jwt_user('a3000000-0000-0000-0000-000000000002'::uuid);
 
-select is(
-  (with deleted as (
-     delete from public.comment
-       where id = 'g3000000-0000-0000-0000-000000000002'
-     returning id
-   )
-   select count(*)::int from deleted),
-  1,
-  'board admin can DELETE any comment'
-);
+with deleted as (
+  delete from public.comment
+    where id = 'g3000000-0000-0000-0000-000000000002'
+  returning id
+)
+select count(*)::int as rcnt from deleted \gset
+
+select is(:rcnt::int, 1, 'board admin can DELETE any comment');
 
 -- ============================================================
 -- Test 13: member cannot INSERT comment as another user

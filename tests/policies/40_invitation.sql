@@ -186,17 +186,15 @@ select is(
 -- Test 5: invitee can UPDATE accepted_at on own invitation
 -- ============================================================
 
-select is(
-  (with updated as (
-     update public.invitation
-       set accepted_at = now()
-     where id = 'i4000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  1,
-  'invitee can set accepted_at on own invitation'
-);
+with updated as (
+  update public.invitation
+    set accepted_at = now()
+  where id = 'i4000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'invitee can set accepted_at on own invitation');
 
 -- ============================================================
 -- Test 6: trigger blocks updating any column other than accepted_at

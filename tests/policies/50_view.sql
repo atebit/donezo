@@ -136,17 +136,15 @@ select is(
 
 select tests.set_jwt_user('a5000000-0000-0000-0000-000000000002'::uuid);
 
-select is(
-  (with updated as (
-     update public.view
-       set name = 'Hacked View Name'
-     where id = 'v5000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  0,
-  'non-owner cannot UPDATE another users personal view (0 rows affected)'
-);
+with updated as (
+  update public.view
+    set name = 'Hacked View Name'
+  where id = 'v5000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 0, 'non-owner cannot UPDATE another users personal view (0 rows affected)');
 
 -- ============================================================
 -- Test 6: owner can UPDATE (and by extension DELETE) their own personal view
@@ -154,17 +152,15 @@ select is(
 
 select tests.set_jwt_user('a5000000-0000-0000-0000-000000000003'::uuid);
 
-select is(
-  (with updated as (
-     update public.view
-       set name = 'My Renamed View'
-     where id = 'v5000000-0000-0000-0000-000000000001'
-     returning id
-   )
-   select count(*)::int from updated),
-  1,
-  'owner can UPDATE their own personal view'
-);
+with updated as (
+  update public.view
+    set name = 'My Renamed View'
+  where id = 'v5000000-0000-0000-0000-000000000001'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'owner can UPDATE their own personal view');
 
 -- ============================================================
 -- Test 7: modifying a shared view requires admin+
@@ -172,17 +168,15 @@ select is(
 -- because view_modify checks admin+ when is_shared=true.
 -- ============================================================
 
-select is(
-  (with updated as (
-     update public.view
-       set name = 'Member Rename Shared'
-     where id = 'v5000000-0000-0000-0000-000000000002'
-     returning id
-   )
-   select count(*)::int from updated),
-  0,
-  'member cannot UPDATE a shared view (requires admin+; 0 rows affected)'
-);
+with updated as (
+  update public.view
+    set name = 'Member Rename Shared'
+  where id = 'v5000000-0000-0000-0000-000000000002'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 0, 'member cannot UPDATE a shared view (requires admin+; 0 rows affected)');
 
 -- ============================================================
 -- Test 8: admin can UPDATE a shared view
@@ -190,17 +184,15 @@ select is(
 
 select tests.set_jwt_user('a5000000-0000-0000-0000-000000000002'::uuid);
 
-select is(
-  (with updated as (
-     update public.view
-       set name = 'Admin Renamed Shared'
-     where id = 'v5000000-0000-0000-0000-000000000002'
-     returning id
-   )
-   select count(*)::int from updated),
-  1,
-  'admin can UPDATE a shared view'
-);
+with updated as (
+  update public.view
+    set name = 'Admin Renamed Shared'
+  where id = 'v5000000-0000-0000-0000-000000000002'
+  returning id
+)
+select count(*)::int as rcnt from updated \gset
+
+select is(:rcnt::int, 1, 'admin can UPDATE a shared view');
 
 select tests.reset_to_service_role();
 
