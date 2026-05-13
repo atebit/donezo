@@ -24,7 +24,7 @@
  */
 
 import { Dialog, Menu } from "@base-ui/react";
-import { Copy, Pencil, RefreshCw, Save, Settings2, Trash2 } from "lucide-react";
+import { Copy, Pencil, RefreshCw, Save, Trash2 } from "lucide-react";
 import { type ReactNode, useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -32,7 +32,6 @@ import {
   duplicateView,
   renameView,
 } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/views/actions";
-import { FormBuilder } from "@/components/board/form/FormBuilder";
 import { EditableTitle, type EditableTitleHandle } from "@/components/shared/EditableTitle";
 import { useBoard } from "@/hooks/use-board";
 import { useBoardView } from "@/hooks/use-board-view";
@@ -50,7 +49,6 @@ export function ViewTabDropdown({ view, children }: ViewTabDropdownProps) {
   const { hasUnsavedChanges, resetDraft, save, switchView, role } = useBoardView();
   const { userId } = useBoard();
   const [renameOpen, setRenameOpen] = useState(false);
-  const [builderOpen, setBuilderOpen] = useState(false);
   const editableRef = useRef<EditableTitleHandle>(null);
 
   // ---------------------------------------------------------------------------
@@ -165,14 +163,6 @@ export function ViewTabDropdown({ view, children }: ViewTabDropdownProps) {
                 Duplicate
               </Menu.Item>
 
-              {/* Configure form — only for form-kind views */}
-              {view.kind === "form" && (
-                <Menu.Item onClick={() => setBuilderOpen(true)} className={menuItemCn()}>
-                  <Settings2 size={14} aria-hidden="true" />
-                  Configure form
-                </Menu.Item>
-              )}
-
               {/* Save changes — gated: draft exists + permission */}
               {hasUnsavedChanges && canModify && (
                 <Menu.Item onClick={handleSave} className={menuItemCn()}>
@@ -206,9 +196,6 @@ export function ViewTabDropdown({ view, children }: ViewTabDropdownProps) {
           </Menu.Positioner>
         </Menu.Portal>
       </Menu.Root>
-
-      {/* Form builder — rendered as a slide-over panel */}
-      {builderOpen && <FormBuilder onClose={() => setBuilderOpen(false)} />}
 
       {/* Rename Dialog — Base UI Dialog with EditableTitle */}
       <Dialog.Root open={renameOpen} onOpenChange={setRenameOpen}>
