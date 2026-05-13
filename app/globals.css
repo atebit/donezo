@@ -286,6 +286,110 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* === dark mode === */
+/*
+ * Overrides for every token when data-theme="dark" is set on <html>.
+ * next-themes writes this attribute; ThemeProvider in components/shared/theme
+ * controls it. Do NOT invent new tokens here — only override existing ones.
+ *
+ * Derivation strategy (design-system.md §1.1.7):
+ *   - Invert --color-fg / --color-surface (light bg → dark bg, dark text → light text)
+ *   - Dial label saturation back ~10%
+ *   - Keep --color-primary at #0073ea (Monday's dark-mode primary is unchanged)
+ *   - Borders: dark mid-gray at 28–40% lightness
+ */
+[data-theme="dark"] {
+  /* App surfaces */
+  --color-surface: oklch(15% 0 0);
+  --color-surface-auth: oklch(12% 0 0);
+  --color-surface-rail: oklch(18% 0 0);
+  --color-surface-nav: oklch(16% 0.04 265);
+  --color-surface-info: oklch(20% 0 0);
+  --color-surface-row-hover: oklch(22% 0 0);
+  --color-surface-hover: oklch(25% 0 0);
+  --color-surface-active: oklch(28% 0.04 265);
+  --color-primary-selected: oklch(28% 0.05 265);
+  --color-primary-selected-hover: oklch(32% 0.06 265);
+  --color-card-selected: oklch(26% 0.04 265);
+  --color-chip-member: oklch(24% 0.03 265);
+
+  /* Text */
+  --color-fg: oklch(95% 0 0);
+  --color-fg-muted: oklch(70% 0 0);
+  --color-fg-subtle: oklch(50% 0 0);
+  --color-fg-strong: oklch(98% 0 0);
+
+  /* Borders */
+  --color-border: oklch(28% 0 0 / 80%);
+  --color-border-solid: oklch(30% 0 0);
+  --color-border-strong: oklch(40% 0 0);
+  --color-border-rail: oklch(35% 0 0);
+  --color-shadow-card: oklch(0% 0 0 / 40%);
+
+  /* Primary — unchanged per spec */
+  --color-primary: #0073ea;
+  --color-primary-hover: #0060b9;
+  --color-primary-foreground: #ffffff;
+  --color-link: #4a9de8;
+  --color-nav-icon: #8080ff;
+
+  /* Labels — saturation dialed back ~10% via oklch chroma reduction */
+  --color-label-green: oklch(70% 0.16 162);
+  --color-label-green-hover: oklch(58% 0.14 162);
+  --color-label-green-selected: oklch(80% 0.1 162);
+  --color-label-yellow: oklch(85% 0.14 88);
+  --color-label-yellow-hover: oklch(70% 0.12 88);
+  --color-label-yellow-selected: oklch(92% 0.09 88);
+  --color-label-blue: oklch(70% 0.14 235);
+  --color-label-blue-hover: oklch(58% 0.12 235);
+  --color-label-blue-selected: oklch(80% 0.09 235);
+  --color-label-gray: oklch(60% 0 0);
+  --color-label-gray-hover: oklch(50% 0 0);
+  --color-label-gray-selected: oklch(70% 0 0);
+  --color-label-orange: oklch(75% 0.14 55);
+  --color-label-red: oklch(62% 0.18 15);
+  --color-label-purple: oklch(65% 0.16 300);
+  --color-label-pending: oklch(70% 0.14 235);
+  --color-label-critical: oklch(80% 0 0);
+  --color-label-black: oklch(80% 0 0);
+
+  /* Overlay */
+  --color-overlay: rgba(0, 0, 0, 0.75);
+
+  /* shadcn / Base UI tokens */
+  --background: oklch(15% 0 0);
+  --foreground: oklch(95% 0 0);
+  --card: oklch(18% 0 0);
+  --card-foreground: oklch(95% 0 0);
+  --popover: oklch(18% 0 0);
+  --popover-foreground: oklch(95% 0 0);
+  --primary: #0073ea;
+  --primary-foreground: #ffffff;
+  --secondary: oklch(22% 0 0);
+  --secondary-foreground: oklch(95% 0 0);
+  --muted: oklch(25% 0 0);
+  --muted-foreground: oklch(70% 0 0);
+  --accent: oklch(28% 0.04 265);
+  --accent-foreground: oklch(95% 0 0);
+  --destructive: oklch(62% 0.18 15);
+  --border: oklch(28% 0 0 / 80%);
+  --input: oklch(28% 0 0 / 80%);
+  --ring: #0073ea;
+  --chart-1: oklch(70% 0.16 162);
+  --chart-2: oklch(85% 0.14 88);
+  --chart-3: oklch(70% 0.14 235);
+  --chart-4: oklch(75% 0.14 55);
+  --chart-5: oklch(65% 0.16 300);
+  --sidebar: oklch(16% 0.04 265);
+  --sidebar-foreground: oklch(90% 0 0);
+  --sidebar-primary: #0073ea;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: oklch(22% 0 0);
+  --sidebar-accent-foreground: oklch(90% 0 0);
+  --sidebar-border: oklch(28% 0 0 / 80%);
+  --sidebar-ring: #0073ea;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

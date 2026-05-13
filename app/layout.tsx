@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
+import { ThemeProvider } from "@/components/shared/theme/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -20,8 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", figtree.variable)}>
       <body className="bg-bg text-fg antialiased">
-        {children}
-        <Toaster />
+        <ThemeProvider>
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
