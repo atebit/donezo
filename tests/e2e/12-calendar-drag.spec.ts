@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 12 / Slice C — Calendar view drag-and-drop E2E spec.
@@ -24,32 +24,29 @@ import { expect, test } from "@playwright/test";
 // ---------------------------------------------------------------------------
 // Constants — replace with seed-script output in epic 15
 // ---------------------------------------------------------------------------
-const USER_A_EMAIL = "user-a+e2e@donezo.local";
-const USER_A_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
+const _USER_A_EMAIL = "user-a+e2e@donezo.local";
+const _USER_A_PASSWORD = "test-password-12345";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
 const BOARD_URL = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}`;
 const DATE_COLUMN_NAME = "Due date";
-const TASK_A_TITLE = "REPLACE_WITH_TASK_A_TITLE"; // has date 2026-06-03
+const _TASK_A_TITLE = "REPLACE_WITH_TASK_A_TITLE"; // has date 2026-06-03
 const TASK_A_INITIAL_DATE = "2026-06-03";
 const TASK_A_TARGET_DATE = "2026-06-10"; // drag target
-const TASK_B_TITLE = "REPLACE_WITH_TASK_B_TITLE"; // no date (off-calendar)
+const _TASK_B_TITLE = "REPLACE_WITH_TASK_B_TITLE"; // no date (off-calendar)
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-// @ts-expect-error playwright wired in epic 15
-async function signIn(page, email: string, password: string) {
+async function _signIn(page: import("@playwright/test").Page, email: string, password: string) {
   await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: /sign in/i }).click();
+
   await page.waitForURL("**/w/**");
 }
 
 // Drag a card from one calendar day cell to another.
-// @ts-expect-error playwright wired in epic 15
 async function dragEventToDate(page, taskTitle: string, targetIsoDate: string) {
   // Find the event card (TaskCard rendered inside the calendar event).
   const card = page.locator(`[data-task-id]`).filter({ hasText: taskTitle }).first();
@@ -77,13 +74,11 @@ async function dragEventToDate(page, taskTitle: string, targetIsoDate: string) {
 // ---------------------------------------------------------------------------
 
 test.describe("Epic 12 — Calendar view", () => {
-  test.skip(true, "Epic 15 will wire the Playwright runner and seed the database.");
-
-  test.beforeEach(async ({ page }) => {
-    await signIn(page, USER_A_EMAIL, USER_A_PASSWORD);
+  test.beforeEach(async () => {
+    // Auth handled by global storageState
   });
 
-  test("01: navigating to /calendar renders the calendar empty state (no column picked)", async ({
+  test.fixme("01: navigating to /calendar renders the calendar empty state (no column picked)", async ({
     page,
   }) => {
     // Create a new calendar view (no dateColumnId configured).
@@ -94,7 +89,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(picker).toBeVisible();
   });
 
-  test("02: picking a date column shows events on the correct days", async ({ page }) => {
+  test.fixme("02: picking a date column shows events on the correct days", async ({ page }) => {
     await page.goto(`${BOARD_URL}/calendar`);
 
     // Select the "Due date" column from the picker.
@@ -108,7 +103,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(eventCard).toBeVisible();
   });
 
-  test("03: TASK_B appears in the off-calendar panel", async ({ page }) => {
+  test.fixme("03: TASK_B appears in the off-calendar panel", async ({ page }) => {
     await page.goto(`${BOARD_URL}/calendar`);
     const picker = page.getByLabel("Pick the date column that drives the calendar");
     await picker.selectOption({ label: DATE_COLUMN_NAME });
@@ -122,7 +117,9 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(offPanelCard).toBeVisible();
   });
 
-  test("04: drag TASK_A from initial date to target date — cell updates", async ({ page }) => {
+  test.fixme("04: drag TASK_A from initial date to target date — cell updates", async ({
+    page,
+  }) => {
     await page.goto(`${BOARD_URL}/calendar`);
     const picker = page.getByLabel("Pick the date column that drives the calendar");
     await picker.selectOption({ label: DATE_COLUMN_NAME });
@@ -144,7 +141,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(movedCard).toBeVisible();
   });
 
-  test("05: reload preserves the new date after drag", async ({ page }) => {
+  test.fixme("05: reload preserves the new date after drag", async ({ page }) => {
     await page.goto(`${BOARD_URL}/calendar`);
     const picker = page.getByLabel("Pick the date column that drives the calendar");
     await picker.selectOption({ label: DATE_COLUMN_NAME });
@@ -171,7 +168,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(originalCard).not.toBeVisible();
   });
 
-  test("06: clicking an event opens the task drawer", async ({ page }) => {
+  test.fixme("06: clicking an event opens the task drawer", async ({ page }) => {
     await page.goto(`${BOARD_URL}/calendar`);
     const picker = page.getByLabel("Pick the date column that drives the calendar");
     await picker.selectOption({ label: DATE_COLUMN_NAME });
@@ -186,7 +183,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await expect(page.locator('[role="dialog"]')).toBeVisible();
   });
 
-  test("07: clicking an empty day slot quick-creates a task", async ({ page }) => {
+  test.fixme("07: clicking an empty day slot quick-creates a task", async ({ page }) => {
     await page.goto(`${BOARD_URL}/calendar`);
     const picker = page.getByLabel("Pick the date column that drives the calendar");
     await picker.selectOption({ label: DATE_COLUMN_NAME });
@@ -200,7 +197,7 @@ test.describe("Epic 12 — Calendar view", () => {
     await page.waitForSelector("text=Task created on");
   });
 
-  test("08: dragging TASK_B from off-calendar panel onto a day assigns the date", async ({
+  test.fixme("08: dragging TASK_B from off-calendar panel onto a day assigns the date", async ({
     page,
   }) => {
     await page.goto(`${BOARD_URL}/calendar`);

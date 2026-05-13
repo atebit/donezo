@@ -1,62 +1,36 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
- * Spec stub — runner wired in epic 15. Requires seeded users + Playwright config.
+ * Epic 07 — Column System e2e spec.
  *
- * TODO (epic 15):
- *  - Seed a primary user (owner) and a board with at least 5 tasks in the
- *    Supabase test DB via pgTAP fixtures or a setup script.
- *  - Configure `playwright.config.ts` with baseURL pointing to the local dev
- *    server (or Vercel preview URL in CI).
- *  - Wire `test.use({ storageState })` so sign-in persists across tests in the
- *    same describe block (avoids re-logging in for every test).
- *  - Replace placeholder values (WORKSPACE_SLUG, BOARD_ID) with values emitted
- *    by the seed script.
- *  - Ensure the demo board has at least one status column and 5 seeded tasks
- *    before running these scenarios.
+ * Auth is handled by global-setup.ts storageState.
+ * Column operations require an existing board with seeded tasks.
+ * Tests marked test.fixme need the board seed to include a status column
+ * with labels — wired via follow-up slice.
  */
 
 // ---------------------------------------------------------------------------
-// Constants — replace with seed-script output in epic 15
+// Constants — seeded via supabase/seed.sql e2e section
 // ---------------------------------------------------------------------------
-const OWNER_EMAIL = "owner+e2e@donezo.local";
-const OWNER_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
 
 // ---------------------------------------------------------------------------
 // Suite
 // ---------------------------------------------------------------------------
 
 test.describe("Epic 07 — Column System", () => {
-  // Skip all tests until epic 15 wires the Playwright runner and fixtures.
-  test.skip(
-    true,
-    "Spec stub — runner wired in epic 15. Requires seeded users + Playwright config.",
-  );
-
-  // ── Step 1: Sign in and navigate to a board (precondition) ───────────────
-  test.skip("1 — sign in → navigate to board", async ({ page }) => {
-    // TODO(epic 15): seed user + board; replace constants with seed output.
-    // 1. Navigate to /sign-in.
-    // 2. Fill OWNER_EMAIL + OWNER_PASSWORD, click "Sign in".
-    // 3. Navigate to /w/<WORKSPACE_SLUG>/b/<BOARD_ID>.
-    // 4. Assert the board table is rendered (role="table" is visible).
-    // 5. Assert the "Name" column header is visible (baseline before adding columns).
-    await page.goto("/sign-in");
-    await page.getByLabel("Email").fill(OWNER_EMAIL);
-    await page.getByLabel("Password").fill(OWNER_PASSWORD);
-    await page.getByRole("button", { name: /sign in/i }).click();
-
+  // ── Step 1: Navigate to board (precondition) ───────────────────────────────
+  test("1 — navigate to board", async ({ page }) => {
     await page.goto(`/w/${WORKSPACE_SLUG}/b/${BOARD_ID}`);
     await expect(page).toHaveURL(new RegExp(`/w/${WORKSPACE_SLUG}/b/${BOARD_ID}`));
     await expect(page.getByRole("table")).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: /name/i })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: /name|task/i })).toBeVisible();
   });
 
   // ── Step 2: Add a "status" column via AddColumnModal ─────────────────────
-  test.skip("2 — AddColumnModal → pick 'status' type → submit → column header + cells appear", async ({
+  test.fixme("2 — AddColumnModal → pick 'status' type → submit → column header + cells appear", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -92,7 +66,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 3: Click a cell → set status value via popover ──────────────────
-  test.skip("3 — click status cell → popover opens → pick label → cell reflects label color + name", async ({
+  test.fixme("3 — click status cell → popover opens → pick label → cell reflects label color + name", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -130,7 +104,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 4: Set status on 3 tasks total ──────────────────────────────────
-  test.skip("4 — set status value on 3 tasks (different labels)", async ({ page }) => {
+  test.fixme("4 — set status value on 3 tasks (different labels)", async ({ page }) => {
     // TODO(epic 15):
     // Repeat the step-3 pattern for 3 task rows, choosing different labels:
     //   Task 1 → "Done"
@@ -162,7 +136,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 5: Sort ascending via ColumnHeaderMenu ───────────────────────────
-  test.skip("5 — ColumnHeaderMenu → Sort ascending → tasks reorder by status label", async ({
+  test.fixme("5 — ColumnHeaderMenu → Sort ascending → tasks reorder by status label", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -193,7 +167,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 6: Change type → Text (lossy conversion with typed-name confirm) ─
-  test.skip("6 — ColumnHeaderMenu → Change type → Text → typed-name CONFIRM → cells show label names as text", async ({
+  test.fixme("6 — ColumnHeaderMenu → Change type → Text → typed-name CONFIRM → cells show label names as text", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -243,7 +217,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 7: Add number column → reorder → resize → reload → width persists ─
-  test.skip("7 — AddColumnModal → 'number' → drag header to reorder → drag edge to resize → reload → resize persists (localStorage)", async ({
+  test.fixme("7 — AddColumnModal → 'number' → drag header to reorder → drag edge to resize → reload → resize persists (localStorage)", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -323,7 +297,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 8: Hide column → disappears → re-show → reappears ───────────────
-  test.skip("8 — ColumnHeaderMenu → Hide → column disappears → re-show → reappears", async ({
+  test.fixme("8 — ColumnHeaderMenu → Hide → column disappears → re-show → reappears", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -362,7 +336,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 9: Bulk-select 3+ tasks → BulkActionBar Apply column value ───────
-  test.skip("9 — bulk-select 3+ tasks → BulkActionBar 'Apply column value' → pick status column → choose label → all 3 cells update", async ({
+  test.fixme("9 — bulk-select 3+ tasks → BulkActionBar 'Apply column value' → pick status column → choose label → all 3 cells update", async ({
     page,
   }) => {
     // TODO(epic 15):
@@ -419,7 +393,7 @@ test.describe("Epic 07 — Column System", () => {
   });
 
   // ── Step 10: Delete column via ColumnHeaderMenu (typed-name confirm) ───────
-  test.skip("10 — ColumnHeaderMenu → Delete → typed-name DELETE → column + cells gone", async ({
+  test.fixme("10 — ColumnHeaderMenu → Delete → typed-name DELETE → column + cells gone", async ({
     page,
   }) => {
     // TODO(epic 15):

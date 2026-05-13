@@ -21,7 +21,10 @@
     "lint:fix": "biome check --write .",
     "start": "next start",
     "test": "vitest run --passWithNoTests",
-    "test:e2e": "echo 'playwright wired in epic 15' && exit 0",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps",
+    "test:e2e:a11y": "playwright test tests/e2e/a11y",
+    "test:e2e:visual": "playwright test tests/e2e/visual",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },

@@ -1,39 +1,19 @@
-// @ts-expect-error playwright wired in epic 15
 import AxeBuilder from "@axe-core/playwright";
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_TASK_1_ID, E2E_WORKSPACE_SLUG } from "../fixtures/seed";
 
 /**
  * Task drawer a11y spec.
  *
- * AUTH FIXTURE GAP (document for epic 15):
- * Requires a logged-in user with a board containing at least one task.
- * Epic 15 owns seeding + auth fixture wiring. Until then, tests are skipped.
- *
- * To enable in epic 15:
- *  1. Remove test.skip.
- *  2. Replace constants with seed-script output.
- *  3. Wire test.use({ storageState: 'e2e-auth.json' }).
- *
- * Run locally (when auth is wired) with:
- *   pnpm dlx playwright test tests/e2e/a11y/task-drawer.a11y.spec.ts
+ * Auth is handled by the global-setup.ts storageState.
+ * The e2e task is seeded by supabase/seed.sql (e2e section).
  */
 
-// ---------------------------------------------------------------------------
-// Constants — replace with seed-script output in epic 15
-// ---------------------------------------------------------------------------
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "replace-with-board-id-from-seed";
-const TASK_ID = "replace-with-task-id-from-seed";
-
-// ---------------------------------------------------------------------------
-// Suite
-// ---------------------------------------------------------------------------
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
+const TASK_ID = E2E_TASK_1_ID;
 
 test.describe("Task drawer — axe-core a11y", () => {
-  // Skip all tests until epic 15 wires the Playwright runner and auth fixtures.
-  test.skip(true, "Auth fixture not wired — epic 15 owns seeding + runner config.");
-
   test("task drawer (open) has no axe violations", async ({ page }) => {
     // Navigate to the board and open the task drawer via the intercept route
     await page.goto(`/w/${WORKSPACE_SLUG}/b/${BOARD_ID}/t/${TASK_ID}`);

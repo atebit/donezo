@@ -1,5 +1,5 @@
-// @ts-expect-error playwright wired in epic 15
 import { expect, test } from "@playwright/test";
+import { E2E_BOARD_ID, E2E_TASK_1_ID, E2E_WORKSPACE_SLUG } from "./fixtures/seed";
 
 /**
  * Epic 10 — Attachments & File Storage — E2E spec.
@@ -44,71 +44,55 @@ import { expect, test } from "@playwright/test";
  */
 
 // ---------------------------------------------------------------------------
-// Constants — replace with seed-script output in epic 15
+// Constants — seeded via supabase/seed.sql e2e section
 // ---------------------------------------------------------------------------
-const USER_A_EMAIL = "user-a+e2e@donezo.local";
-const USER_A_PASSWORD = "test-password-12345";
-const USER_B_EMAIL = "user-b+e2e@donezo.local";
-const USER_B_PASSWORD = "test-password-12345";
-const USER_C_EMAIL = "user-c+e2e-nonmember@donezo.local";
-const USER_C_PASSWORD = "test-password-12345";
-const WORKSPACE_SLUG = "e2e-workspace";
-const BOARD_ID = "REPLACE_WITH_SEED_BOARD_ID";
+const WORKSPACE_SLUG = E2E_WORKSPACE_SLUG;
+const BOARD_ID = E2E_BOARD_ID;
 const BOARD_URL = `/w/${WORKSPACE_SLUG}/b/${BOARD_ID}`;
-const TASK_ID_T1 = "REPLACE_WITH_SEED_TASK_T1";
-/**
- * Set to true in epic 15 when the seed script creates a file-column on the board.
- * Tests 2 and 3 skip when this is false.
- */
+const TASK_ID_T1 = E2E_TASK_1_ID;
+
+// Second / third users — require dedicated storageState fixtures (follow-up)
+// See: docs/conversion-plan/_dispatch/epic-15-test-debt.md
+const _USER_A_EMAIL = "user-a+e2e@donezo.local";
+const _USER_A_PASSWORD = "test-password-12345";
+const _USER_B_EMAIL = "user-b+e2e@donezo.local";
+const _USER_B_PASSWORD = "test-password-12345";
+const _USER_C_EMAIL = "user-c+e2e-nonmember@donezo.local";
+const _USER_C_PASSWORD = "test-password-12345";
+
+// File column — not yet in e2e seed; deferred to follow-up slice
 const HAS_FILE_COLUMN = false;
 const TASK_FILE_COLUMN_ID = "REPLACE_WITH_SEED_FILE_COLUMN_ID";
 
 // ---------------------------------------------------------------------------
-// Helper — sign in a page as a given user
+// Helper — sign in a page as a given user (used by fixme multi-user tests)
 // ---------------------------------------------------------------------------
-async function signIn(
-  // @ts-expect-error playwright wired in epic 15
-  page: Awaited<ReturnType<typeof import("@playwright/test")["test"]["info"]>>,
-  email: string,
-  password: string,
-) {
-  // @ts-expect-error playwright wired in epic 15
+async function _signIn(page: import("@playwright/test").Page, email: string, password: string) {
   await page.goto("/sign-in");
-  // @ts-expect-error playwright wired in epic 15
   await page.getByLabel("Email").fill(email);
-  // @ts-expect-error playwright wired in epic 15
   await page.getByLabel("Password").fill(password);
-  // @ts-expect-error playwright wired in epic 15
   await page.getByRole("button", { name: /sign in/i }).click();
-  // @ts-expect-error playwright wired in epic 15
-  await page.waitForURL(`**/w/**`);
+  await page.waitForURL("**/w/**");
 }
 
 // ---------------------------------------------------------------------------
 // Helper — open the task drawer for a given task
 // ---------------------------------------------------------------------------
-async function openTaskDrawer(
-  // @ts-expect-error playwright wired in epic 15
-  page: Awaited<ReturnType<typeof import("@playwright/test")["test"]["info"]>>,
+async function _openTaskDrawer(
+  page: import("@playwright/test").Page,
   boardUrl: string,
   taskId: string,
 ) {
-  // @ts-expect-error playwright wired in epic 15
   await page.goto(`${boardUrl}/t/${taskId}`);
-  // @ts-expect-error playwright wired in epic 15
   await page.waitForSelector('[data-testid="task-drawer"]');
 }
 
 // ---------------------------------------------------------------------------
 // Helper — navigate to the Files tab inside an open task drawer
 // ---------------------------------------------------------------------------
-async function openFilesTab(
-  // @ts-expect-error playwright wired in epic 15
-  page: Awaited<ReturnType<typeof import("@playwright/test")["test"]["info"]>>,
-) {
-  // @ts-expect-error playwright wired in epic 15
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _openFilesTab(page: import("@playwright/test").Page) {
   await page.getByRole("tab", { name: /files/i }).click();
-  // @ts-expect-error playwright wired in epic 15
   await page.waitForSelector('[data-testid="files-tab-list"], [data-testid="file-dropzone"]', {
     timeout: 3000,
   });
@@ -117,7 +101,7 @@ async function openFilesTab(
 // ---------------------------------------------------------------------------
 // Helper — create a minimal in-memory PNG File for upload tests
 // ---------------------------------------------------------------------------
-function makeTestPngBuffer(): Buffer {
+function _makeTestPngBuffer(): Buffer {
   // 1×1 red pixel PNG (67 bytes) — smallest valid PNG.
   // Avoid reading from disk so tests work in any CI environment.
   return Buffer.from(
@@ -131,13 +115,25 @@ function makeTestPngBuffer(): Buffer {
 // Suite
 // ---------------------------------------------------------------------------
 
-test.describe("Epic 10 — Attachments & File Storage", () => {
-  // Skip all tests until epic 15 wires the Playwright runner and fixtures.
-  test.skip(
-    true,
-    "Spec stub — runner wired in epic 15. Requires seeded users, Playwright config, and local Supabase stack.",
-  );
+// All tests need two/three users + file column seed. Marked fixme.
+// See: docs/conversion-plan/_dispatch/epic-15-test-debt.md
+// Suppress unused-var warnings for prefixed helpers
+void _signIn;
+void _openTaskDrawer;
+void _openFilesTab;
+void _USER_A_EMAIL;
+void _USER_A_PASSWORD;
+void _USER_B_EMAIL;
+void _USER_B_PASSWORD;
+void _USER_C_EMAIL;
+void _USER_C_PASSWORD;
+void HAS_FILE_COLUMN;
+void TASK_FILE_COLUMN_ID;
+void TASK_ID_T1;
+void BOARD_URL;
+void _makeTestPngBuffer;
 
+test.describe("Epic 10 — Attachments & File Storage", () => {
   // ── Test 1: Drag a file into the Files tab ─────────────────────────────────
   /**
    * User A opens the task drawer, navigates to the Files tab, and drops a PNG.
@@ -149,22 +145,20 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    *
    * DB assertion: attachment row exists with is_uploaded=true.
    */
-  test("1 — drag a file into Files tab → tile visible, DB row is_uploaded=true", async ({
+  test.fixme("1 — drag a file into Files tab → tile visible, DB row is_uploaded=true", async ({
     browser,
-    // @ts-expect-error playwright wired in epic 15
   }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
-    await signIn(pageA, USER_A_EMAIL, USER_A_PASSWORD);
-    await openTaskDrawer(pageA, BOARD_URL, TASK_ID_T1);
-    await openFilesTab(pageA);
+    // TODO: wire multi-user fixture — see epic-15-test-debt.md
+    // TODO: wire task drawer helper
+    // TODO: wire openFilesTab helper
 
     // Inject the file into the hidden <input type="file"> inside FileDropzone.
     // Playwright's setInputFiles is the most reliable way to simulate a drop/pick.
     const testPngName = "test-upload.png";
-    const testPngBuffer = makeTestPngBuffer();
-    // @ts-expect-error playwright wired in epic 15
+    const testPngBuffer = _makeTestPngBuffer();
     await pageA.locator('[data-testid="file-dropzone"] input[type="file"]').setInputFiles({
       name: testPngName,
       mimeType: "image/png",
@@ -172,13 +166,11 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     });
 
     // Wait for the AttachmentTile to appear in the list (realtime + store update)
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="files-tab-list"] [data-testid="attachment-tile"]', {
       timeout: 8000,
     });
 
     // Assert the tile shows the correct filename
-    // @ts-expect-error playwright wired in epic 15
     await expect(
       pageA.locator('[data-testid="files-tab-list"] [data-testid="attachment-tile"]:last-child'),
     ).toContainText(testPngName);
@@ -213,33 +205,26 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    *
    * If HAS_FILE_COLUMN is false, this test is skipped with a clear reason.
    */
-  test("2 — uploaded file count badge visible in file column cell", async ({ browser }) => {
-    // @ts-expect-error playwright wired in epic 15
+  test.fixme("2 — uploaded file count badge visible in file column cell", async ({ browser }) => {
     test.skip(!HAS_FILE_COLUMN, "Requires a seeded file column — set HAS_FILE_COLUMN = true");
 
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
-    await signIn(pageA, USER_A_EMAIL, USER_A_PASSWORD);
-    // @ts-expect-error playwright wired in epic 15
+    // TODO: wire multi-user fixture — see epic-15-test-debt.md
     await pageA.goto(BOARD_URL);
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="board-table"]');
 
     // The file column cell for the seeded task should show at least 1 file
     // (from Test 1 upload). The Cell renderer shows a count badge.
-    // @ts-expect-error playwright wired in epic 15
     const fileCell = pageA.locator(
       `[data-task-id="${TASK_ID_T1}"] [data-column-id="${TASK_FILE_COLUMN_ID}"]`,
     );
-    // @ts-expect-error playwright wired in epic 15
     await expect(fileCell.locator('[data-testid="file-cell-badge"]')).toBeVisible();
 
     // The badge should show a positive integer
-    // @ts-expect-error playwright wired in epic 15
     const badgeText = await fileCell.locator('[data-testid="file-cell-badge"]').textContent();
     const count = Number.parseInt(badgeText ?? "0", 10);
-    // @ts-expect-error playwright wired in epic 15
     expect(count).toBeGreaterThan(0);
 
     await contextA.close();
@@ -257,43 +242,35 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    *
    * Assertion: file cell badge count increases by 1.
    */
-  test("3 — file column editor drop → cell value updates to include new attachment id", async ({
+  test.fixme("3 — file column editor drop → cell value updates to include new attachment id", async ({
     browser,
   }) => {
-    // @ts-expect-error playwright wired in epic 15
     test.skip(!HAS_FILE_COLUMN, "Requires a seeded file column — set HAS_FILE_COLUMN = true");
 
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
-    await signIn(pageA, USER_A_EMAIL, USER_A_PASSWORD);
-    // @ts-expect-error playwright wired in epic 15
+    // TODO: wire multi-user fixture — see epic-15-test-debt.md
     await pageA.goto(BOARD_URL);
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="board-table"]');
 
     // Read current badge count before upload
-    // @ts-expect-error playwright wired in epic 15
     const fileCell = pageA.locator(
       `[data-task-id="${TASK_ID_T1}"] [data-column-id="${TASK_FILE_COLUMN_ID}"]`,
     );
     const prevText = await fileCell
       .locator('[data-testid="file-cell-badge"]')
-      // @ts-expect-error playwright wired in epic 15
       .textContent()
       .catch(() => "0");
     const prevCount = Number.parseInt(prevText ?? "0", 10);
 
     // Click the cell to open the FileEditor popover
-    // @ts-expect-error playwright wired in epic 15
     await fileCell.click();
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="file-cell-editor"]', { timeout: 3000 });
 
     // Upload a second file via the FileEditor's dropzone
     const secondPngName = "test-upload-2.png";
-    const testPngBuffer = makeTestPngBuffer();
-    // @ts-expect-error playwright wired in epic 15
+    const testPngBuffer = _makeTestPngBuffer();
     await pageA.locator('[data-testid="file-cell-editor"] input[type="file"]').setInputFiles({
       name: secondPngName,
       mimeType: "image/png",
@@ -301,18 +278,15 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     });
 
     // Wait for the upload to complete (progress rows clear, new row appears)
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector(
       '[data-testid="file-cell-editor"] [data-testid="file-editor-row"]',
       { timeout: 8000 },
     );
 
     // Close the popover (Escape key)
-    // @ts-expect-error playwright wired in epic 15
     await pageA.keyboard.press("Escape");
 
     // Badge count should increment by 1
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForFunction(
       ([taskId, colId, prev]) => {
         const cell = document.querySelector(
@@ -348,9 +322,8 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    * The test verifies the [data-testid="attachment-image-node"] element is
    * visible in User B's view after a fresh page load.
    */
-  test("4 — paste image in comment → image renders on fresh page load for another user", async ({
+  test.fixme("4 — paste image in comment → image renders on fresh page load for another user", async ({
     browser,
-    // @ts-expect-error playwright wired in epic 15
   }) => {
     const contextA = await browser.newContext();
     const contextB = await browser.newContext();
@@ -358,15 +331,14 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     const pageB = await contextB.newPage();
 
     await Promise.all([
-      signIn(pageA, USER_A_EMAIL, USER_A_PASSWORD),
-      signIn(pageB, USER_B_EMAIL, USER_B_PASSWORD),
+      _signIn(pageA, _USER_A_EMAIL, _USER_A_PASSWORD),
+      _signIn(pageB, _USER_B_EMAIL, _USER_B_PASSWORD),
     ]);
 
     // User A opens the task drawer
-    await openTaskDrawer(pageA, BOARD_URL, TASK_ID_T1);
+    // TODO: wire task drawer helper
 
     // Focus the comment composer ProseMirror editor
-    // @ts-expect-error playwright wired in epic 15
     await pageA.locator(".comment-composer .ProseMirror").first().click();
 
     // Simulate clipboard paste by writing image data to the clipboard.
@@ -378,10 +350,8 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     // a DataTransfer holding an image/png item. Playwright's real clipboard
     // paste simulation requires headless=false; in headless mode we inject
     // the paste event manually.
-    const testPngBuffer = makeTestPngBuffer();
+    const testPngBuffer = _makeTestPngBuffer();
     const pngBase64 = testPngBuffer.toString("base64");
-
-    // @ts-expect-error playwright wired in epic 15
     await pageA.evaluate(
       async ({ b64, selector }) => {
         // Reconstruct the File from base64 inside the browser
@@ -404,30 +374,24 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     );
 
     // Wait for the AttachmentImageNode to appear in the composer (upload completed)
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector(
       '.comment-composer .ProseMirror [data-testid="attachment-image-node"]',
       { timeout: 10000 },
     );
 
     // Submit the comment
-    // @ts-expect-error playwright wired in epic 15
     await pageA.getByRole("button", { name: /save/i }).click();
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="comment-item"]', { timeout: 5000 });
 
     // User B opens the same task on a fresh page (navigate, not existing session)
-    await openTaskDrawer(pageB, BOARD_URL, TASK_ID_T1);
+    await _openTaskDrawer(pageB, BOARD_URL, TASK_ID_T1);
 
     // Wait for the comment list to appear
-    // @ts-expect-error playwright wired in epic 15
     await pageB.waitForSelector('[data-testid="comment-item"]', { timeout: 5000 });
 
     // The last comment should contain an [data-testid="attachment-image-node"]
     // visible after the signed URL is fetched (allow up to 5s for the SA call)
-    // @ts-expect-error playwright wired in epic 15
     const lastComment = pageB.locator('[data-testid="comment-item"]').last();
-    // @ts-expect-error playwright wired in epic 15
     await expect(lastComment.locator('[data-testid="attachment-image-node"]')).toBeVisible({
       timeout: 5000,
     });
@@ -447,31 +411,27 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    * URL assertion: getSignedDisplayUrl for the deleted attachmentId returns
    * NOT_FOUND error (the DB row is gone, so the SA can't find it).
    */
-  test("5 — delete attachment → tile gone; signed URL for deleted id returns NOT_FOUND", async ({
+  test.fixme("5 — delete attachment → tile gone; signed URL for deleted id returns NOT_FOUND", async ({
     browser,
-    // @ts-expect-error playwright wired in epic 15
   }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
-    await signIn(pageA, USER_A_EMAIL, USER_A_PASSWORD);
-    await openTaskDrawer(pageA, BOARD_URL, TASK_ID_T1);
-    await openFilesTab(pageA);
+    // TODO: wire multi-user fixture — see epic-15-test-debt.md
+    // TODO: wire task drawer helper
+    // TODO: wire openFilesTab helper
 
     // Wait for the files list to be non-empty (from Test 1 upload)
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="files-tab-list"] [data-testid="attachment-tile"]', {
       timeout: 5000,
     });
 
     // Count tiles before deletion
-    // @ts-expect-error playwright wired in epic 15
     const tilesBefore = await pageA
       .locator('[data-testid="files-tab-list"] [data-testid="attachment-tile"]')
       .count();
 
     // Click the Delete button on the first tile
-    // @ts-expect-error playwright wired in epic 15
     await pageA
       .locator(
         '[data-testid="files-tab-list"] [data-testid="attachment-tile"]:first-child [aria-label*="Delete"]',
@@ -479,7 +439,6 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
       .click();
 
     // Wait for the tile count to decrease
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForFunction(
       (expected: number) => {
         const tiles = document.querySelectorAll(
@@ -492,11 +451,9 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     );
 
     // The tile should be gone
-    // @ts-expect-error playwright wired in epic 15
     const tilesAfter = await pageA
       .locator('[data-testid="files-tab-list"] [data-testid="attachment-tile"]')
       .count();
-    // @ts-expect-error playwright wired in epic 15
     expect(tilesAfter).toBe(tilesBefore - 1);
 
     // Optionally: assert that calling getSignedDisplayUrl for the deleted id
@@ -525,15 +482,14 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    * For the test to work, the storage path must be constructed from a known
    * attachment row fetched via the admin client.
    */
-  test("6 — non-member cannot fetch attachment via Storage URL (expects 400/401/403)", async ({
+  test.fixme("6 — non-member cannot fetch attachment via Storage URL (expects 400/401/403)", async ({
     browser,
-    // @ts-expect-error playwright wired in epic 15
   }) => {
     // User C is NOT a member of BOARD_ID.
     const contextC = await browser.newContext();
     const pageC = await contextC.newPage();
 
-    await signIn(pageC, USER_C_EMAIL, USER_C_PASSWORD);
+    await _signIn(pageC, _USER_C_EMAIL, _USER_C_PASSWORD);
 
     // TODO (epic 15):
     //   1. Obtain a known storage_path for an attachment on BOARD_ID via admin client:
@@ -562,12 +518,10 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     //      expect([400, 401, 403]).toContain(response);
     //
     // For now, assert that User C cannot reach the board URL at all.
-    // @ts-expect-error playwright wired in epic 15
     await pageC.goto(BOARD_URL);
 
     // User C should be redirected away (no board access) or see a not-found.
     // The exact redirect depends on the authorization middleware.
-    // @ts-expect-error playwright wired in epic 15
     await expect(pageC).not.toHaveURL(new RegExp(BOARD_URL));
 
     await contextC.close();
@@ -589,14 +543,13 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
    * Implementation: the actual `supabase.rpc` call is made in a page.evaluate
    * using the global Supabase client (service role key available in test env).
    */
-  test("7 — orphan cleanup: stale is_uploaded=false row purged by purge_orphan_attachments()", async ({
+  test.fixme("7 — orphan cleanup: stale is_uploaded=false row purged by purge_orphan_attachments()", async ({
     browser,
-    // @ts-expect-error playwright wired in epic 15
   }) => {
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
 
-    await signIn(pageA, USER_A_EMAIL, USER_A_PASSWORD);
+    // TODO: wire multi-user fixture — see epic-15-test-debt.md
 
     // TODO (epic 15):
     //   1. Insert an orphan row via admin client:
@@ -627,13 +580,10 @@ test.describe("Epic 10 — Attachments & File Storage", () => {
     //      expect(gone).toBeNull();
     //
     // For now, navigate to the board and verify the page loads (smoke).
-    // @ts-expect-error playwright wired in epic 15
     await pageA.goto(BOARD_URL);
-    // @ts-expect-error playwright wired in epic 15
     await pageA.waitForSelector('[data-testid="board-table"]', { timeout: 5000 });
 
     // Placeholder assertion — replace with the above admin-client calls in epic 15.
-    // @ts-expect-error playwright wired in epic 15
     await expect(pageA.locator('[data-testid="board-table"]')).toBeVisible();
 
     await contextA.close();
