@@ -84,14 +84,14 @@ export const SMOKE_COL_PERSON_ID = "eeeeeeee-eeee-eeee-eeee-eeeeeeee1624";
 export const SMOKE_COL_DATE_ID = "eeeeeeee-eeee-eeee-eeee-eeeeeeee1625";
 export const SMOKE_COL_NUMBER_ID = "eeeeeeee-eeee-eeee-eeee-eeeeeeee1626";
 
-export const SMOKE_TASK_ALPHA_1 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16d1";
-export const SMOKE_TASK_ALPHA_2 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16d2";
-export const SMOKE_TASK_ALPHA_3 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16d3";
-export const SMOKE_TASK_BETA_1 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16e1";
-export const SMOKE_TASK_BETA_2 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16e2";
-export const SMOKE_TASK_BETA_3 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16e3";
-export const SMOKE_TASK_GAMMA_1 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16f1";
-export const SMOKE_TASK_GAMMA_2 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16f2";
-export const SMOKE_TASK_GAMMA_3 = "eeeeeeee-eeee-eeee-eeee-eeeeeee16f3";
+export const SMOKE_TASK_ALPHA_1 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1";
+export const SMOKE_TASK_ALPHA_2 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2";
+export const SMOKE_TASK_ALPHA_3 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16d3";
+export const SMOKE_TASK_BETA_1 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1";
+export const SMOKE_TASK_BETA_2 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16e2";
+export const SMOKE_TASK_BETA_3 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16e3";
+export const SMOKE_TASK_GAMMA_1 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1";
+export const SMOKE_TASK_GAMMA_2 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16f2";
+export const SMOKE_TASK_GAMMA_3 = "eeeeeeee-eeee-eeee-eeee-eeeeeeee16f3";
 
 export const SMOKE_BOARD_URL = `/w/${E2E_WORKSPACE_SLUG}/b/${SMOKE_BOARD_ID}`;

@@ -374,17 +374,17 @@ on conflict (task_id, column_id) do nothing;
 --   Smoke col text:        eeeeeeee-eeee-eeee-eeee-eeeeeeee1627
 --   Smoke col checkbox:    eeeeeeee-eeee-eeee-eeee-eeeeeeee1628
 --   Smoke col rating:      eeeeeeee-eeee-eeee-eeee-eeeeeeee1629
---   Smoke label sA-done:   eeeeeeee-eeee-eeee-eeee-eeeeeee16a1
---   Smoke label sA-wip:    eeeeeeee-eeee-eeee-eeee-eeeeeee16a2
---   Smoke label sA-stuck:  eeeeeeee-eeee-eeee-eeee-eeeeeee16a3
---   Smoke label sB-done:   eeeeeeee-eeee-eeee-eeee-eeeeeee16b1
---   Smoke label sB-wip:    eeeeeeee-eeee-eeee-eeee-eeeeeee16b2
---   Smoke label p-high:    eeeeeeee-eeee-eeee-eeee-eeeeeee16c1
---   Smoke label p-medium:  eeeeeeee-eeee-eeee-eeee-eeeeeee16c2
---   Smoke label p-low:     eeeeeeee-eeee-eeee-eeee-eeeeeee16c3
---   Smoke tasks Alpha:     eeeeeeee-eeee-eeee-eeee-eeeeeee16d1..d3
---   Smoke tasks Beta:      eeeeeeee-eeee-eeee-eeee-eeeeeee16e1..e3
---   Smoke tasks Gamma:     eeeeeeee-eeee-eeee-eeee-eeeeeee16f1..f3
+--   Smoke label sA-done:   eeeeeeee-eeee-eeee-eeee-eeeeeeee16a1
+--   Smoke label sA-wip:    eeeeeeee-eeee-eeee-eeee-eeeeeeee16a2
+--   Smoke label sA-stuck:  eeeeeeee-eeee-eeee-eeee-eeeeeeee16a3
+--   Smoke label sB-done:   eeeeeeee-eeee-eeee-eeee-eeeeeeee16b1
+--   Smoke label sB-wip:    eeeeeeee-eeee-eeee-eeee-eeeeeeee16b2
+--   Smoke label p-high:    eeeeeeee-eeee-eeee-eeee-eeeeeeee16c1
+--   Smoke label p-medium:  eeeeeeee-eeee-eeee-eeee-eeeeeeee16c2
+--   Smoke label p-low:     eeeeeeee-eeee-eeee-eeee-eeeeeeee16c3
+--   Smoke tasks Alpha:     eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1..d3
+--   Smoke tasks Beta:      eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1..e3
+--   Smoke tasks Gamma:     eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1..f3
 -- =============================================================
 
 -- ------------------------------------------------------------
@@ -463,16 +463,16 @@ on conflict (id) do nothing;
 -- ------------------------------------------------------------
 insert into public.label (id, column_id, name, color, position) values
   -- Status A
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16a1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Done',           '#00c875', 1),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16a2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Working on it',  '#fdab3d', 2),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16a3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Stuck',          '#e2445c', 3),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16a1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Done',           '#00c875', 1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16a2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Working on it',  '#fdab3d', 2),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16a3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Stuck',          '#e2445c', 3),
   -- Status B
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16b1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'Done',           '#00c875', 1),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16b2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'In Progress',    '#579bfc', 2),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16b1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'Done',           '#00c875', 1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16b2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'In Progress',    '#579bfc', 2),
   -- Priority
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16c1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'High',           '#e2445c', 1),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16c2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'Medium',         '#fdab3d', 2),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16c3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'Low',            '#579bfc', 3)
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16c1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'High',           '#e2445c', 1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16c2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'Medium',         '#fdab3d', 2),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16c3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'Low',            '#579bfc', 3)
 on conflict (id) do nothing;
 
 -- ------------------------------------------------------------
@@ -480,17 +480,17 @@ on conflict (id) do nothing;
 -- ------------------------------------------------------------
 insert into public.task (id, group_id, board_id, title, position, created_by) values
   -- Alpha group
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
   -- Beta group
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task One',    1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task Two',    2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task Three',  3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task One',    1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task Two',    2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task Three',  3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
   -- Gamma group
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee')
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee')
 on conflict (id) do nothing;
 
 -- ------------------------------------------------------------
@@ -500,15 +500,15 @@ on conflict (id) do nothing;
 
 -- Title cells (text_value) — all 9 tasks
 insert into public.cell (task_id, column_id, text_value) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task One'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task Two'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task Three'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task One'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task Two'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task Three'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task One'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task Two'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task Three')
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task Three'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task Three'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task Three')
 on conflict (task_id, column_id) do nothing;
 
 -- Status A cells (label_id) — 6 of 9 set; 3 empty (Alpha-3, Beta-3, Gamma-3)
@@ -516,12 +516,12 @@ on conflict (task_id, column_id) do nothing;
 -- Beta-1  → Working on it, Beta-2 → Stuck
 -- Gamma-1 → Done, Gamma-2 → Working on it
 insert into public.cell (task_id, column_id, label_id) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a1'), -- Done
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a2'), -- Working on it
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a2'), -- Working on it
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a3'), -- Stuck
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a1'), -- Done
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a2')  -- Working on it
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16a1'), -- Done
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16a2'), -- Working on it
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16a2'), -- Working on it
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16a3'), -- Stuck
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16a1'), -- Done
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16a2')  -- Working on it
   -- Alpha-3, Beta-3, Gamma-3: no cell row → empty state
 on conflict (task_id, column_id) do nothing;
 
@@ -530,54 +530,54 @@ on conflict (task_id, column_id) do nothing;
 -- Alpha-2 → In Progress (proves independence: Alpha-1 Status A is Done but Status B is empty)
 -- Others: mix
 insert into public.cell (task_id, column_id, label_id) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16b2'), -- In Progress
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16b1'), -- Done
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16b2')  -- In Progress
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16b2'), -- In Progress
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16b1'), -- Done
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16b2')  -- In Progress
   -- All others empty
 on conflict (task_id, column_id) do nothing;
 
 -- Priority cells (label_id) — mix
 insert into public.cell (task_id, column_id, label_id) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c1'), -- High
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c2'), -- Medium
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c3'), -- Low
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c1')  -- High
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16c1'), -- High
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16c2'), -- Medium
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16c3'), -- Low
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee16c1')  -- High
 on conflict (task_id, column_id) do nothing;
 
 -- Person cells (json_value — array of user uuids) — some set
 insert into public.cell (task_id, column_id, json_value) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb)
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb)
 on conflict (task_id, column_id) do nothing;
 
 -- Date cells — some set
 insert into public.cell (task_id, column_id, date_value) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '7 days'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '14 days'),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '3 days')
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '7 days'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '14 days'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '3 days')
 on conflict (task_id, column_id) do nothing;
 
 -- Number cells — some set
 insert into public.cell (task_id, column_id, number_value) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 8),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 5),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 13),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 3)
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 8),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 5),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 13),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 3)
 on conflict (task_id, column_id) do nothing;
 
 -- Checkbox cells — some checked
 insert into public.cell (task_id, column_id, boolean_value) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', true),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', true),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', false)
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', true),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', true),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', false)
 on conflict (task_id, column_id) do nothing;
 
 -- Rating cells (number_value, 1–5 scale)
 insert into public.cell (task_id, column_id, number_value) values
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 4),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 3),
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 5)
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 4),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 3),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 5)
 on conflict (task_id, column_id) do nothing;
 
 -- ------------------------------------------------------------
