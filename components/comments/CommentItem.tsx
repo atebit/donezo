@@ -354,7 +354,7 @@ function InlineEditForm({
           onClick={onCancel}
           className={cn(
             "h-8 px-3 rounded-[4px] text-sm font-medium text-fg",
-            "bg-white hover:bg-[color:var(--color-surface-hover)]",
+            "bg-[color:var(--color-surface)] hover:bg-[color:var(--color-surface-hover)]",
             "border border-[color:var(--color-border-strong)] transition-colors",
           )}
           data-testid="comment-edit-cancel-btn"

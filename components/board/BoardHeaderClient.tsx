@@ -73,7 +73,7 @@ export function BoardHeaderClient({
     <>
       <header
         className={cn(
-          "sticky top-0 z-[var(--z-board-header)] bg-white",
+          "sticky top-0 z-[var(--z-board-header)] bg-[color:var(--color-surface)]",
           "flex items-center gap-2 px-[38px] py-[16px] pr-[30px]",
         )}
       >

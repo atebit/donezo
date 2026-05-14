@@ -2,6 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useShallow } from "zustand/react/shallow";
 
 import { TableCell } from "@/components/cells/TableCell";
 import { selectEffectiveConfig, selectUsersViewingTask, useBoardStore } from "@/stores/board-store";
@@ -79,7 +80,7 @@ export function TaskRow({ task, group }: TaskRowProps) {
   const isFocused = focusedRowId === task.id;
 
   // Presence dot — shows when any other user is viewing this task in the drawer (Epic 09)
-  const viewingUserIds = useBoardStore((s) => selectUsersViewingTask(s, task.id));
+  const viewingUserIds = useBoardStore(useShallow((s) => selectUsersViewingTask(s, task.id)));
 
   // Epic 11 (Slice D): DnD is disabled when a sort or column-based group-by is active,
   // because task reorder would conflict with the derived order (cross-slice contract §44–46).

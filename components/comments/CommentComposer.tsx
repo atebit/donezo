@@ -170,7 +170,7 @@ function CommentComposerImpl({
             className={cn(
               "h-8 rounded px-3 text-sm font-medium",
               "border border-[color:var(--color-border-strong)]",
-              "bg-white text-[color:var(--color-fg)]",
+              "bg-[color:var(--color-surface)] text-[color:var(--color-fg)]",
               "hover:bg-[color:var(--color-surface-hover)]",
               "disabled:opacity-50 disabled:cursor-not-allowed",
             )}

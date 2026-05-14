@@ -148,8 +148,8 @@ function TypePicker({ onSelect }: TypePickerProps) {
         <p className="mt-0.5 text-sm text-[color:var(--color-fg-muted)]">Pick a type</p>
       </div>
 
-      {/* 2-column grid of 120px tiles; total grid = 240px + gap */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* 6-column grid of 120px tiles; wraps to a new row after 6 */}
+      <div className="grid grid-cols-6 gap-2">
         {PICKER_TYPES.map((typeId) => (
           <TypeTile key={typeId} typeId={typeId} onClick={() => onSelect(typeId)} />
         ))}
@@ -351,8 +351,8 @@ export function AddColumnModal({ open, onOpenChange }: AddColumnModalProps) {
           className={[
             "fixed left-1/2 top-1/2 z-[var(--z-modal)] -translate-x-1/2 -translate-y-1/2",
             "w-full rounded-xl bg-[color:var(--color-surface)] p-6 shadow-[var(--shadow-modal)] focus:outline-none",
-            // Width accommodates the 2-column 120px tile grid plus padding
-            step === "pick" ? "max-w-[300px]" : "max-w-sm",
+            // Width accommodates the 6-column 120px tile grid plus gaps + padding
+            step === "pick" ? "max-w-[820px]" : "max-w-sm",
           ].join(" ")}
           aria-labelledby="add-column-dialog-title"
         >

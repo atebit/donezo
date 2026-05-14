@@ -58,6 +58,12 @@ import type { Column } from "./types";
 
 type Label = Database["public"]["Tables"]["label"]["Row"];
 
+// Stable empty-array sentinel for the labelsByColumn selector. Returning a
+// fresh `[]` literal from a Zustand v5 selector trips useSyncExternalStore's
+// snapshot equality check and produces an infinite re-render loop (see
+// MEMORY donezo-zustand-v5-selectors).
+const EMPTY_LABELS: Label[] = [];
+
 // ---------------------------------------------------------------------------
 // Label color palette — 12 swatches from --color-label-* tokens.
 // Tokens defined in app/globals.css; referenced by CSS var name (no raw hex).
@@ -223,7 +229,7 @@ interface LabelEditorModalProps {
 export function LabelEditorModal({ column, open, onOpenChange }: LabelEditorModalProps) {
   const [, startTransition] = useTransition();
 
-  const labels = useBoardStore((s) => s.labelsByColumn.get(column.id) ?? []);
+  const labels = useBoardStore((s) => s.labelsByColumn.get(column.id) ?? EMPTY_LABELS);
   const applyLabelUpsert = useBoardStore((s) => s.applyLabelUpsert);
   const applyLabelDelete = useBoardStore((s) => s.applyLabelDelete);
 

@@ -48,7 +48,7 @@ export function BoardCard({ board, workspaceSlug, isStarred }: BoardCardProps) {
   return (
     <article
       style={{
-        backgroundColor: "white",
+        backgroundColor: "var(--color-surface)",
         border: "1px solid var(--color-border-solid)",
         borderRadius: 8,
         padding: 16,

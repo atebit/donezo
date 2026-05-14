@@ -186,7 +186,7 @@ export function TaskDrawer({
         <SheetContent
           side="bottom"
           showCloseButton={false}
-          className="h-[100dvh] w-full rounded-none p-0 flex flex-col bg-white"
+          className="h-[100dvh] w-full rounded-none p-0 flex flex-col bg-[color:var(--color-surface)]"
           data-testid="task-drawer"
         >
           <SheetTitle className="sr-only">{task.title || "Untitled"}</SheetTitle>
@@ -200,9 +200,9 @@ export function TaskDrawer({
   // TaskDrawerModalShell.
   return (
     <div
-      className="flex flex-col bg-white"
+      className="flex flex-col bg-[color:var(--color-surface)]"
       style={{
-        borderInlineStart: "1px solid #ccc",
+        borderInlineStart: "1px solid var(--color-border-solid)",
         minWidth: 570,
         height: "100vh",
       }}

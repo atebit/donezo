@@ -3,7 +3,6 @@
 import { WorkspaceLogoTile } from "@/components/shared/WorkspaceLogoTile";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import type { CurrentUser } from "@/lib/auth/current-user";
-import { IconMenu } from "@/lib/icons";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { UserMenu } from "./UserMenu";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
@@ -21,8 +20,10 @@ type MainSidebarProps = {
 
 /**
  * Main navigation rail — 66px wide on desktop, dark nav background.
- * On mobile (<768px): fixed-bottom row at 8vh height, gap 30px, tools hidden.
- * Hamburger button opens a Sheet (drawer) containing WorkspaceSidebar.
+ * On mobile (<768px): hidden; the Topbar exposes the hamburger + avatar so a
+ * separate bottom bar isn't needed. The Sheet drawer below is still mounted
+ * here because both the desktop rail and the mobile Topbar drive it through
+ * the sidebar store.
  */
 export function MainSidebar({ user, workspaces = [] }: MainSidebarProps) {
   const mobileSidebarOpen = useSidebarStore((s) => s.mobileSidebarOpen);
@@ -119,55 +120,6 @@ export function MainSidebar({ user, workspaces = [] }: MainSidebarProps) {
         >
           <UserMenu user={user} variant="main" />
         </div>
-      </nav>
-
-      {/* Mobile: fixed-bottom row at 8vh height */}
-      <nav
-        aria-label="Mobile navigation"
-        className="md:hidden"
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "8vh",
-          backgroundColor: "var(--color-surface-nav)",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 30,
-          zIndex: "var(--z-rail)",
-          paddingLeft: 16,
-          paddingRight: 16,
-        }}
-      >
-        {/* Hamburger to open workspace sidebar drawer */}
-        <button
-          type="button"
-          aria-label="Open workspace sidebar"
-          aria-expanded={mobileSidebarOpen}
-          onClick={() => setMobileSidebarOpen(true)}
-          style={{
-            width: 42,
-            height: 42,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "transparent",
-            border: "none",
-            borderRadius: "var(--radius-lg)",
-            color: "var(--color-nav-icon)",
-            cursor: "pointer",
-          }}
-          className="hover:bg-[var(--color-surface-nav-hover)] focus-visible:bg-[var(--color-surface-nav-hover)] focus-visible:outline-none"
-          data-testid="mobile-hamburger"
-        >
-          <IconMenu size={24} aria-hidden="true" />
-        </button>
-
-        {/* User menu */}
-        <UserMenu user={user} variant="main" />
       </nav>
 
       {/* Mobile sidebar drawer */}

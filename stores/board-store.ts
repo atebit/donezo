@@ -1323,6 +1323,12 @@ export function selectTaskActivity(state: BoardState, taskId: string): ActivityR
 const EMPTY_VIEWS: ViewRow[] = [];
 const EMPTY_CONFIG: ViewConfig = {};
 
+// Memoize parsed view configs by the raw jsonb reference. parseViewConfig runs
+// Zod safeParse which allocates a fresh object on every call; without this
+// cache, useBoardStore(selectEffectiveConfig) returns a new reference each
+// render and useSyncExternalStore enters an infinite render loop.
+const parsedConfigCache = new WeakMap<object, ViewConfig>();
+
 /**
  * Returns the resolved active ViewRow for the current boardId, or null if not
  * yet hydrated.
@@ -1346,11 +1352,18 @@ export function selectEffectiveConfig(state: BoardState): ViewConfig {
   if (state.draftConfig !== null) return state.draftConfig;
   const active = selectActiveView(state);
   if (!active) return EMPTY_CONFIG;
-  const parsed = parseViewConfig(active.config);
-  // Return EMPTY_CONFIG sentinel when the parsed config is empty
-  // (all keys undefined) so stable-reference comparison works.
+
+  const raw = active.config;
+  if (typeof raw !== "object" || raw === null) return EMPTY_CONFIG;
+
+  const cached = parsedConfigCache.get(raw as object);
+  if (cached) return cached;
+
+  const parsed = parseViewConfig(raw);
   const hasAnyKey = Object.keys(parsed).length > 0;
-  return hasAnyKey ? parsed : EMPTY_CONFIG;
+  const result = hasAnyKey ? parsed : EMPTY_CONFIG;
+  parsedConfigCache.set(raw as object, result);
+  return result;
 }
 
 /**
