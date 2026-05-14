@@ -355,6 +355,231 @@ insert into public.cell (task_id, column_id, text_value) values
   ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee04', 'E2E Task Three')
 on conflict (task_id, column_id) do nothing;
 
+-- =============================================================
+-- EPIC-16 SMOKE BOARD — remediation smoke test board
+--
+-- Stable uuid constants (smoke section):
+--   Smoke board:           eeeeeeee-eeee-eeee-eeee-eeeeeeee1600
+--   Smoke view:            eeeeeeee-eeee-eeee-eeee-eeeeeeee1601
+--   Smoke group Alpha:     eeeeeeee-eeee-eeee-eeee-eeeeeeee1610
+--   Smoke group Beta:      eeeeeeee-eeee-eeee-eeee-eeeeeeee1611
+--   Smoke group Gamma:     eeeeeeee-eeee-eeee-eeee-eeeeeeee1612
+--   Smoke col title:       eeeeeeee-eeee-eeee-eeee-eeeeeeee1620
+--   Smoke col status-A:    eeeeeeee-eeee-eeee-eeee-eeeeeeee1621
+--   Smoke col status-B:    eeeeeeee-eeee-eeee-eeee-eeeeeeee1622
+--   Smoke col priority:    eeeeeeee-eeee-eeee-eeee-eeeeeeee1623
+--   Smoke col person:      eeeeeeee-eeee-eeee-eeee-eeeeeeee1624
+--   Smoke col date:        eeeeeeee-eeee-eeee-eeee-eeeeeeee1625
+--   Smoke col number:      eeeeeeee-eeee-eeee-eeee-eeeeeeee1626
+--   Smoke col text:        eeeeeeee-eeee-eeee-eeee-eeeeeeee1627
+--   Smoke col checkbox:    eeeeeeee-eeee-eeee-eeee-eeeeeeee1628
+--   Smoke col rating:      eeeeeeee-eeee-eeee-eeee-eeeeeeee1629
+--   Smoke label sA-done:   eeeeeeee-eeee-eeee-eeee-eeeeeee16a1
+--   Smoke label sA-wip:    eeeeeeee-eeee-eeee-eeee-eeeeeee16a2
+--   Smoke label sA-stuck:  eeeeeeee-eeee-eeee-eeee-eeeeeee16a3
+--   Smoke label sB-done:   eeeeeeee-eeee-eeee-eeee-eeeeeee16b1
+--   Smoke label sB-wip:    eeeeeeee-eeee-eeee-eeee-eeeeeee16b2
+--   Smoke label p-high:    eeeeeeee-eeee-eeee-eeee-eeeeeee16c1
+--   Smoke label p-medium:  eeeeeeee-eeee-eeee-eeee-eeeeeee16c2
+--   Smoke label p-low:     eeeeeeee-eeee-eeee-eeee-eeeeeee16c3
+--   Smoke tasks Alpha:     eeeeeeee-eeee-eeee-eeee-eeeeeee16d1..d3
+--   Smoke tasks Beta:      eeeeeeee-eeee-eeee-eeee-eeeeeee16e1..e3
+--   Smoke tasks Gamma:     eeeeeeee-eeee-eeee-eeee-eeeeeee16f1..f3
+-- =============================================================
+
+-- ------------------------------------------------------------
+-- SMOKE-1. Board + member (uses the E2E workspace)
+-- ------------------------------------------------------------
+insert into public.board (id, workspace_id, name, created_by) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee01',
+  'Epic 16 Smoke Board',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'
+) on conflict (id) do nothing;
+
+insert into public.board_member (board_id, user_id, role) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+  'owner'
+) on conflict do nothing;
+
+-- ------------------------------------------------------------
+-- SMOKE-2. Default table view
+-- ------------------------------------------------------------
+insert into public.view (id, board_id, owner_id, name, kind, is_shared, position, config) values (
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeee1601',
+  'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600',
+  null,
+  'Main table',
+  'table',
+  true,
+  0,
+  '{}'::jsonb
+) on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- SMOKE-3. Groups — 3 distinct accent colors from GROUP_PALETTE
+--   index 0 → #a25ddc (purple)
+--   index 1 → #fbbc04 (yellow)
+--   index 2 → #f1e4de (blush)
+-- ------------------------------------------------------------
+insert into public."group" (id, board_id, name, position, color) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha', 1, '#a25ddc'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta',  2, '#fbbc04'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma', 3, '#f1e4de')
+on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- SMOKE-4. Columns
+--   pos 1: text  (title)
+--   pos 2: status column A  — critical for same-type-columns independence
+--   pos 3: status column B  — critical for same-type-columns independence
+--   pos 4: priority
+--   pos 5: person
+--   pos 6: date
+--   pos 7: number
+--   pos 8: text  (notes)
+--   pos 9: checkbox
+--   pos 10: rating
+-- ------------------------------------------------------------
+insert into public."column" (id, board_id, name, type, position) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Task',          'text',     1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Status A',      'status',   2),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Status B',      'status',   3),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Priority',      'priority', 4),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Owner',         'person',   5),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Due Date',      'date',     6),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Points',        'number',   7),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1627', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Notes',         'text',     8),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Done',          'checkbox', 9),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Rating',        'rating',   10)
+on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- SMOKE-5. Labels
+--   Status A labels: Done (green), Working on it (orange), Stuck (red)
+--   Status B labels: Done (green), In Progress (blue) — distinct set for independence test
+--   Priority labels: High (red), Medium (orange), Low (blue)
+-- ------------------------------------------------------------
+insert into public.label (id, column_id, name, color, position) values
+  -- Status A
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16a1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Done',           '#00c875', 1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16a2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Working on it',  '#fdab3d', 2),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16a3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'Stuck',          '#e2445c', 3),
+  -- Status B
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16b1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'Done',           '#00c875', 1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16b2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'In Progress',    '#579bfc', 2),
+  -- Priority
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16c1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'High',           '#e2445c', 1),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16c2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'Medium',         '#fdab3d', 2),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16c3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'Low',            '#579bfc', 3)
+on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- SMOKE-6. Tasks — 3 per group
+-- ------------------------------------------------------------
+insert into public.task (id, group_id, board_id, title, position, created_by) values
+  -- Alpha group
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1610', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Alpha Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  -- Beta group
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task One',    1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task Two',    2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1611', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Beta Task Three',  3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  -- Gamma group
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task One',   1, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task Two',   2, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1612', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1600', 'Gamma Task Three', 3, 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee')
+on conflict (id) do nothing;
+
+-- ------------------------------------------------------------
+-- SMOKE-7. Cells
+-- Mixed values: some set, some empty, to exercise all render paths.
+-- ------------------------------------------------------------
+
+-- Title cells (text_value) — all 9 tasks
+insert into public.cell (task_id, column_id, text_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Alpha Task Three'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Beta Task Three'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task One'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task Two'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f3', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1620', 'Gamma Task Three')
+on conflict (task_id, column_id) do nothing;
+
+-- Status A cells (label_id) — 6 of 9 set; 3 empty (Alpha-3, Beta-3, Gamma-3)
+-- Alpha-1 → Done, Alpha-2 → Working on it
+-- Beta-1  → Working on it, Beta-2 → Stuck
+-- Gamma-1 → Done, Gamma-2 → Working on it
+insert into public.cell (task_id, column_id, label_id) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a1'), -- Done
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a2'), -- Working on it
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a2'), -- Working on it
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a3'), -- Stuck
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a1'), -- Done
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1621', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16a2')  -- Working on it
+  -- Alpha-3, Beta-3, Gamma-3: no cell row → empty state
+on conflict (task_id, column_id) do nothing;
+
+-- Status B cells (label_id) — intentionally independent from Status A.
+-- Alpha-1 → empty (no row)
+-- Alpha-2 → In Progress (proves independence: Alpha-1 Status A is Done but Status B is empty)
+-- Others: mix
+insert into public.cell (task_id, column_id, label_id) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16b2'), -- In Progress
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16b1'), -- Done
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1622', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16b2')  -- In Progress
+  -- All others empty
+on conflict (task_id, column_id) do nothing;
+
+-- Priority cells (label_id) — mix
+insert into public.cell (task_id, column_id, label_id) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c1'), -- High
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c2'), -- Medium
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c3'), -- Low
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1623', 'eeeeeeee-eeee-eeee-eeee-eeeeeee16c1')  -- High
+on conflict (task_id, column_id) do nothing;
+
+-- Person cells (json_value — array of user uuids) — some set
+insert into public.cell (task_id, column_id, json_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1624', '["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"]'::jsonb)
+on conflict (task_id, column_id) do nothing;
+
+-- Date cells — some set
+insert into public.cell (task_id, column_id, date_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '7 days'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '14 days'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1625', now() + interval '3 days')
+on conflict (task_id, column_id) do nothing;
+
+-- Number cells — some set
+insert into public.cell (task_id, column_id, number_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 8),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 5),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 13),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1626', 3)
+on conflict (task_id, column_id) do nothing;
+
+-- Checkbox cells — some checked
+insert into public.cell (task_id, column_id, boolean_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', true),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', true),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f2', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1628', false)
+on conflict (task_id, column_id) do nothing;
+
+-- Rating cells (number_value, 1–5 scale)
+insert into public.cell (task_id, column_id, number_value) values
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16d1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 4),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16e1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 3),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeee16f1', 'eeeeeeee-eeee-eeee-eeee-eeeeeeee1629', 5)
+on conflict (task_id, column_id) do nothing;
+
 -- ------------------------------------------------------------
 -- 9. Reload PostgREST schema cache
 -- ------------------------------------------------------------
