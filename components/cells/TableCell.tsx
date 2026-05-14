@@ -39,6 +39,7 @@ interface TableCellProps {
 
 function TableCellInner({ task, column }: TableCellProps) {
   const [editing, setEditing] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const columnType = column.type as CellTypeId;
   const def = getCellDef(columnType);
@@ -56,7 +57,14 @@ function TableCellInner({ task, column }: TableCellProps) {
   const { emit } = useCursorBroadcast(boardId ?? "", userId);
 
   if (editing) {
-    return <CellEditor task={task} column={column} onClose={() => setEditing(false)} />;
+    return (
+      <CellEditor
+        task={task}
+        column={column}
+        anchorEl={anchorEl}
+        onClose={() => setEditing(false)}
+      />
+    );
   }
 
   // Cast to a looser component type so we can pass optional contract props
@@ -70,7 +78,10 @@ function TableCellInner({ task, column }: TableCellProps) {
     <div className="relative" data-task-id={task.id} data-column-id={column.id}>
       <button
         type="button"
-        onClick={() => setEditing(true)}
+        onClick={(e) => {
+          setAnchorEl(e.currentTarget);
+          setEditing(true);
+        }}
         onMouseEnter={() => emit(task.id, column.id)}
         onFocus={() => emit(task.id, column.id)}
         className="cursor-pointer w-full text-left p-0 border-0 bg-transparent"
