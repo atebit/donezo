@@ -1279,20 +1279,37 @@ export function selectUsersViewingTask(state: BoardState, taskId: string): strin
 // Selectors — Epic 09: Comments + reactions + activity
 // ============================================================================
 
+const EMPTY_COMMENTS: CommentRow[] = [];
+const EMPTY_REACTIONS: CommentReactionRow[] = [];
+const EMPTY_ACTIVITY: ActivityRow[] = [];
+
 /** All comments for a task, oldest-first. (Flat — no threading per Q1.) */
 export function selectCommentsForTask(state: BoardState, taskId: string): CommentRow[] {
-  return state.commentsByTask.get(taskId) ?? [];
+  return state.commentsByTask.get(taskId) ?? EMPTY_COMMENTS;
 }
 
-/** Grouped reactions for a comment with counts + selfReacted flag. */
+/** Raw reactions for a comment — stable reference from the store Map. */
+export function selectReactionsForComment(
+  state: BoardState,
+  commentId: string,
+): CommentReactionRow[] {
+  return state.reactionsByComment.get(commentId) ?? EMPTY_REACTIONS;
+}
+
+/**
+ * Grouped reactions for a comment with counts + selfReacted flag.
+ *
+ * WARNING: Returns a new array of new objects on every call. Do NOT use as a
+ * Zustand selector (causes infinite render loops). Use selectReactionsForComment
+ * + useMemo in components instead. Kept exported for tests.
+ */
 export function selectGroupedReactions(
   state: BoardState,
   commentId: string,
   currentUserId: string,
 ): Array<{ emoji: string; count: number; selfReacted: boolean }> {
-  const reactions = state.reactionsByComment.get(commentId) ?? [];
+  const reactions = state.reactionsByComment.get(commentId) ?? EMPTY_REACTIONS;
 
-  // Group by emoji
   const grouped = new Map<string, { count: number; selfReacted: boolean }>();
   for (const reaction of reactions) {
     const entry = grouped.get(reaction.emoji) ?? { count: 0, selfReacted: false };
@@ -1312,7 +1329,7 @@ export function selectGroupedReactions(
 
 /** Activity events for a task, newest-first. */
 export function selectTaskActivity(state: BoardState, taskId: string): ActivityRow[] {
-  return state.activityByTask.get(taskId) ?? [];
+  return state.activityByTask.get(taskId) ?? EMPTY_ACTIVITY;
 }
 
 // ============================================================================

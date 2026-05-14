@@ -16,7 +16,7 @@
  */
 
 import { Plus } from "lucide-react";
-import { useCallback, useTransition } from "react";
+import { useCallback, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 // Server actions — from Slice A
 import {
@@ -24,7 +24,7 @@ import {
   unreactComment,
 } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/comments/actions";
 import { cn } from "@/lib/utils";
-import { selectGroupedReactions, useBoardStore } from "@/stores/board-store";
+import { selectReactionsForComment, useBoardStore } from "@/stores/board-store";
 import type { CommentReactionRow } from "@/stores/types/comments";
 import { ReactionPicker } from "./ReactionPicker";
 
@@ -45,8 +45,24 @@ interface CommentReactionsProps {
 export function CommentReactions({ commentId, boardId, currentUserId }: CommentReactionsProps) {
   const [, startTransition] = useTransition();
 
-  // Read grouped reactions from store (Slice C).
-  const grouped = useBoardStore((s) => selectGroupedReactions(s, commentId, currentUserId));
+  // Read raw reactions — stable reference from the store Map (no new array per render).
+  const reactions = useBoardStore((s) => selectReactionsForComment(s, commentId));
+
+  // Derive grouped data in useMemo so we only recompute when reactions change.
+  const grouped = useMemo(() => {
+    const map = new Map<string, { count: number; selfReacted: boolean }>();
+    for (const r of reactions) {
+      const entry = map.get(r.emoji) ?? { count: 0, selfReacted: false };
+      entry.count += 1;
+      if (r.user_id === currentUserId) entry.selfReacted = true;
+      map.set(r.emoji, entry);
+    }
+    return Array.from(map.entries()).map(([emoji, { count, selfReacted }]) => ({
+      emoji,
+      count,
+      selfReacted,
+    }));
+  }, [reactions, currentUserId]);
 
   // Store mutation actions (Slice C).
   const applyReactionInsert = useBoardStore((s) => s.applyReactionInsert);
