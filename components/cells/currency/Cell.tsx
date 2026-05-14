@@ -4,7 +4,7 @@
  * CurrencyCell — read-mode renderer for the "currency" cell type.
  *
  * Renders the number formatted as a currency string via Intl.NumberFormat.
- * Default currency: USD. Empty state: muted "—".
+ * Default currency: USD. Empty state: visually empty (hover outline affordance only).
  */
 
 import React from "react";
@@ -42,11 +42,7 @@ function CurrencyCellInner({ value, config }: CurrencyCellProps) {
         <span className="truncate text-sm text-[color:var(--color-fg)] tabular-nums">
           {display}
         </span>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          —
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }

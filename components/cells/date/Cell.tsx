@@ -4,7 +4,7 @@
  * DateCell — read-mode renderer for the "date" cell type.
  *
  * Renders the date formatted via Intl.DateTimeFormat.
- * Empty state: muted "—".
+ * Empty state: visually empty (hover outline affordance only).
  */
 
 import React from "react";
@@ -41,11 +41,7 @@ function DateCellInner({ value, config: _config, row: _row }: DateCellProps) {
     <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
       {display ? (
         <span className="truncate text-sm text-[color:var(--color-fg)]">{display}</span>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          —
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }
