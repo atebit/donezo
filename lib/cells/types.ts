@@ -10,6 +10,7 @@
 
 import type { ComponentType } from "react";
 import type { Database } from "@/lib/supabase/types";
+import type { AggregateRenderDescriptor } from "./aggregate-descriptors";
 
 // ---------------------------------------------------------------------------
 // CellRow / TaskRow — re-exported from generated types, not redefined
@@ -61,6 +62,7 @@ export type CellTypeId =
 export type AggregationKind =
   | "count"
   | "count_empty"
+  | "count_non_empty"
   | "count_unique"
   | "sum"
   | "avg"
@@ -183,10 +185,28 @@ export type CellTypeDef<TValue, TConfig = Record<string, never>> = {
   aggregations: AggregationKind[];
 
   /**
-   * Compute and format an aggregation across a column of values for a group
-   * footer row. Returns a display-ready string (e.g. "42", "58%", "Jan – Dec").
+   * The aggregation kind shown by default in the group footer for this cell type.
+   * Falls back to `aggregations[0]` when absent.
+   *
+   * Introduced in Epic 16 (Slice C) to make footer aggregation type-aware.
    */
-  aggregate: (values: TValue[], kind: AggregationKind, config: TConfig) => string;
+  defaultAggregation?: AggregationKind;
+
+  /**
+   * Compute and format an aggregation across a column of values for a group
+   * footer row. Returns either a display-ready string (legacy, renders as plain
+   * text) or an `AggregateRenderDescriptor` (structured payload rendered by
+   * `<AggregateRender />`).
+   *
+   * String returns continue to work at every existing call site — backward-
+   * compatible. Descriptor returns are only consumed by `FooterCell` in
+   * `GroupFooter.tsx`.
+   */
+  aggregate: (
+    values: TValue[],
+    kind: AggregationKind,
+    config: TConfig,
+  ) => string | AggregateRenderDescriptor;
 
   // ------------------------------------------------------------------
   // Filtering
