@@ -39,12 +39,7 @@ test.describe("Epic 16 — Board grid column alignment", () => {
     const headerCells = page.locator('[role="columnheader"]');
     const headerCount = await headerCells.count();
 
-    if (headerCount === 0) {
-      // If no role="columnheader" present (the epic-16 grid uses divs, not th),
-      // fall back to reading the sticky header's direct children.
-      test.skip();
-      return;
-    }
+    expect(headerCount, "ColumnHeader must expose role=columnheader").toBeGreaterThan(0);
 
     // Build array of header x-positions.
     const headerXPositions: number[] = [];
@@ -58,10 +53,7 @@ test.describe("Epic 16 — Board grid column alignment", () => {
     const taskRows = page.locator('[role="row"]');
     const taskRowCount = await taskRows.count();
 
-    if (taskRowCount === 0) {
-      test.skip();
-      return;
-    }
+    expect(taskRowCount).toBeGreaterThan(0);
 
     // Use the first task row that has cells matching the column count.
     for (let rowIdx = 0; rowIdx < Math.min(taskRowCount, 3); rowIdx++) {
@@ -96,10 +88,7 @@ test.describe("Epic 16 — Board grid column alignment", () => {
     const headerCells = page.locator('[role="columnheader"]');
     const headerCount = await headerCells.count();
 
-    if (headerCount === 0) {
-      test.skip();
-      return;
-    }
+    expect(headerCount, "ColumnHeader must expose role=columnheader").toBeGreaterThan(0);
 
     const headerXPositions: number[] = [];
     for (let i = 0; i < headerCount; i++) {

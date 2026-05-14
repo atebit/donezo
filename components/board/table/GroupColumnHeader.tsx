@@ -24,7 +24,10 @@ export function GroupColumnHeader() {
 
       {/* Title column — sticky left */}
       {titleColumn && (
+        // biome-ignore lint/a11y/useFocusableInteractive: column header divs in a CSS grid are display-only; keyboard navigation is handled by inner interactive children
+        // biome-ignore lint/a11y/useSemanticElements: <th> cannot be used inside a CSS grid layout; role="columnheader" is intentional for a11y + Playwright targeting
         <div
+          role="columnheader"
           className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] flex items-center gap-1 px-2 border-r border-[color:var(--color-border-strong)] text-xs text-[color:var(--color-fg-muted)] font-medium"
           style={{ width: getColumnWidth(titleColumn) }}
         >
@@ -42,8 +45,11 @@ export function GroupColumnHeader() {
       {otherColumns.map((col) => {
         const TypeIcon = CELL_TYPE_ICONS[col.type as CellTypeId];
         return (
+          // biome-ignore lint/a11y/useFocusableInteractive: column header divs in a CSS grid are display-only; keyboard navigation is handled by inner interactive children
+          // biome-ignore lint/a11y/useSemanticElements: <th> cannot be used inside a CSS grid layout; role="columnheader" is intentional for a11y + Playwright targeting
           <div
             key={col.id}
+            role="columnheader"
             className="flex items-center gap-1 px-2 border-r border-[color:var(--color-border-strong)] text-xs text-[color:var(--color-fg-muted)] font-medium"
             style={{ width: getColumnWidth(col) }}
           >
