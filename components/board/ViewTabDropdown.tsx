@@ -6,6 +6,8 @@
  * Menu items:
  *   - Rename    → opens an inline Base UI Dialog with an <EditableTitle>
  *   - Duplicate → duplicateView then switchView to new view
+ *   - Density   → Compact / Default / Spacious radio group (per-view setting,
+ *                 moved here from ViewToolbar per epic 16 Slice D)
  *   - Save changes (gated: draft exists + permission)
  *   - Reset to saved (gated: draft exists)
  *   - Delete (gated: admin+ for shared / owner for personal;
@@ -24,7 +26,7 @@
  */
 
 import { Dialog, Menu } from "@base-ui/react";
-import { Copy, Pencil, RefreshCw, Save, Settings2, Trash2 } from "lucide-react";
+import { AlignJustify, Copy, Pencil, RefreshCw, Save, Settings2, Trash2 } from "lucide-react";
 import { type ReactNode, useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -37,6 +39,7 @@ import { EditableTitle, type EditableTitleHandle } from "@/components/shared/Edi
 import { useBoard } from "@/hooks/use-board";
 import { useBoardView } from "@/hooks/use-board-view";
 import { cn } from "@/lib/utils";
+import type { Density } from "@/lib/views/config-schema";
 import { useBoardStore } from "@/stores/board-store";
 import type { ViewRow } from "@/stores/types/views";
 
@@ -46,12 +49,20 @@ interface ViewTabDropdownProps {
   children: ReactNode;
 }
 
+const DENSITY_OPTIONS: { value: Density; label: string }[] = [
+  { value: "compact", label: "Compact" },
+  { value: "default", label: "Default" },
+  { value: "spacious", label: "Spacious" },
+];
+
 export function ViewTabDropdown({ view, children }: ViewTabDropdownProps) {
-  const { hasUnsavedChanges, resetDraft, save, switchView, role } = useBoardView();
+  const { hasUnsavedChanges, resetDraft, save, switchView, role, effective, applyDraft } =
+    useBoardView();
   const { userId } = useBoard();
   const [renameOpen, setRenameOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
   const editableRef = useRef<EditableTitleHandle>(null);
+  const currentDensity = effective?.density ?? "default";
 
   // ---------------------------------------------------------------------------
   // Authorization helpers
@@ -144,7 +155,7 @@ export function ViewTabDropdown({ view, children }: ViewTabDropdownProps) {
         <Menu.Portal>
           <Menu.Positioner sideOffset={4} align="start">
             <Menu.Popup
-              className="outline-none min-w-[180px] p-1"
+              className="outline-none min-w-[200px] p-1"
               style={{
                 background: "var(--color-surface)",
                 border: "1px solid var(--color-border-strong)",
@@ -173,7 +184,47 @@ export function ViewTabDropdown({ view, children }: ViewTabDropdownProps) {
                 </Menu.Item>
               )}
 
+              {/* ── Density ── per-view Compact / Default / Spacious selector */}
+              <hr className="my-1 border-[color:var(--color-border-strong)]" />
+              <div className="flex items-center gap-1.5 px-2 py-1 text-xs text-[color:var(--color-fg-muted)]">
+                <AlignJustify size={12} aria-hidden="true" />
+                <span>Density</span>
+              </div>
+              <Menu.RadioGroup
+                value={currentDensity}
+                onValueChange={(val) => applyDraft({ density: val as Density })}
+              >
+                {DENSITY_OPTIONS.map(({ value, label }) => (
+                  <Menu.RadioItem
+                    key={value}
+                    value={value}
+                    className={cn(
+                      menuItemCn(),
+                      currentDensity === value && "font-semibold text-[color:var(--color-fg)]",
+                    )}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border flex-shrink-0",
+                        currentDensity === value
+                          ? "bg-[color:var(--color-primary)] border-[color:var(--color-primary)]"
+                          : "border-[color:var(--color-border-strong)]",
+                      )}
+                    >
+                      {currentDensity === value && (
+                        <span className="block w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </span>
+                    {label}
+                  </Menu.RadioItem>
+                ))}
+              </Menu.RadioGroup>
+
               {/* Save changes — gated: draft exists + permission */}
+              {hasUnsavedChanges && (
+                <hr className="my-1 border-[color:var(--color-border-strong)]" />
+              )}
               {hasUnsavedChanges && canModify && (
                 <Menu.Item onClick={handleSave} className={menuItemCn()}>
                   <Save size={14} aria-hidden="true" />

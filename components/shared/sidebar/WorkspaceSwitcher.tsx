@@ -47,7 +47,7 @@ export function WorkspaceSwitcher({ workspaces, currentWorkspace }: WorkspaceSwi
             whiteSpace: "nowrap",
           }}
         >
-          {currentWorkspace?.name ?? "Select workspace"}
+          {currentWorkspace?.name}
         </span>
         <IconChevronDown size={14} style={{ color: "var(--color-fg-muted)", flexShrink: 0 }} />
       </Menu.Trigger>

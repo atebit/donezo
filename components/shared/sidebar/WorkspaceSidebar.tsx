@@ -144,31 +144,14 @@ export function WorkspaceSidebar({ workspaces, mobileDrawerMode = false }: Works
           </div>
         ) : null}
 
-        {/* Board list or empty state */}
+        {/* Board list — always rendered since we are inside a workspace layout */}
         <div style={{ flex: 1, padding: "8px 4px", overflowY: "auto" }}>
-          {currentWorkspace ? (
+          {currentWorkspace && (
             <BoardList
               workspaceSlug={currentWorkspace.slug}
               activeBoardId={activeBoardId}
               initialBoards={sidebarBoards}
             />
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                gap: 8,
-                padding: "24px 16px",
-                textAlign: "center",
-              }}
-            >
-              <p style={{ fontSize: 13, color: "var(--color-fg-muted)", lineHeight: 1.5 }}>
-                Select a workspace to see your boards
-              </p>
-            </div>
           )}
         </div>
       </div>
