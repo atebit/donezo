@@ -20,11 +20,8 @@ import type { StatusCellValue } from "@/components/cells/status/Cell";
 // Shared components from the status folder — per Q24
 import { Cell } from "@/components/cells/status/Cell";
 import { Editor } from "@/components/cells/status/Editor";
-import {
-  aggregateCount,
-  aggregateCountEmpty,
-  aggregatePercentByLabel,
-} from "@/lib/cells/aggregations";
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
+import { aggregateCount, aggregateCountEmpty } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
 import { OperandEditor } from "./OperandEditor";
 
@@ -76,16 +73,36 @@ export const priorityType: CellTypeDef<StatusCellValue, Record<string, never>> =
   },
 
   aggregations: ["count", "count_empty", "percent_by_label"],
+  defaultAggregation: "percent_by_label",
 
-  aggregate: (values, kind, _config) => {
+  aggregate: (values, kind, config): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
     if (kind === "count_empty") return aggregateCountEmpty(values);
     if (kind === "percent_by_label") {
-      // aggregatePercentByLabel needs label definitions to map ids → names.
-      // For v1, label metadata is not available in the aggregate function;
-      // raw labelId is used as the display key.
-      // POLISH ITEM (epic 14): inject label metadata for readable output.
-      return aggregatePercentByLabel(values, []);
+      // Build a label_distribution descriptor using labels from config._labels
+      // (injected by FooterCell from the board store).
+      const cfg = config as unknown as {
+        _labels?: Array<{ id: string; name: string; color: string }>;
+      };
+      const labelDefs = cfg?._labels ?? [];
+
+      const counts = new Map<string, number>();
+      for (const v of values) {
+        if (v == null) continue;
+        counts.set(v.labelId, (counts.get(v.labelId) ?? 0) + 1);
+      }
+
+      const segments = Array.from(counts.entries()).map(([labelId, count]) => {
+        const lbl = labelDefs.find((l) => l.id === labelId);
+        return {
+          labelId,
+          count,
+          color: lbl?.color ?? "var(--color-label-gray)",
+          name: lbl?.name ?? labelId,
+        };
+      });
+
+      return { kind: "label_distribution", segments };
     }
     return "—";
   },

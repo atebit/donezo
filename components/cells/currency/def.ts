@@ -77,6 +77,7 @@ export const currencyType: CellTypeDef<number, CurrencyConfig> = {
   },
 
   aggregations: ["count", "sum", "avg", "min", "max", "median"],
+  defaultAggregation: "sum",
 
   aggregate: (values, kind) => {
     const nonNull = values.filter((v): v is number => v != null);

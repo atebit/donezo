@@ -7,8 +7,8 @@
  */
 
 import { CheckSquare } from "lucide-react";
-
-import { aggregateCount, aggregatePercentChecked } from "@/lib/cells/aggregations";
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
+import { aggregateCount } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
 
 import { Cell } from "./Cell";
@@ -52,10 +52,16 @@ export const checkboxType: CellTypeDef<boolean, Record<string, never>> = {
   },
 
   aggregations: ["count", "percent_checked"],
+  defaultAggregation: "percent_checked",
 
-  aggregate: (values, kind) => {
+  aggregate: (values, kind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
-    if (kind === "percent_checked") return aggregatePercentChecked(values);
+    if (kind === "percent_checked") {
+      const total = values.length;
+      const checked = values.filter((v) => v === true).length;
+      const pct = total === 0 ? 0 : (checked / total) * 100;
+      return { kind: "percent_checked", pct, total };
+    }
     return "—";
   },
 

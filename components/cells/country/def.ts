@@ -7,7 +7,7 @@
  */
 
 import { Globe } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCountUnique } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
 
@@ -59,10 +59,16 @@ export const countryType: CellTypeDef<string, Record<string, never>> = {
     return false;
   },
 
-  aggregations: ["count_unique"],
+  aggregations: ["count_unique", "count_non_empty"],
+  defaultAggregation: "count_non_empty",
 
-  aggregate: (values, kind) => {
+  aggregate: (values, kind): string | AggregateRenderDescriptor => {
     if (kind === "count_unique") return aggregateCountUnique(values);
+    if (kind === "count_non_empty") {
+      const total = values.length;
+      const nonEmpty = values.filter((v) => v != null && v !== "").length;
+      return { kind: "count_non_empty", nonEmpty, total };
+    }
     return "—";
   },
 

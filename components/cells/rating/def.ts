@@ -8,7 +8,7 @@
 
 import { Star } from "lucide-react";
 
-import { aggregateAvg, aggregateCount } from "@/lib/cells/aggregations";
+import { aggregateAvg, aggregateCount, aggregateSum } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
 
 import { Cell } from "./Cell";
@@ -59,11 +59,13 @@ export const ratingType: CellTypeDef<number, RatingConfig> = {
     return false;
   },
 
-  aggregations: ["count", "avg"],
+  aggregations: ["count", "sum", "avg"],
+  defaultAggregation: "sum",
 
   aggregate: (values, kind) => {
     const nonNull = values.filter((v): v is number => v != null);
     if (kind === "count") return aggregateCount(values);
+    if (kind === "sum") return aggregateSum(nonNull);
     if (kind === "avg") return aggregateAvg(nonNull);
     return "—";
   },

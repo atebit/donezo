@@ -7,7 +7,7 @@
  */
 
 import { Tag } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCount, aggregateCountUnique } from "@/lib/cells/aggregations";
 import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
@@ -79,9 +79,10 @@ export const tagsType: CellTypeDef<TagsCellValue, Record<string, never>> = {
     return false;
   },
 
-  aggregations: ["count", "count_unique"],
+  aggregations: ["count", "count_unique", "percent_by_label"],
+  defaultAggregation: "percent_by_label",
 
-  aggregate: (values, kind: AggregationKind) => {
+  aggregate: (values, kind: AggregationKind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
     if (kind === "count_unique") {
       // count_unique counts unique tag VALUES across cells, not cells
@@ -94,6 +95,26 @@ export const tagsType: CellTypeDef<TagsCellValue, Record<string, never>> = {
         }
       }
       return aggregateCountUnique(Array.from(unique));
+    }
+    if (kind === "percent_by_label") {
+      // Tags are free-form strings — use tag value as both id and name.
+      // There are no label-defined colors, so we use a fixed muted token.
+      const counts = new Map<string, number>();
+      for (const v of values) {
+        if (v == null) continue;
+        for (const tag of v.values) {
+          counts.set(tag, (counts.get(tag) ?? 0) + 1);
+        }
+      }
+
+      const segments = Array.from(counts.entries()).map(([tag, count]) => ({
+        labelId: tag,
+        count,
+        color: "var(--color-surface-hover)",
+        name: tag,
+      }));
+
+      return { kind: "label_distribution", segments };
     }
     return "—";
   },

@@ -82,6 +82,7 @@ export const numberType: CellTypeDef<number, NumberConfig> = {
   },
 
   aggregations: ["count", "count_empty", "sum", "avg", "min", "max", "median"],
+  defaultAggregation: "sum",
 
   aggregate: (values, kind) => {
     const nonNull = values.filter((v): v is number => v != null);

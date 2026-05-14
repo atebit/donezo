@@ -11,7 +11,7 @@
  */
 
 import { Link } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCount } from "@/lib/cells/aggregations";
 import type { CellRow, CellTypeDef, FilterOperator } from "@/lib/cells/types";
 
@@ -76,10 +76,16 @@ export const linkType: CellTypeDef<LinkValue, Record<string, never>> = {
 
   matchesFilter,
 
-  aggregations: ["count"],
+  aggregations: ["count", "count_non_empty"],
+  defaultAggregation: "count_non_empty",
 
-  aggregate: (values, kind) => {
+  aggregate: (values, kind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
+    if (kind === "count_non_empty") {
+      const total = values.length;
+      const nonEmpty = values.filter((v) => v != null).length;
+      return { kind: "count_non_empty", nonEmpty, total };
+    }
     return "—";
   },
 
