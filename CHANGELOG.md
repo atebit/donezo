@@ -7,6 +7,19 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ---
 
+## [Unreleased] — 2026-05-14
+
+### Epic 17 — Legacy Cleanup
+
+Documentation and repository hygiene pass after all 16 product epics shipped. See [`docs/conversion-plan/17-legacy-cleanup.md`](docs/conversion-plan/17-legacy-cleanup.md).
+
+- **Q1 — Deleted local `frontend/` and `backend/` folders from disk.** Both directories were untracked (`.gitignore`-listed). Recovery path: git commit `a5d47c2`.
+- **Q2 — Archived pre-rebuild documentation subtrees.** `docs/audit/`, `docs/pre-planning/`, and `docs/conversion-refinements/` moved to `docs/archive/` via `git mv`. An umbrella `docs/archive/_README.md` explains the archive.
+- **Q3 — Reworded anti-pattern guardrails** in `CLAUDE.md`, `CONTRIBUTING.md`, and related docs from "in new code" phrasing to "this repo uses X, not Y" phrasing.
+- **Documentation pass** across `CLAUDE.md`, `CONTRIBUTING.md`, `README.md`, and `docs/conversion-plan/` — dropped "mid-rebuild" / "being rebuilt" framing; updated stale legacy-stack references; preserved provenance notes pointing at commit `a5d47c2` where origin is interesting.
+
+---
+
 ## [0.1.0] — 2026-05-13
 
 Initial internal release. This version represents the full initial rebuild from the

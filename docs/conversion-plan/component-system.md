@@ -1,14 +1,13 @@
 # Donezo Component System (Locked)
 
-The companion to [`design-system.md`](design-system.md). This doc inventories every legacy component that has product meaning and locks down its visual + interaction contract for the new app.
+The companion to [`design-system.md`](design-system.md). This doc inventories every component that has product meaning and locks down its visual + interaction contract.
 
-**Translation rule:** legacy components are CRA + SCSS + MUI. New components are RSC where possible, `"use client"` where interaction is required, styled via shadcn/ui (Base UI primitives) + Tailwind tokens. We rebuild from these specs, not from JSX.
+**Translation rule:** the original app used CRA + SCSS + MUI. This app uses RSC where possible, `"use client"` where interaction is required, styled via shadcn/ui (Base UI primitives) + Tailwind tokens. We implement from these specs. (Historical note: the original component implementations are accessible via git commit `a5d47c2`.)
 
-**Marketing/landing components are not ported.** The legacy `cmps/home/`, `cmps/custom/`, and `home-header.jsx` are out of scope. The new app's only public route is the Google sign-in screen ([03](03-auth.md)).
+**Marketing/landing components are not implemented.** The original `cmps/home/`, `cmps/custom/`, and `home-header.jsx` were not ported. The only public route is the Google sign-in screen ([03](03-auth.md)).
 
 **File path conventions in this doc:**
-- Legacy JSX: `frontend/src/cmps/<area>/<file>.jsx`
-- Legacy SCSS: `frontend/src/assets/styles/cmps/<…>/<file>.scss`
+- Each entry's **Provenance** line gives the original component file name from commit `a5d47c2` (e.g., `modal/dynamic-modal.jsx` + `_dynamic-modal.scss`).
 - New components land under `components/<area>/<Name>.tsx` per the layout in [00-overview.md](00-overview.md)
 
 Each entry below has the same shape:
@@ -39,7 +38,7 @@ These five components carry most of the product's visual identity. If any of the
 
 - **What:** the leftmost vertical rail containing brand glyph, tool icons, user avatar, and login menu.
 - **Where:** `app/(app)/layout.tsx` — every authed route.
-- **Legacy:** `frontend/src/cmps/sidebar/main-sidebar.jsx`, [_main-sidebar.scss](../../frontend/src/assets/styles/cmps/sidebar/_main-sidebar.scss).
+- **Provenance:** `cmps/sidebar/main-sidebar.jsx` + `_main-sidebar.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Background `--color-surface-nav` (`#292f4c`), full-height, `position: sticky; top: 0`.
   - Min width `66px` desktop. On mobile (`max-md`) collapses to a 8vh bottom bar (`position: fixed; bottom: 0; flex-direction: row`).
@@ -59,7 +58,7 @@ These five components carry most of the product's visual identity. If any of the
 
 - **What:** secondary rail listing workspace name, workspace tools (Search, Add board, Templates, ...), favorites, and the board list.
 - **Where:** `app/(app)/layout.tsx`, slides in/out next to `MainSidebar`.
-- **Legacy:** `workspace-sidebar.jsx` + [_workspace-sidebar.scss](../../frontend/src/assets/styles/cmps/sidebar/_workspace-sidebar.scss).
+- **Provenance:** `workspace-sidebar.jsx` + `_workspace-sidebar.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Open: width `230px`. Closed: width `0` (mobile) / `30px` (narrow+).
   - Background `--color-surface-rail` (`#F6F7FB`); right border `1px solid --color-border-rail` (baked `darken($border-color, 30%)`).
@@ -79,7 +78,7 @@ These five components carry most of the product's visual identity. If any of the
 
 - **What:** board title bar with title (inline edit), star, board tools (activity, members, invite), description link, and view tabs.
 - **Where:** `app/(app)/w/[slug]/b/[boardId]/layout.tsx`.
-- **Legacy:** `board/board-header.jsx` + [_board-header.scss](../../frontend/src/assets/styles/cmps/board/_board-header.scss).
+- **Provenance:** `board/board-header.jsx` + `_board-header.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Padding: `16px 30px 0 38px` desktop; `16px 10px 0 10px` mobile.
   - `position: sticky; top: 0; left: 0; z: --z-board-header`. Bg white.
@@ -100,7 +99,7 @@ These five components carry most of the product's visual identity. If any of the
 
 - **What:** the "+ New Item" split-button, search expander, person filter, and sort/hide/group controls below the board header.
 - **Where:** above `<BoardTable />`.
-- **Legacy:** `board/board-filter.jsx` + [_board-filter.scss](../../frontend/src/assets/styles/cmps/board/_board-filter.scss).
+- **Provenance:** `board/board-filter.jsx` + `_board-filter.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Row gap `5px`; each tool `height: 32px`, `font-size: 14px`.
   - Tools (`Person/Filter/Sort/Hide/Group/Search`): padding `0 8px`, color `--color-fg-muted`, glyph `18px`. Hover bg `--color-surface-hover`, radius `4px`.
@@ -142,7 +141,7 @@ Marketing surfaces are out of scope per [00-overview.md](00-overview.md). The on
 
 - **What:** the row that introduces a group of tasks: collapse arrow, colored title, task count, overflow menu.
 - **Where:** every board view that shows groups.
-- **Legacy:** `board/title-group-preview.jsx` and parts of `group-preview.jsx` + [_group-preview.scss](../../frontend/src/assets/styles/cmps/group/_group-preview.scss).
+- **Provenance:** `board/title-group-preview.jsx`, `group-preview.jsx` + `_group-preview.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - `position: sticky; top: 182px` (narrow+) / `149px` (mobile); bg white; height `40px`; line-height `24px`.
   - Title H4: font-weight 600, font-size `18px`, padding `4px`, color matches the group's accent (`--color-group-N`).
@@ -160,7 +159,7 @@ Marketing surfaces are out of scope per [00-overview.md](00-overview.md). The on
 
 - **What:** a single row of the board table. Handles drag handle reveal, checkbox, inline title, comment count, expand-to-drawer link, and the dynamic cells.
 - **Where:** every Table view; the row is the core read/write surface.
-- **Legacy:** `task/task-preview.jsx` + [_task-preview.scss](../../frontend/src/assets/styles/cmps/_task-preview.scss).
+- **Provenance:** `task/task-preview.jsx` + `_task-preview.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Row height `36px`. Font size `14px`.
   - Sticky-div (left): bg white, `border-left: 6px solid <group-accent>`, sticky at `left: 40px` (mobile `left: 0`, min-width `240px`).
@@ -179,15 +178,15 @@ Marketing surfaces are out of scope per [00-overview.md](00-overview.md). The on
 
 A shared cell skeleton: `min-width: 140px`, `height: 36px`, `1px solid --color-border-strong` border. Each cell type extends.
 
-| Cell | Legacy SCSS | Key visual | Interaction | Lands in |
-|---|---|---|---|---|
-| `StatusCell` / `PriorityCell` | [_status-priority-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_status-priority-picker.scss) | Full-bleed bg = label color; centered white label text; **diagonal "fold" in top-right reveals on hover** (border-width `0 → 10×10 → 15×15px` over `--motion-base` with `transition-delay: .2s`); empty state shows `--color-label-gray` (`#c4c4c4`) bg with no text | Click opens `<StatusPicker />` popover; popover lists labels (centered, fixed-width 152px chips) + "Edit Labels" button bottom (1px top border `--color-border-strong`) | [07](07-column-system.md) |
-| `PersonCell` | [_member-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_member-picker.scss) | Stacked avatars (26px circle, `-5px` overlap); empty state shows muted person glyph; bg neutral | Click opens member-picker modal | [07](07-column-system.md) |
-| `DateCell` | [_date-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_date-picker.scss) | Centered text input; max-width 140px; transparent bg | Hover: `0.2px` border `--color-surface-hover`, text `--color-primary`. Focus: border `--color-primary`. Click opens date popover | [07](07-column-system.md) |
-| `NumberCell` | [_number-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_number-picker.scss) | Centered number input; on hover reveals `+`/`-` icons in `--color-primary` and a `clear` chip top-right (bg `--color-surface-hover`, radius 3px) | Hover reveals controls; focus shows `--color-primary` border | [07](07-column-system.md) |
-| `CheckboxCell` | [_checkbox-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_checkbox-picker.scss) | Centered icon; checked color `--color-primary`, unchecked `--color-fg`. Hover wash `rgba(0,0,0,0.05)` over `--motion-base` | Click toggles | [07](07-column-system.md) |
-| `FileCell` | [_file-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_file-picker.scss) | Hidden file input; centered "+" icon (`19px`, opacity `0 → 1` on hover) | Hover reveals upload affordance; click opens file picker | [10](10-attachments.md) |
-| `UpdatedByCell` | [_update-picker.scss](../../frontend/src/assets/styles/cmps/task-picker/_update-picker.scss) | Avatar (26px) + relative time `(2h, 5d, 3w)` from `calculateTime` util | Read-only | [07](07-column-system.md) |
+| Cell | Key visual | Interaction | Lands in |
+|---|---|---|---|
+| `StatusCell` / `PriorityCell` | Full-bleed bg = label color; centered white label text; **diagonal "fold" in top-right reveals on hover** (border-width `0 → 10×10 → 15×15px` over `--motion-base` with `transition-delay: .2s`); empty state shows `--color-label-gray` (`#c4c4c4`) bg with no text | Click opens `<StatusPicker />` popover; popover lists labels (centered, fixed-width 152px chips) + "Edit Labels" button bottom (1px top border `--color-border-strong`) | [07](07-column-system.md) |
+| `PersonCell` | Stacked avatars (26px circle, `-5px` overlap); empty state shows muted person glyph; bg neutral | Click opens member-picker modal | [07](07-column-system.md) |
+| `DateCell` | Centered text input; max-width 140px; transparent bg | Hover: `0.2px` border `--color-surface-hover`, text `--color-primary`. Focus: border `--color-primary`. Click opens date popover | [07](07-column-system.md) |
+| `NumberCell` | Centered number input; on hover reveals `+`/`-` icons in `--color-primary` and a `clear` chip top-right (bg `--color-surface-hover`, radius 3px) | Hover reveals controls; focus shows `--color-primary` border | [07](07-column-system.md) |
+| `CheckboxCell` | Centered icon; checked color `--color-primary`, unchecked `--color-fg`. Hover wash `rgba(0,0,0,0.05)` over `--motion-base` | Click toggles | [07](07-column-system.md) |
+| `FileCell` | Hidden file input; centered "+" icon (`19px`, opacity `0 → 1` on hover) | Hover reveals upload affordance; click opens file picker | [10](10-attachments.md) |
+| `UpdatedByCell` | Avatar (26px) + relative time `(2h, 5d, 3w)` from `calculateTime` util | Read-only | [07](07-column-system.md) |
 | Other types (`text`, `email`, `phone`, `country`, `link`, `tags`, `rating`, `currency`, `vote`, `week`, `location`, `formula`) | — | Inherit cell skeleton; per-type editor follows the picker patterns above. **Match** the visual rhythm (centered content, `--color-primary` focus border, hover wash) | Open editor on click; ESC cancels, blur commits | [07](07-column-system.md) |
 
 **Fidelity bar for all cells:** `must-match`. The status fold and the `--color-primary` focus borders are characteristic.
@@ -214,17 +213,17 @@ A shared cell skeleton: `min-width: 140px`, `height: 36px`, `1px solid --color-b
 ### 3.1 `DynamicModal` (popover container)
 
 - **What:** the floating popover used for status pickers, priority pickers, group menus, board menus, color palette, etc. Position computed from the click target's rect.
-- **Legacy:** `modal/dynamic-modal.jsx` + [_dynamic-modal.scss](../../frontend/src/assets/styles/cmps/modal/_dynamic-modal.scss).
+- **Provenance:** `modal/dynamic-modal.jsx` + `_dynamic-modal.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - `position: absolute`, bg white, `padding: 8px`, `border-radius: 8px`, `border: 1px solid --color-border-strong`, `box-shadow: --shadow-modal`, `z-index: --z-popover` (1000).
 - **Interaction contract:**
   - Open positions are computed from the trigger element. Outside-click + Esc close.
-  - Reuse Base UI's `<Popover>` (via shadcn) and apply the legacy chrome.
+  - Reuse Base UI's `<Popover>` (via shadcn) and apply the chrome per §3.1.
 - **Fidelity bar:** `must-match` chrome; `match` positioning logic (Base UI's Floating UI integration is fine).
 
 ### 3.2 `MenuModal` recipe (mixin)
 
-The `@mixin menu-modal()` ([_mixins.scss:107-132](../../frontend/src/assets/styles/setup/_mixins.scss)) is reused by ~10 different menus (task-tools, group-menu, task-menu, login-logout, board-description-modal items). Lock the recipe:
+The `menu-modal` recipe (provenance: `@mixin menu-modal()` in `_mixins.scss:107-132` at commit `a5d47c2`) is used by ~10 different menus (task-tools, group-menu, task-menu, login-logout, board-description-modal items). The locked recipe:
 
 ```css
 .menu-modal {
@@ -261,18 +260,18 @@ All dropdown menus (board, group, task, add-column, add-group, chart-type, login
 ### 3.3 `ColorPalette` popover
 
 - **What:** the 12-swatch grid for picking a group's accent color.
-- **Legacy:** `cmps/color-palette.jsx` + [_color-palette-modal.scss](../../frontend/src/assets/styles/cmps/modal/_color-palette-modal.scss).
+- **Provenance:** `cmps/color-palette.jsx` + `_color-palette-modal.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Container width `142px`, flex-wrap, swatches at margin `5px`.
   - Swatch: `BsFillCircleFill` (Lucide `Circle` filled), font-size `20px`, fill = palette color (one of the 12 group colors).
-- **Interaction contract:** click swatch → fires `setGroupColor`. No checkmark on the active swatch in legacy (consider adding for a11y).
+- **Interaction contract:** click swatch → fires `setGroupColor`. No checkmark on the active swatch in the original design (consider adding for a11y).
 - **Lands in:** [06](06-groups-tasks-table.md) (group recolor uses it).
 - **Fidelity bar:** `match` (palette is `must-match`; layout flexibility is fine).
 
 ### 3.4 `StatusLabelEditor` popover
 
 - **What:** the popover that opens from a status cell to pick or edit labels.
-- **Legacy:** `modal/modal-status-priority.jsx` + [_status-priority-modal.scss](../../frontend/src/assets/styles/cmps/modal/_status-priority-modal.scss).
+- **Provenance:** `modal/modal-status-priority.jsx` + `_status-priority-modal.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - `<ul>` of label chips, padding `8px`, font-size `14px`, gap `8px`, color white.
   - Each chip: min-width `152px`, `height: 32px`, centered. Bg = label color.
@@ -284,7 +283,7 @@ All dropdown menus (board, group, task, add-column, add-group, chart-type, login
 ### 3.5 `TaskDrawer` (right-slide modal)
 
 - **What:** the right-side drawer that opens when a task is expanded. Tabs: Updates / Activity / Files.
-- **Legacy:** `modal/task-modal.jsx` + [_board-modal.scss](../../frontend/src/assets/styles/cmps/modal/_board-modal.scss).
+- **Provenance:** `modal/task-modal.jsx` + `_board-modal.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - `position: fixed; top: 0; right: 0; height: 100vh; min-width: 570px` (mobile: 100vw).
   - Bg white, `border-inline-start: 1px solid #ccc`.
@@ -301,21 +300,21 @@ All dropdown menus (board, group, task, add-column, add-group, chart-type, login
 ### 3.6 `BoardDescriptionModal` (centered, two-pane)
 
 - **What:** big info modal showing the board description on the left and meta (created-by, members, lightning workspace tile) on the right.
-- **Legacy:** [_board-description-modal.scss](../../frontend/src/assets/styles/cmps/modal/_board-description-modal.scss).
+- **Provenance:** `_board-description-modal.scss` (commit `a5d47c2`).
 - **Visual contract:** `850 × 550px` (`max-w 95vw`, `max-h 90vh`), `border-radius: 8px`, shadow `1px 0 20px black`. Right pane bg `--color-surface-info`. Description blockquote uses inline-editable [§2.1](#21-inline-editable-title-blockquote-pattern) pattern.
 - **Lands in:** [05](05-workspaces-boards.md) or [06](06-groups-tasks-table.md) (whichever ships board description editing).
 - **Fidelity bar:** `match`.
 
 ### 3.7 `CreateBoardModal` (centered)
 
-- **Legacy:** [_create-board-modal.scss](../../frontend/src/assets/styles/cmps/modal/_create-board-modal.scss).
+- **Provenance:** `_create-board-modal.scss` (commit `a5d47c2`).
 - **Visual contract:** `width 500px`, padding `16px 32px 32px`, `border-radius: 8px`, shadow `--shadow-modal`. H1 `32px / 500`, H3 `14px / 400`. Form input full-width, `border-radius: 4px`, `1px solid --color-border`, height `40px`.
 - **Lands in:** [05](05-workspaces-boards.md).
 - **Fidelity bar:** `match`.
 
 ### 3.8 `MemberModal` / `InviteModal`
 
-- **Legacy:** [_member-modal.scss](../../frontend/src/assets/styles/cmps/modal/_member-modal.scss).
+- **Provenance:** `_member-modal.scss` (commit `a5d47c2`).
 - **Visual contract:** `width 360px` desktop / `250px` mobile. Member chips in `taskMembers`: padding `4px 8px`, bg `--color-chip-member`, radius `8px`, with avatar `22 × 22`. Search row: padding `4px`, width `320px`, radius `8px`, `2px` border `--color-border-strong`.
 - **Lands in:** [05](05-workspaces-boards.md).
 - **Fidelity bar:** `match`.
@@ -323,7 +322,7 @@ All dropdown menus (board, group, task, add-column, add-group, chart-type, login
 ### 3.9 `BulkActionBar` (floating)
 
 - **What:** the floating bottom-aligned action bar that appears when ≥1 task is selected.
-- **Legacy:** `modal/task-tools-modal.jsx` + [_task-tools-modal.scss](../../frontend/src/assets/styles/cmps/modal/_task-tools-modal.scss).
+- **Provenance:** `modal/task-tools-modal.jsx` + `_task-tools-modal.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - `position: fixed; bottom: 35px; height: 63px; width: 60%`. Inset positions left/right roughly center it.
   - Bg white, `border-radius: 5px`, `box-shadow: --shadow-bulk-bar`.
@@ -345,7 +344,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ### 4.1 `CommentList` & `CommentItem`
 
-- **Legacy:** `task/comment-preview.jsx` + [_comment-preview.scss](../../frontend/src/assets/styles/cmps/_comment-preview.scss).
+- **Provenance:** `task/comment-preview.jsx` + `_comment-preview.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Item: `border-radius: 4px`, `1px` border `--color-border-strong`, padding `16px`, margin-bottom `16px`.
   - Header: bottom-padding `8px`, `font-size: 14px`, color `--color-fg-muted`.
@@ -359,7 +358,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ### 4.2 `ActivityList` & `ActivityItem`
 
-- **Legacy:** `activity-preview.jsx` + [_activity-preview.scss](../../frontend/src/assets/styles/cmps/_activity-preview.scss).
+- **Provenance:** `activity-preview.jsx` + `_activity-preview.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Row: padding `8px 0`, `1px` bottom border `--color-shadow-card`, margin `0 25px`, gap `5%`, font-size `16px`, height `60px`.
   - Avatar 30×30. Time-title col `200px` (mobile `100px`, font 12px).
@@ -371,7 +370,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ## 5. ~~Marketing components~~ — REMOVED
 
-`<GetStartedButton />`, `<HomeTeaser />`, `<HomeScreenshot />` and the rest of the legacy `cmps/home/` and `cmps/custom/` files are not ported. The corresponding tokens (brand-violet, home gradients, CTA glow shadow) were dropped from [`design-system.md`](design-system.md). Per [00-overview.md](00-overview.md), the only public surface is Google sign-in.
+`<GetStartedButton />`, `<HomeTeaser />`, `<HomeScreenshot />` and the original `cmps/home/` and `cmps/custom/` components were not ported. The corresponding tokens (brand-violet, home gradients, CTA glow shadow) were dropped from [`design-system.md`](design-system.md). Per [00-overview.md](00-overview.md), the only public surface is Google sign-in.
 
 ---
 
@@ -379,7 +378,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ### 6.1 `LoginSignup` form
 
-- **Legacy:** `pages/login-signup.jsx` + [_login-signup.scss](../../frontend/src/assets/styles/views/_login-signup.scss).
+- **Provenance:** `pages/login-signup.jsx` + `_login-signup.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Page wash `--color-surface-auth` (`#f7f7f7`). Header bar `height: 65px`, `1px` bottom border `#e0e0e0`.
   - Form container centered, padding-top 40px. H1 40px / 100 weight in `#333`.
@@ -393,7 +392,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ### 6.2 `Logo`
 
-- **Legacy:** `cmps/logo.jsx` + [_logo.scss](../../frontend/src/assets/styles/cmps/_logo.scss).
+- **Provenance:** `cmps/logo.jsx` + `_logo.scss` (commit `a5d47c2`).
 - **Visual contract:** PNG icon 18px (normal+ 20px) + word-mark "donezo" at 20px (normal+ 24px), `font-weight: 700`, color black. Gap `7px`.
 - **Lands in:** [01](01-foundation.md). Convert PNG → SVG at first opportunity.
 - **Fidelity bar:** `must-match`.
@@ -404,7 +403,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ### 7.1 `KanbanBoard` lanes & cards
 
-- **Legacy:** `kanban/group-list-kanban.jsx` + [_group-list-kanban.scss](../../frontend/src/assets/styles/cmps/kanban/_group-list-kanban.scss), `_group-preview-kanban.scss`, `_task-list-kanban.scss`, `_task-preview-kanban.scss`.
+- **Provenance:** `kanban/group-list-kanban.jsx` + `_group-list-kanban.scss`, `_group-preview-kanban.scss`, `_task-list-kanban.scss`, `_task-preview-kanban.scss` (commit `a5d47c2`).
 - **Visual contract:**
   - Lane (`group-preview-kanban`): width `260px`, bg `--color-surface-rail`, header `44px` tall, white text on group color, top corners `8px` rounded.
   - Card (`task-container`): bg white, `border-radius: 4px`, `box-shadow: --shadow-card`, font 13px, margin-bottom 8px. Inner padding 8px, gap 8px.
@@ -413,7 +412,7 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
   - Lane container max-height `410px`, padding-left `38px`, gap `30px`, flex-wrap.
 - **Interaction:** drag a card between lanes → updates the group-by cell. Drag within lane → updates `task.position`.
 - **Lands in:** [12](12-alternate-views.md).
-- **Fidelity bar:** `match` (the Kanban port is the loosest area; legacy code path is technically not even routed in JSX).
+- **Fidelity bar:** `match` (the Kanban port is the loosest area; the original code path was not routed in JSX).
 
 ---
 
@@ -421,20 +420,20 @@ Inherit the [MenuModal recipe](#32-menumodal-recipe-mixin). Add-column is a flex
 
 ### 8.1 `Loader`
 
-- **Legacy:** `loader.jsx` + [_loader.scss](../../frontend/src/assets/styles/cmps/_loader.scss). Centered `loader.gif`.
+- **Provenance:** `loader.jsx` + `_loader.scss` (commit `a5d47c2`). Original was a centered `loader.gif`.
 - **Replace with:** `<Skeleton />` (shadcn) for layouts; spinner only for explicit "we don't know how long" cases (file uploads).
 - **Lands in:** [01](01-foundation.md) for primitives; populated in [14](14-mobile-a11y-polish.md).
 - **Fidelity bar:** `inspired`.
 
 ### 8.2 `LastViewed`
 
-- **Legacy:** `last-viewed.jsx` + [_last-viewed.scss](../../frontend/src/assets/styles/cmps/_last-viewed.scss). Padding `32px 16px`, member info row gap 8px, avatar 26px.
+- **Provenance:** `last-viewed.jsx` + `_last-viewed.scss` (commit `a5d47c2`). Padding `32px 16px`, member info row gap 8px, avatar 26px.
 - **Lands in:** [05](05-workspaces-boards.md) (workspace landing page).
 - **Fidelity bar:** `match`.
 
 ### 8.3 Favorites empty-state
 
-- **Legacy:** workspace-sidebar `.favorites-empty`. 80px star icon + centered text, font 15px, line-height 1.5.
+- **Provenance:** workspace-sidebar `.favorites-empty` pattern (commit `a5d47c2`). 80px star icon + centered text, font 15px, line-height 1.5.
 - **Lands in:** [05](05-workspaces-boards.md).
 - **Fidelity bar:** `match`.
 
@@ -462,7 +461,7 @@ A quick lookup of which epic owns which component.
 
 ## 10. Open questions
 
-- **Mobile bottom-bar parity.** Legacy mobile mode for `<MainSidebar />` is non-trivial (fixed-bottom row, hidden tools, hamburger). Most of this lands in [14](14-mobile-a11y-polish.md), but the *desktop* version in [05](05-workspaces-boards.md) needs to leave room for it (component contract, not just CSS).
-- **Kanban code path.** Legacy Kanban is implemented but commented out of routing ([audit/03-frontend.md:32](../audit/03-frontend.md)). We're rebuilding from the SCSS + JSX, but treat any inferred behavior as design-by-archaeology.
-- **Custom date/time picker.** Legacy uses `react-datepicker` (chunk of CSS we'd inherit); new app should use Base UI's date primitives styled to the legacy chrome. Defer details to [07](07-column-system.md) cell spec.
+- **Mobile bottom-bar parity.** The mobile mode for `<MainSidebar />` is non-trivial (fixed-bottom row, hidden tools, hamburger). Most of this lands in [14](14-mobile-a11y-polish.md), but the *desktop* version in [05](05-workspaces-boards.md) needs to leave room for it (component contract, not just CSS).
+- **Kanban code path.** The Kanban view was implemented in the original app but the routing was commented out. Treat any inferred behavior as design-by-archaeology (see commit `a5d47c2`).
+- **Custom date/time picker.** The original app used `react-datepicker`; this app should use Base UI's date primitives styled to the chrome in §2.4. Defer details to [07](07-column-system.md) cell spec.
 - **Status fold pixel-precise port.** The diagonal fold on hover is the most visually distinctive single moment in the app. Consider explicitly screenshotting it (light mode + dark mode) and saving to `docs/conversion-plan/_assets/` once produced, so executors don't drift.

@@ -4,7 +4,7 @@ A monday.com-class project and task management tool, built on Next.js 15, Supaba
 
 ## Status
 
-Mid-rebuild. The original CRA + Express + MongoDB app has been archived in git history; the new app is being rebuilt epic-by-epic (17 epics, through epic 16 as of May 2026). See [`docs/conversion-plan/00-overview.md`](docs/conversion-plan/00-overview.md) for the full plan.
+Donezo is a shipping Next.js 15 + Supabase + Vercel application, rebuilt across 17 epics from an earlier CRA + Express + MongoDB codebase. See [`docs/conversion-plan/00-overview.md`](docs/conversion-plan/00-overview.md) for the architecture and epic-by-epic scope; see [`CHANGELOG.md`](CHANGELOG.md) for the rebuild history.
 
 ## Stack
 
