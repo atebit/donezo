@@ -731,7 +731,7 @@ The following hits look like cleanup targets but must not be edited. Each is cla
 
 ## Stage 1-A: local folders disposition record (to be filled by Slice 1-A)
 
-(pending)
+On 2026-05-14, the local `frontend/` (12 MB) and `backend/` (20 MB) directories were deleted from disk. Both folders were confirmed untracked (`git ls-files frontend backend` returned empty output), so the deletion produced no tracked-file changes and required no git commit. The `.gitignore` entries for both paths remain in place as cheap insurance. For archaeology of the original CRA + Express + MongoDB codebase, see git commit `a5d47c2`.
 
 ---
 
@@ -752,6 +752,130 @@ Verified on: 2026-05-14. All 9 files in `docs/runbooks/` are clean. Consistent w
 
 ---
 
-## Stage 5-A: verification report (to be filled by Slice 5-A)
+## Stage 5-A: verification report
 
-(pending)
+**Date:** 2026-05-14
+
+### Re-grep results
+
+Re-grep command (verbatim from methodology section, with `.claude/worktrees/` exclusion per Q7):
+
+```sh
+grep -rEni "frontend/src|legacy|MongoDB|\bmongo\b|\bMUI\b|Redux|Socket\.IO|Cloudinary|\bCRA\b|\bExpress\b" \
+  --include="*.md" --include="*.ts" --include="*.tsx" --include="*.js" \
+  --include="*.json" --include="*.sql" --include="*.yaml" --include="*.yml" \
+  --exclude-dir="node_modules" --exclude-dir=".next" --exclude-dir=".git" \
+  --exclude-dir=".turbo" --exclude-dir="frontend" --exclude-dir="backend" \
+  --exclude="pnpm-lock.yaml" --exclude="tsconfig.tsbuildinfo" \
+  . \
+| grep -v "docs/conversion-plan/_dispatch/" \
+| grep -v "\.claude/worktrees/" \
+| sort
+```
+
+**Total lines (hits):** 324  
+**Unique files:** 44  
+**Baseline (Stage 0):** 428 hits / 54 files  
+**Reduction:** 104 lines removed (24.3%), 10 files fully cleaned
+
+### Per-classification breakdown
+
+| Treatment | Files | Lines (hits) |
+|---|---|---|
+| `preserve-history-note` | 30 | 270 |
+| `preserve-live-semantic` | 14 | 54 |
+| `rewrite` (any remaining) | 0 | 0 |
+| `archive` (any remaining unarchived) | 0 | 0 |
+
+**Note on `archive` classification:** All 17 files originally classified `archive` have been moved to `docs/archive/` by Slice 1-B. They still appear in the re-grep (contributing 246 of the 270 `preserve-history-note` lines) because their content was not edited — moving them to `docs/archive/` was the correct treatment per Q2. Their hits are properly `preserve-history-note` in the current state.
+
+**Note on `rewrite`-classified files:** All 21 files originally classified `rewrite` have been processed. Remaining hits in those files are historical provenance notes referencing commit `a5d47c2` or anti-pattern guardrails reworded per Q3. Zero `rewrite`-treatment hits remain; all are now `preserve-history-note`.
+
+### Top 10 files by hit count
+
+| Rank | File | Hits | Treatment | Confirmed |
+|---|---|---|---|---|
+| 1 | `docs/conversion-plan/17-legacy-cleanup.md` | 37 | `preserve-history-note` | Yes — epic doc intentionally not edited by its own epic |
+| 2 | `docs/archive/audit/10-supabase-migration.md` | 28 | `preserve-history-note` | Yes — archived per Slice 1-B (Q2) |
+| 3 | `docs/archive/audit/08-dependencies.md` | 25 | `preserve-history-note` | Yes — archived per Slice 1-B |
+| 4 | `docs/archive/pre-planning/01-architecture-and-runtime.md` | 19 | `preserve-history-note` | Yes — archived per Slice 1-B |
+| 5 | `docs/archive/audit/05-security.md` | 19 | `preserve-history-note` | Yes — archived per Slice 1-B |
+| 6 | `docs/archive/audit/11-recommendation-migrate-now.md` | 17 | `preserve-history-note` | Yes — archived per Slice 1-B |
+| 7 | `docs/archive/audit/01-architecture.md` | 14 | `preserve-history-note` | Yes — archived per Slice 1-B |
+| 8 | `components/board/MigrateLegacyColumnPrefs.tsx` | 14 | `preserve-live-semantic` | Yes — live one-shot migration component; Slice 4-B forbidden |
+| 9 | `tests/unit/use-visible-columns.test.ts` | 13 | `preserve-live-semantic` | Yes — tests live `columnPrefsByBoard` fallback; Slice 4-B forbidden |
+| 10 | `docs/archive/audit/09-roadmap-to-full-featured.md` | 12 | `preserve-history-note` | Yes — archived per Slice 1-B |
+
+### Residual-hit inventory confirmation
+
+Every remaining hit matches its inventory treatment. Specific confirmations for non-archive files:
+
+- **`.claude/agents/epic-executor.md`** (2 hits): Both are `preserve-history-note` — reworded prohibition now reads "were removed in commit `a5d47c2` and are no longer on disk." Inventory listed 1 hit at line 26 for `rewrite`; the second hit at line 90 is the reworded version on the `epic-executor` hard-prohibitions list, also `preserve-history-note`. Rewrite is complete.
+- **`.claude/agents/epic-researcher.md`** (2 hits): Both are `preserve-history-note` — reworded to historical note form. Inventory classified both as `rewrite`; rewrite is complete.
+- **`CLAUDE.md`** (8 hits): All `preserve-history-note` — `## Legacy code` section now contains a historical note pointing at `a5d47c2`; anti-pattern guardrails reworded per Q3 ("This repo does not use Redux/Socket.IO/Cloudinary"). Inventory classified all 10 original hits as `rewrite`; rewrite complete (2 hits removed entirely, 8 remain as intentional notes).
+- **`CONTRIBUTING.md`** (3 hits): All `preserve-history-note` — same pattern as CLAUDE.md. Inventory classified 5 hits as `rewrite`; rewrite complete.
+- **`README.md`** (2 hits): Both `preserve-history-note` — line 7 is now a historical note ("rebuilt across 17 epics from an earlier CRA + Express + MongoDB codebase"); line 20 keeps "no Redux" as stack-table entry. Inventory classified both as `rewrite`; rewrite complete.
+- **`docs/conversion-plan/00-overview.md`** (7 hits): All `preserve-history-note` — live `frontend/src/...` pointers replaced with historical notes; anti-pattern guardrails reworded. Down from 14 hits baseline.
+- **`docs/conversion-plan/01-foundation.md`** (4 hits): All `preserve-history-note` — forward-looking language removed; remaining hits are historical provenance notes and anti-pattern guardrails. Down from 7 hits baseline.
+- **`docs/conversion-plan/design-system.md`** (11 hits): All `preserve-history-note` — all `frontend/src/...` live pointers replaced; remaining hits are table column headers ("Legacy SCSS") and one-sentence provenance notes pointing at `a5d47c2`. Down from 42 hits baseline.
+- **`docs/conversion-plan/component-system.md`** (1 hit): `preserve-history-note` — single line is the translation-rule preamble with historical note. Down from 43 hits baseline.
+- **`components/ui/menu-list.tsx`** (1 hit): `preserve-history-note` — reworded per Q6; remaining hit is "(Original recipe: @mixin menu-modal() in the legacy SCSS partial, commit a5d47c2.)". Down from 2 hits baseline.
+- **`CHANGELOG.md`** (4 hits): All `preserve-history-note` — 3 new hits are from the epic-17 umbrella entry added by Slice 2-A (per Q4); 1 existing hit (line 26) is the original CRA→Next.js historical entry. Inventory classified original line 13 as `preserve-history-note`; the 3 new CHANGELOG hits are correct additions.
+- **`docs/archive/_README.md`** (2 hits): `preserve-history-note` — new file created by Slice 1-B; contains intentional historical references.
+
+All 14 `preserve-live-semantic` files match their inventory treatment exactly. No regressions found.
+
+### CI gate results
+
+#### `pnpm lint`
+
+**Result: FAIL (exit code 1) — 7 errors, pre-existing**
+
+Errors:
+1. `components/board/calendar/CalendarView.tsx:328` — unused biome suppression
+2. `components/board/calendar/calendar.css:82` — `!important` style
+3. `components/board/calendar/calendar.css:83` — `!important` style
+4. `components/board/calendar/calendar.css:88` — `!important` style
+5. `components/board/calendar/calendar.css:118` — `!important` style
+6. `components/board/item-drawer/UpdatesTab.tsx:3` — unsorted imports
+7. `components/shared/sidebar/WorkspaceSidebar.tsx:3` — unsorted imports (+ format)
+
+None of these files were touched by epic 17. Matches the 7 pre-existing errors reported in Slice 4-B's done report. **No new lint errors introduced by epic 17.**
+
+#### `pnpm typecheck`
+
+**Result: FAIL (exit code 2) — 2 errors, pre-existing**
+
+Errors:
+1. `components/activity/BoardActivityTrigger.tsx(33,26)` — `last_view_per_board` missing from profile type
+2. `components/board/tabs/ActivityTab.tsx(44,28)` — same error
+
+Neither file was touched by epic 17. Matches the 2 pre-existing errors reported in Slice 4-B's done report. **No new typecheck errors introduced by epic 17.**
+
+#### `pnpm test`
+
+**Result: FAIL (exit code 1) — 1 failure, pre-existing**
+
+Failure:
+- `tests/unit/workspace-sidebar.test.tsx > WorkspaceSidebar > renders board groups when rendered inside a WorkspaceProvider with sidebarBoards`
+- `TypeError: Cannot read properties of undefined (reading 'avatarUrl')` in `UserMenu.tsx:34`
+
+The failing test file (`tests/unit/workspace-sidebar.test.tsx`) and the file it exercises (`components/shared/sidebar/UserMenu.tsx`, `WorkspaceSidebar.tsx`) were not touched by epic 17 (`git diff main..epic/17-legacy-cleanup` shows only `components/ui/menu-list.tsx` and `lib/icons.ts` changed in tracked code). **No new test failures introduced by epic 17.**
+
+Passing: 1769 tests passed, 114 skipped, 12 todo (1896 total).
+
+#### `pnpm build`
+
+**Result: FAIL (exit code 1) — caused by the same 2 pre-existing typecheck errors**
+
+The build compiled successfully in ~109s but failed at the "Linting and checking validity of types" step with the identical `BoardActivityTrigger.tsx` / `ActivityTab.tsx` errors from the typecheck gate. This is a direct consequence of the same 2 pre-existing errors. No epic-17 files contributed to the build failure. Duration: ~2 minutes.
+
+Per the dispatch plan risk note: "pnpm build on main is assumed clean. If broken for unrelated reasons, Stage 5 will flag it; the executor escalates rather than fixing runtime in this epic." The failure is attributable to pre-existing typecheck errors in files epic 17 did not touch.
+
+### Overall verdict
+
+**STAGE 5-A: CLEAN** — with noted pre-existing failures.
+
+All 324 residual grep hits match allowlisted treatments (`preserve-history-note` or `preserve-live-semantic`). Zero `rewrite`-treatment hits remain. Zero `archive`-treatment hits remain outside `docs/archive/`. All CI failures are pre-existing and match the counts documented in Slice 4-B's done report (7 lint errors, 2 typecheck errors, 1 test failure). No new failures were introduced by epic 17.
+
+The `pnpm build` failure is a consequence of the same pre-existing typecheck errors and is not attributable to any file epic 17 touched. Per the dispatch plan, this is flagged for the orchestrator; no runtime fix is in scope for this epic.
