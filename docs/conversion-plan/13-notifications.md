@@ -341,7 +341,7 @@ A "snooze" feature (mark-read-and-resurface-tomorrow) is out of scope.
 
 ## Open questions
 
-- **Self-notifications.** The legacy "skip self" rule applies — never notify a user about their own action. Verify in every emitter.
+- **Self-notifications.** The skip-self rule: never notify a user about their own action. Verify in every emitter.
 - **Email throttling.** A burst of mentions across many comments could spam. Add a 5-minute coalescing window per (user, board, kind)? Defer; observe.
 - **Digest content.** What's in it? "8 mentions across 3 boards, 4 status changes, 2 new tasks assigned." Spec the layout.
 - **Notification cleanup.** Old read notifications grow forever. Add a TTL of 90 days for read notifications. Recommended.

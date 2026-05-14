@@ -43,7 +43,7 @@ Two options:
 1. **Modal/drawer over the table**, route-driven (`/.../t/<taskId>`).
 2. **Full page**.
 
-Drawer is better for "context next to the row" UX — the legacy app and monday both do this. We keep the route so links work.
+Drawer is better for "context next to the row" UX — this is the monday-style pattern. We keep the route so links work.
 
 `app/(app)/w/[slug]/b/[boardId]/t/[taskId]/page.tsx` renders into a `@modal` slot or via parallel routes. Implementation: Next.js intercepting routes (`(.)t/[taskId]`) so navigating from the table opens the drawer in place; refreshing the URL hits the same route directly and shows a full-page version.
 
@@ -261,7 +261,7 @@ This epic ships the right-side **task drawer** (the third "monday-feel" surface 
 Must-match:
 
 - **`<TaskDrawer />`** — fixed right-side drawer, `min-width: 570px` desktop / 100vw mobile. Slide-in `transform: translateX(100% → 0)` over `--motion-drawer` (`.6s`); drawer shadow `--shadow-drawer`. Header at 53px tall, font 18px. Tab strip with `1px solid --color-border` bottom and active tab indicated by `2px solid --color-primary` underline. Content scrolls 85vh with hidden scrollbar. See [§3.5](component-system.md#35-taskdrawer-right-slide-modal).
-- **Update editor card** — outline `1px solid --color-primary`, radius 4px, height 145px. Save button bg `--color-primary`, white text, height 32px, radius 4px. See [_board-modal.scss:84-129](../../frontend/src/assets/styles/cmps/modal/_board-modal.scss).
+- **Update editor card** — outline `1px solid --color-primary`, radius 4px, height 145px. Save button bg `--color-primary`, white text, height 32px, radius 4px. See [§4.3](component-system.md#43-update-editor-card).
 - **`<CommentItem />`** — `1px solid --color-border-strong` border, radius 4px, padding 16px, margin-bottom 16px. Header avatar 26px, name 16px in `--color-fg`, timestamp/menu glyph row in `--color-fg-muted`. Body padding `0 16px 16px`. See [§4.1](component-system.md#41-commentlist--commentitem).
 - **`<ActivityItem />`** — 60px row, padding `8px 0`, `1px` bottom border `--color-shadow-card`, font 16px (mobile 12px). Activity labels render with the cell's status-color bg + white text + 4px radius (matching the status pill chrome). See [§4.2](component-system.md#42-activitylist--activityitem).
 - **Inline editable description** for board description — uses the [§2.1 blockquote pattern](component-system.md#21-inline-editable-title-blockquote-pattern).

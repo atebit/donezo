@@ -262,9 +262,9 @@ Must-match:
 - **Mobile `<MainSidebar />`** — fixed-bottom row at `8vh` height, gap `30px`, hidden tools, hamburger reveals workspace sidebar full-width. See [component-system.md §1.1](component-system.md#11-mainsidebar-icon-column) (mobile contract documented there).
 - **Mobile `<WorkspaceSidebar />`** — open state takes 100vw; toggle pill hidden.
 - **Reduced motion** — `@media (prefers-reduced-motion: reduce)` overrides any animation longer than `--motion-base` (200ms) to `0ms`. Critically: the workspace-sidebar collapse, board drawer slide-in, and status-fold reveal all need this guard.
-- **Skeleton states** — replace the legacy `loader.gif` everywhere with shadcn `<Skeleton />`. Match the ~36px row height for table skeletons so the page doesn't shift layout on hydration.
+- **Skeleton states** — the current app uses shadcn `<Skeleton />` throughout; audit and fill any surfaces that still show a spinner or blank flash. Match the ~36px row height for table skeletons so the page doesn't shift layout on hydration.
 - **`<EmptyState />` primitive** — used in trash, no-boards, no-tasks-in-group, favorites-empty. Lock typography: title font-display 24px weight 500, body 14px in `--color-fg-muted`, CTA = primary button.
-- **Color contrast** — every label color in [§1.1.5](design-system.md#115-status--priority-palette-monday-colors) must hit WCAG AA against white text. The orange (`#FDAB3D`) and yellow (`#ffcb00`) labels carry **black** text in legacy at certain sizes — verify.
+- **Color contrast** — every label color in [§1.1.5](design-system.md#115-status--priority-palette-monday-colors) must hit WCAG AA against white text. The orange (`#FDAB3D`) and yellow (`#ffcb00`) labels use **black** text at smaller sizes — verify all combinations.
 - **Animation pass** — all micro-interactions from [§8.3](design-system.md#83-recurring-micro-interaction-patterns) must work after the polish pass; if any have regressed, fix here.
 
 Don't introduce new tokens here. Only consume.
