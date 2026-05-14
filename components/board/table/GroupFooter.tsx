@@ -12,9 +12,11 @@
  */
 
 import { memo } from "react";
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { getCellDef } from "@/lib/cells/registry";
 import type { CellTypeId } from "@/lib/cells/types";
 import { useBoardStore } from "@/stores/board-store";
+import { AggregateRender } from "./AggregateRender";
 
 import { useGridTemplate } from "./grid-template-context";
 import type { Column, Group } from "./types";
@@ -40,9 +42,10 @@ function FooterCell({
   const labelsByColumn = useBoardStore((s) => s.labelsByColumn);
 
   const def = getCellDef(col.type as CellTypeId);
-  const firstKind = def.aggregations[0];
+  // Slice C: use defaultAggregation first; fall back to aggregations[0]
+  const kind = def.defaultAggregation ?? def.aggregations[0];
 
-  if (firstKind === undefined) {
+  if (kind === undefined) {
     return null;
   }
 
@@ -51,20 +54,26 @@ function FooterCell({
   const config: unknown = (col.settings ?? {}) as unknown;
   const labels = labelsByColumn.get(col.id) ?? [];
 
-  let result: string;
+  let result: string | AggregateRenderDescriptor;
   try {
-    result = def.aggregate(values, firstKind, {
+    // Pass labels in config so label-aware aggregators (status, priority, tags)
+    // can build distribution segments. Labels come from Zustand store (hydrated
+    // by Slice F / Realtime), NOT from the aggregate signature — per spec.
+    result = def.aggregate(values, kind, {
       ...(config as object),
       _labels: labels,
-    }) as string;
+    } as Parameters<typeof def.aggregate>[2]);
   } catch {
     result = "—";
   }
 
+  // String returns: wrap in a text descriptor for uniform rendering path
+  const descriptor: AggregateRenderDescriptor =
+    typeof result === "string" ? { kind: "text", value: result } : result;
+
   return (
-    <div className="flex flex-col items-center justify-center text-[14px] font-medium w-full h-full">
-      <span>{result}</span>
-      <span className="text-[12px] text-[color:var(--color-fg-muted)]">{firstKind}</span>
+    <div className="flex items-center justify-start px-2 w-full h-full overflow-hidden">
+      <AggregateRender descriptor={descriptor} />
     </div>
   );
 }
