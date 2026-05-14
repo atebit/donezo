@@ -15,9 +15,6 @@ import { E2E_WORKSPACE_SLUG, SMOKE_BOARD_ID } from "./fixtures/seed";
 
 const BOARD_URL = `/w/${E2E_WORKSPACE_SLUG}/b/${SMOKE_BOARD_ID}`;
 
-// Popover must overlap the cell horizontally and left edge within ±8px.
-const _ANCHOR_LEFT_TOLERANCE = 8;
-
 interface ViewportConfig {
   label: string;
   width: number;
