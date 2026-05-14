@@ -211,7 +211,7 @@ This epic spans five different views; each needs to feel cohesive with the table
 **Match — Calendar / Timeline / Dashboard / Form**:
 - Use `--color-primary` for selected dates and active timeline today-line.
 - Status-pill bars in Timeline use the cell registry's color palette (no new color choices).
-- Dashboard widgets: 2px border `--color-border-strong` with hover border-color `--color-primary` (per [_dashboard.scss:14](../../frontend/src/assets/styles/views/_dashboard.scss)). Widget headers separated by `1px solid --color-border-strong`.
+- Dashboard widgets: 2px border `--color-border-strong` with hover border-color `--color-primary` (see [§7.2](component-system.md#72-dashboard-widgets)). Widget headers separated by `1px solid --color-border-strong`.
 - Form view inputs reuse the chrome from [03](03-auth.md) auth forms (radius 4px, padding `8px 16px`, focus border `--color-primary`).
 - Card style applied to `<TaskCard />` for kanban/calendar/timeline must come from a single shared renderer — same component, three contexts.
 

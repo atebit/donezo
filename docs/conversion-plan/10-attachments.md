@@ -2,7 +2,7 @@
 
 ## Goal
 
-Multi-file uploads per task, image/PDF previews, file column type wiring, and Supabase Storage bucket policies. Replace Cloudinary entirely. Support drag-drop into the task drawer's Files tab and into the table's `file` column. Inline image embedding in comments and long-text cells.
+Multi-file uploads per task, image/PDF previews, file column type wiring, and Supabase Storage bucket policies. Supabase Storage is the storage layer. Support drag-drop into the task drawer's Files tab and into the table's `file` column. Inline image embedding in comments and long-text cells.
 
 ## Why this is its own epic
 
