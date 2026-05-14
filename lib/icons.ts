@@ -2,7 +2,7 @@
  * Canonical icon module.
  *
  * The ONLY file allowed to import from `lucide-react`. All other code imports
- * from `@/lib/icons`. Mapping back to legacy react-icons is documented in
+ * from `@/lib/icons`. Mapping back to the original react-icons set is documented in
  * `docs/conversion-plan/design-system.md` §9.2.
  */
 export {
