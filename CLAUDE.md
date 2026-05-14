@@ -1,13 +1,12 @@
 # Donezo — Repo Rules
 
-This repo is mid-rewrite: a CRA + Express + MongoDB app is being rebuilt as a Next.js 15 + Supabase + Vercel app. The canonical plan is in [`docs/conversion-plan/`](docs/conversion-plan/), starting with [`00-overview.md`](docs/conversion-plan/00-overview.md). Read the overview before doing anything substantive.
+Donezo is a Next.js 15 + Supabase + Vercel project management application. The canonical plan is in [`docs/conversion-plan/`](docs/conversion-plan/), starting with [`00-overview.md`](docs/conversion-plan/00-overview.md). Read the overview before doing anything substantive. For archaeology of the original CRA + Express + MongoDB codebase, see git commit `a5d47c2`.
 
 ## Legacy code
 
-- The legacy CRA + MUI + Redux frontend and Express + MongoDB backend have been **removed from git** (after epic 01, commit `a5d47c2`). Maintainers may keep local copies of `frontend/` and `backend/` outside the repo, or untracked inside it — both paths are now in `.gitignore`. They exist for dev reference only.
-- **Do not re-add legacy code to the repo.** No imports from a local copy, no porting of files, no compatibility shims for legacy data shapes.
-- The new app is built fresh. Anything we want from the legacy product is recreated against the new substrate, not copied.
-- Git history before `a5d47c2` still contains the legacy code if needed for archaeology.
+The legacy CRA + MUI + Redux frontend and Express + MongoDB backend were removed from git in commit `a5d47c2` and are no longer on disk. See git history at or before that commit for archaeology.
+
+**Do not re-add legacy code to the repo.** No imports from old code, no porting of files, no compatibility shims for legacy data shapes. The app is the canonical new substrate; anything from the legacy product is recreated fresh, not copied.
 
 ## Workflow — one epic at a time
 
@@ -43,15 +42,15 @@ From the overview doc; restate here so executors don't drift:
 - **Next.js 15 App Router**, RSC-first. `"use client"` only for interactivity.
 - **Server Actions** for mutations. No `/api` route handlers except webhooks.
 - **TypeScript strict.** Generated Supabase types via `supabase gen types typescript`.
-- **Tailwind v4 + shadcn/ui + Base UI** (`@base-ui/react`). The current shadcn `base-nova` style uses Base UI, which is the explicit successor to Radix; we adopt it as the canonical primitive layer for this rebuild. No MUI, no SCSS in new code.
+- **Tailwind v4 + shadcn/ui + Base UI** (`@base-ui/react`). The current shadcn `base-nova` style uses Base UI, which is the explicit successor to Radix; we adopt it as the canonical primitive layer for this rebuild. This repo uses Tailwind v4 + shadcn/ui + Base UI, not MUI or SCSS.
 - **Forms:** React Hook Form + Zod. Same Zod schema validates client + server action.
 - **Tables:** TanStack Table + TanStack Virtual.
 - **DnD:** dnd-kit.
 - **Rich text:** Tiptap.
-- **Client state:** Zustand for UI-only state. No Redux.
+- **Client state:** Zustand for UI-only state. This repo does not use Redux.
 - **DB:** Supabase Postgres. **RLS is the source of truth for authorization.**
-- **Realtime:** Supabase Realtime. No Socket.IO.
-- **Storage:** Supabase Storage. No Cloudinary.
+- **Realtime:** Supabase Realtime. This repo does not use Socket.IO.
+- **Storage:** Supabase Storage. This repo does not use Cloudinary.
 - **Email:** Resend + React Email.
 - **Hosting:** Vercel.
 - **Tests:** Vitest (unit) + Playwright (e2e) + pgTAP (RLS policies).
