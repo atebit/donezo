@@ -8,12 +8,13 @@ import { TableCell } from "@/components/cells/TableCell";
 import { selectEffectiveConfig, selectUsersViewingTask, useBoardStore } from "@/stores/board-store";
 
 import { BulkSelectCheckbox } from "./BulkSelectCheckbox";
-import { colorToToken } from "./group-color";
+import { useGridTemplate } from "./grid-template-context";
 import { TaskDragHandle } from "./TaskDragHandle";
 import { TaskOverflowMenu } from "./TaskOverflowMenu";
 import { TaskTitleCell } from "./TaskTitleCell";
 import { useTableKeyboard } from "./table-keyboard-context";
-import type { Column, Group, Task } from "./types";
+import type { Group, Task } from "./types";
+import { useVisibleColumns } from "./use-visible-columns";
 
 interface TaskRowProps {
   task: Task;
@@ -21,44 +22,9 @@ interface TaskRowProps {
 }
 
 export function TaskRow({ task, group }: TaskRowProps) {
-  const colorToken = colorToToken(group.color);
+  const { gridTemplateColumns } = useGridTemplate();
+  const { titleColumn, otherColumns, getColumnWidth } = useVisibleColumns();
   const { focusedRowId, setFocusedRow } = useTableKeyboard();
-
-  // ---------------------------------------------------------------------------
-  // Visible non-title columns — mirrors the identification logic in StickyHeader
-  // (S19) so rows and headers stay in sync.
-  //
-  // Epic 11: prefer `effective.columnVisibility` from the active view config when
-  // present; fall back to the legacy `columnPrefsByBoard` path until Slice F
-  // completes the one-shot migration.
-  // ---------------------------------------------------------------------------
-  const columns = useBoardStore((s) => s.columns);
-  const columnPrefsByBoard = useBoardStore((s) => s.columnPrefsByBoard);
-  const boardId = useBoardStore((s) => s.boardId);
-  const effectiveConfig = useBoardStore(selectEffectiveConfig);
-  const boardPrefs = boardId ? (columnPrefsByBoard[boardId] ?? {}) : {};
-
-  const visibleColumns = columns.filter((c) => {
-    // Prefer view config visibility when present; fallback to legacy prefs.
-    if (effectiveConfig.columnVisibility && c.id in effectiveConfig.columnVisibility) {
-      return effectiveConfig.columnVisibility[c.id] !== false;
-    }
-    return !boardPrefs[c.id]?.hidden;
-  });
-
-  // Title column = first text-type column by position; same fallback as S19.
-  const textColumns = visibleColumns.filter((c) => c.type === "text");
-  const titleColumn: Column | undefined =
-    textColumns.length > 0
-      ? textColumns.reduce<Column | undefined>(
-          (min, c) => (min === undefined || c.position < min.position ? c : min),
-          undefined,
-        )
-      : visibleColumns[0];
-
-  const otherColumns = titleColumn
-    ? visibleColumns.filter((c) => c.id !== titleColumn.id)
-    : visibleColumns;
 
   // Derive aria-rowindex from visible tasks in store. O(n visible tasks) but
   // the virtualizer keeps visible count small. 1-based per ARIA spec.
@@ -79,11 +45,8 @@ export function TaskRow({ task, group }: TaskRowProps) {
 
   const isFocused = focusedRowId === task.id;
 
-  // Presence dot — shows when any other user is viewing this task in the drawer (Epic 09)
   const viewingUserIds = useBoardStore(useShallow((s) => selectUsersViewingTask(s, task.id)));
 
-  // Epic 11 (Slice D): DnD is disabled when a sort or column-based group-by is active,
-  // because task reorder would conflict with the derived order (cross-slice contract §44–46).
   const isDraggable = useBoardStore((s) => {
     const config = selectEffectiveConfig(s);
     return (s.sortKeys ?? []).length === 0 && config.groupBy?.kind !== "column";
@@ -97,8 +60,11 @@ export function TaskRow({ task, group }: TaskRowProps) {
   const style: React.CSSProperties = {
     ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
     ...(transition ? { transition } : {}),
-    // Lift dragged row above siblings so it doesn't clip under sticky headers.
     ...(isDragging ? { zIndex: 1, opacity: 0.85 } : {}),
+    // Group accent stripe as inset box-shadow — does not consume a grid track,
+    // preserving alignment with the header.
+    boxShadow: "inset 6px 0 0 0 var(--group-accent)",
+    gridTemplateColumns,
   };
 
   return (
@@ -107,61 +73,60 @@ export function TaskRow({ task, group }: TaskRowProps) {
       ref={setNodeRef}
       role="row"
       style={style}
-      className="group flex items-center h-[var(--size-cell-h)] border-b border-[color:var(--color-border-strong)]"
+      className="group relative grid items-center h-[var(--size-cell-h)] border-b border-[color:var(--color-border-strong)]"
       data-task-id={task.id}
       data-row-index={ariaRowIndex - 1}
       aria-rowindex={ariaRowIndex}
       tabIndex={isFocused ? 0 : -1}
       onFocus={() => setFocusedRow(task.id)}
     >
-      {/* 6px group accent stripe */}
-      <div
-        className="h-full flex-shrink-0 border-l-[6px]"
-        style={{ borderLeftColor: `var(${colorToken})` }}
-        aria-hidden="true"
-      />
+      {/* Drag handle — off-canvas, absolute positioned, not a grid track */}
+      {isDraggable && (
+        <div className="absolute left-0 top-0 h-full flex items-center -translate-x-full">
+          <TaskDragHandle attributes={attributes} listeners={listeners} />
+        </div>
+      )}
 
-      {/* Drag handle — hidden when sort or column group-by is active (Epic 11 §cross-slice) */}
-      {isDraggable && <TaskDragHandle attributes={attributes} listeners={listeners} />}
-
-      {/* Bulk-select checkbox */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
+      {/* Checkbox grid cell */}
+      <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
         <BulkSelectCheckbox taskId={task.id} />
       </div>
 
-      {/* Task title cell */}
-      <div className="w-[var(--size-cell-w-task)] flex-shrink-0 overflow-hidden">
+      {/* Title cell — sticky left */}
+      <div
+        className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] h-full overflow-hidden"
+        style={{ width: titleColumn ? getColumnWidth(titleColumn) : undefined }}
+      >
         <TaskTitleCell task={task} />
       </div>
 
-      {/* Per-column data cells — one per visible non-title column, in position order */}
-      {otherColumns.map((col) => {
-        // Prefer view config width; fall back to legacy prefs; default 140px.
-        const colWidth = effectiveConfig.columnWidths?.[col.id] ?? boardPrefs[col.id]?.width ?? 140;
-        return (
-          <div
-            key={col.id}
-            className="flex-shrink-0 overflow-hidden border-l border-[color:var(--color-border-strong)]"
-            style={{ width: colWidth }}
-          >
-            <TableCell task={task} column={col} />
-          </div>
-        );
-      })}
+      {/* Per-column data cells */}
+      {otherColumns.map((col) => (
+        <div
+          key={col.id}
+          className="h-full overflow-hidden border-l border-[color:var(--color-border-strong)]"
+          style={{ width: getColumnWidth(col) }}
+        >
+          <TableCell task={task} column={col} />
+        </div>
+      ))}
 
-      {/* Presence dot — visible when at least one other user is viewing this task (Epic 09 F.3) */}
+      {/* Add-column slot — empty */}
+      <div className="h-full" />
+
+      {/* Presence dot — visible when at least one other user is viewing this task */}
       {viewingUserIds.length > 0 && (
         <div
           role="status"
-          className="flex-shrink-0 w-2 h-2 rounded-full bg-[color:var(--color-primary)] mx-1"
+          className="absolute right-8 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[color:var(--color-primary)]"
           title={`${viewingUserIds.length} viewer${viewingUserIds.length === 1 ? "" : "s"} in task`}
           aria-label={`${viewingUserIds.length} user${viewingUserIds.length === 1 ? "" : "s"} currently viewing this task`}
           data-testid="task-presence-dot"
         />
       )}
 
-      {/* Overflow menu — hover-revealed, aligned to the right */}
-      <div className="ml-auto pr-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
+      {/* Overflow menu — hover-revealed, absolute on right edge */}
+      <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-[var(--motion-base)]">
         <TaskOverflowMenu task={task} group={group} />
       </div>
     </div>
