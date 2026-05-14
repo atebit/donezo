@@ -6,7 +6,7 @@ type AvatarProps = {
   src?: string | null;
   displayName?: string | null;
   email?: string | null;
-  size?: 22 | 24 | 26 | 30 | 37.4;
+  size?: 20 | 22 | 24 | 26 | 30 | 37.4;
   borderColor?: "white" | "transparent";
   className?: string;
 };

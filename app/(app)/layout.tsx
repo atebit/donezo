@@ -1,20 +1,25 @@
-import { SidebarShell } from "@/components/shared/sidebar/SidebarShell";
 import { NotificationsBootstrap } from "@/components/shared/topbar/NotificationsBootstrap";
 import { requireUser } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import type { AnyNotification } from "@/stores/notification-store";
 
+/**
+ * Outer authed layout — auth guard, notifications bootstrap.
+ *
+ * NOTE: SidebarShell is intentionally NOT mounted here. It is mounted by
+ * app/(app)/w/[workspaceSlug]/layout.tsx so that WorkspaceProvider can wrap
+ * both the sidebar and page content, making useWorkspaceMaybe() return the
+ * active workspace inside WorkspaceSidebar / WorkspaceSwitcher.
+ *
+ * Non-workspace routes (account, notifications) render without the workspace
+ * sidebar — they have no workspace context and showing "Select workspace" is
+ * misleading.
+ */
 export default async function AuthedLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
   const supabase = await createClient();
 
-  // Parallel: workspaces + initial notifications + unread count
-  const [workspacesRes, notificationsRes, unreadRes] = await Promise.all([
-    supabase
-      .from("workspace_member")
-      .select("workspace:workspace_id(id, slug, name)")
-      .eq("user_id", user.id)
-      .is("workspace.deleted_at", null),
+  const [notificationsRes, unreadRes] = await Promise.all([
     supabase
       .from("notification")
       .select("*")
@@ -32,13 +37,13 @@ export default async function AuthedLayout({ children }: { children: React.React
   const initialUnreadCount = unreadRes.count ?? 0;
 
   return (
-    <SidebarShell user={user} workspaces={workspacesRes.data ?? []}>
+    <>
       <NotificationsBootstrap
         userId={user.id}
         initialNotifications={initialNotifications}
         initialUnreadCount={initialUnreadCount}
       />
       {children}
-    </SidebarShell>
+    </>
   );
 }

@@ -7,7 +7,7 @@
  */
 
 import { Calendar } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCount, aggregateCountEmpty } from "@/lib/cells/aggregations";
 import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
@@ -98,21 +98,18 @@ export const dateType: CellTypeDef<DateCellValue, DateConfig> = {
   },
 
   aggregations: ["count", "count_empty", "range", "earliest", "latest"],
+  defaultAggregation: "range",
 
-  aggregate: (values, kind: AggregationKind) => {
+  aggregate: (values, kind: AggregationKind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
     if (kind === "count_empty") return aggregateCountEmpty(values);
     if (kind === "range") {
       const isos = values.filter((v): v is DateCellValue => v != null).map((v) => v.iso);
-      if (isos.length === 0) return "—";
-      const min = new Date(Math.min(...isos.map((s) => new Date(s).getTime())));
-      const max = new Date(Math.max(...isos.map((s) => new Date(s).getTime())));
-      const fmt = new Intl.DateTimeFormat(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-      return `${fmt.format(min)} – ${fmt.format(max)}`;
+      if (isos.length === 0) return { kind: "date_range", min: null, max: null };
+      const times = isos.map((s) => new Date(s).getTime());
+      const minIso = isos[times.indexOf(Math.min(...times))] ?? null;
+      const maxIso = isos[times.indexOf(Math.max(...times))] ?? null;
+      return { kind: "date_range", min: minIso, max: maxIso };
     }
     if (kind === "earliest") {
       const dates = values

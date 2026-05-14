@@ -7,7 +7,7 @@
  */
 
 import { Phone } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCount } from "@/lib/cells/aggregations";
 import type { CellTypeDef } from "@/lib/cells/types";
 
@@ -54,10 +54,16 @@ export const phoneType: CellTypeDef<string, Record<string, never>> = {
     return false;
   },
 
-  aggregations: ["count"],
+  aggregations: ["count", "count_non_empty"],
+  defaultAggregation: "count_non_empty",
 
-  aggregate: (values, kind) => {
+  aggregate: (values, kind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
+    if (kind === "count_non_empty") {
+      const total = values.length;
+      const nonEmpty = values.filter((v) => v != null && v !== "").length;
+      return { kind: "count_non_empty", nonEmpty, total };
+    }
     return "—";
   },
 

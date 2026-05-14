@@ -7,7 +7,7 @@
  */
 
 import { Users } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCount, aggregateCountEmpty } from "@/lib/cells/aggregations";
 import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
@@ -80,8 +80,9 @@ export const personType: CellTypeDef<PersonCellValue, Record<string, never>> = {
   },
 
   aggregations: ["count", "count_empty", "count_unique"],
+  defaultAggregation: "count_unique",
 
-  aggregate: (values, kind: AggregationKind) => {
+  aggregate: (values, kind: AggregationKind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
     if (kind === "count_empty")
       return aggregateCountEmpty(
@@ -96,7 +97,8 @@ export const personType: CellTypeDef<PersonCellValue, Record<string, never>> = {
           }
         }
       }
-      return unique.size.toString();
+      const userIds = Array.from(unique);
+      return { kind: "unique_count_avatars", count: userIds.length, userIds };
     }
     return "—";
   },

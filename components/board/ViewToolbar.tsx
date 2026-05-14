@@ -4,7 +4,7 @@
  * ViewToolbar — the row below <ViewTabs>.
  *
  * Layout (component-system §1.4):
- *   [Filter (N)] [Sort (N)] [Hide (N)] [Group: <name>] [Density] [Search ──] [💾 Save] [↺ Reset]
+ *   [Filter (N)] [Sort (N)] [Hide (N)] [Group: <name>] [Search ──] [💾 Save] [↺ Reset]
  *
  * Token mapping:
  *   - Button height: 32px (h-8).
@@ -16,8 +16,8 @@
  *   - Save/Reset: visible only when hasUnsavedChanges is true.
  *   - Save: additionally gated by permission (admin+ for shared, owner for personal).
  *
- * All five popovers are from Slice C:
- *   FilterBuilder, SortBuilder, ColumnVisibilityPanel, GroupByPicker, DensityToggle.
+ * Note: DensityToggle has been moved into ViewTabDropdown (per-view settings,
+ * epic 16 Slice D).
  *
  * Count badges on Filter/Sort/Hide show the number of active items.
  */
@@ -27,7 +27,6 @@ import { useMemo } from "react";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
 import { ColumnVisibilityPanel } from "@/components/filters/ColumnVisibilityPanel";
-import { DensityToggle } from "@/components/filters/DensityToggle";
 import { FilterBuilder } from "@/components/filters/FilterBuilder";
 import { GroupByPicker } from "@/components/filters/GroupByPicker";
 import { PopoverShell } from "@/components/filters/PopoverShell";
@@ -114,21 +113,21 @@ function CountBadge({ count }: { count: number }) {
 //   sort:    on/on/on/on/off/off
 //   hide:    on/off/off/off/off/off
 //   group:   on/off/off/off/off/off
-//   density: on/off/off/off/off/off
 //   search:  on/on/on/on/off/off
 //   save:    on/on/on/on/on/on
 //   reset:   on/on/on/on/on/on
+// (density moved to ViewTabDropdown — per-view setting)
 // ---------------------------------------------------------------------------
 
-type ToolbarItem = "filter" | "sort" | "hide" | "group" | "density" | "search";
+type ToolbarItem = "filter" | "sort" | "hide" | "group" | "search";
 
 const KIND_DISABLED_ITEMS: Record<string, ToolbarItem[]> = {
   table: [],
-  kanban: ["hide", "group", "density"],
-  calendar: ["hide", "group", "density"],
-  timeline: ["hide", "group", "density"],
-  dashboard: ["sort", "hide", "group", "density", "search"],
-  form: ["filter", "sort", "hide", "group", "density", "search"],
+  kanban: ["hide", "group"],
+  calendar: ["hide", "group"],
+  timeline: ["hide", "group"],
+  dashboard: ["sort", "hide", "group", "search"],
+  form: ["filter", "sort", "hide", "group", "search"],
 };
 
 // ---------------------------------------------------------------------------
@@ -328,24 +327,6 @@ export function ViewToolbar() {
             onChange={(next: GroupBy) => applyDraft({ groupBy: next })}
           />
         </PopoverShell>
-      )}
-
-      {/* ── Density ── (inline, not in a popover) */}
-      {disabledItems.has("density") ? (
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          title={`Density is not available on ${viewKind} view`}
-          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
-        >
-          Density
-        </button>
-      ) : (
-        <DensityToggle
-          density={effective.density}
-          onChange={(next) => applyDraft({ density: next })}
-        />
       )}
 
       {/* ── Search (grows to fill remaining space) ── */}

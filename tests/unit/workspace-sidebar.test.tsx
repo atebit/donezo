@@ -16,11 +16,6 @@ const boards: SidebarBoards = {
 const memberRole = "member" as const;
 
 describe("WorkspaceSidebar", () => {
-  it("renders 'Select a workspace' copy when rendered outside a WorkspaceProvider", () => {
-    render(<WorkspaceSidebar workspaces={[]} />);
-    expect(screen.getByText("Select a workspace to see your boards")).toBeTruthy();
-  });
-
   it("renders board groups when rendered inside a WorkspaceProvider with sidebarBoards", () => {
     render(
       <WorkspaceProvider workspace={ws1} role={memberRole} sidebarBoards={boards}>

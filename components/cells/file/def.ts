@@ -84,6 +84,7 @@ export const fileType: CellTypeDef<FileCellValue, Record<string, never>> = {
   },
 
   aggregations: ["sum"],
+  defaultAggregation: "sum",
 
   aggregate: (values, kind: AggregationKind) => {
     if (kind === "sum") {

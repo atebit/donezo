@@ -26,6 +26,7 @@
  */
 
 import React from "react";
+import { EmptyCellTile } from "@/components/cells/_shared/EmptyCellTile";
 import { labelTextColor } from "@/lib/cells/label-text-color";
 import type { TaskRow } from "@/lib/cells/types";
 import { useBoardStore } from "@/stores/board-store";
@@ -51,9 +52,14 @@ function StatusCellInner({ value, columnId }: StatusCellProps) {
   const labels = columnId ? (labelsByColumn.get(columnId) ?? []) : [];
   const label = value?.labelId ? labels.find((l) => l.id === value.labelId) : undefined;
 
-  const bgColor = label?.color ?? "var(--color-label-gray)";
-  const labelName = label?.name ?? null;
-  const textColor = label ? labelTextColor(label.color) : null;
+  // Empty state: dashed-border tile (Epic 16 Slice C — no gray block).
+  if (!label) {
+    return <EmptyCellTile />;
+  }
+
+  const bgColor = label.color;
+  const labelName = label.name;
+  const textColor = labelTextColor(label.color);
 
   return (
     /**
@@ -74,16 +80,14 @@ function StatusCellInner({ value, columnId }: StatusCellProps) {
       className="relative min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center justify-center overflow-hidden border border-[color:var(--color-border-strong)] cursor-pointer group"
       style={{ backgroundColor: bgColor }}
       role="img"
-      aria-label={labelName ?? "No status"}
+      aria-label={labelName}
     >
-      {labelName && (
-        <span
-          className="text-xs font-medium truncate px-2 select-none"
-          style={{ color: textColor ?? undefined }}
-        >
-          {labelName}
-        </span>
-      )}
+      <span
+        className="text-xs font-medium truncate px-2 select-none"
+        style={{ color: textColor ?? undefined }}
+      >
+        {labelName}
+      </span>
       {/* Diagonal fold reveal — top-right corner triangle */}
       <span
         className={[

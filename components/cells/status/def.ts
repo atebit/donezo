@@ -10,12 +10,8 @@
  */
 
 import { Circle } from "lucide-react";
-
-import {
-  aggregateCount,
-  aggregateCountEmpty,
-  aggregatePercentByLabel,
-} from "@/lib/cells/aggregations";
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
+import { aggregateCount, aggregateCountEmpty } from "@/lib/cells/aggregations";
 import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 import type { StatusCellValue } from "./Cell";
 import { Cell } from "./Cell";
@@ -70,17 +66,37 @@ export const statusType: CellTypeDef<StatusCellValue, Record<string, never>> = {
   },
 
   aggregations: ["count", "count_empty", "percent_by_label"],
+  defaultAggregation: "percent_by_label",
 
-  aggregate: (values, kind, _config) => {
+  aggregate: (values, kind, config): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
     if (kind === "count_empty") return aggregateCountEmpty(values);
     if (kind === "percent_by_label") {
-      // aggregatePercentByLabel needs the label definitions to map ids → names.
-      // The aggregate function receives typed values; label metadata is not
-      // available here without the store. For v1, we compute percentages using
-      // labelId as the bucket key and display the raw id.
-      // POLISH ITEM (epic 14): inject label metadata so names display correctly.
-      return aggregatePercentByLabel(values, []);
+      // Build a label_distribution descriptor using labels from config._labels
+      // (injected by FooterCell from the board store — not from the aggregate
+      // signature itself, per Epic 16 architecture).
+      const cfg = config as unknown as {
+        _labels?: Array<{ id: string; name: string; color: string }>;
+      };
+      const labelDefs = cfg?._labels ?? [];
+
+      const counts = new Map<string, number>();
+      for (const v of values) {
+        if (v == null) continue;
+        counts.set(v.labelId, (counts.get(v.labelId) ?? 0) + 1);
+      }
+
+      const segments = Array.from(counts.entries()).map(([labelId, count]) => {
+        const lbl = labelDefs.find((l) => l.id === labelId);
+        return {
+          labelId,
+          count,
+          color: lbl?.color ?? "var(--color-label-gray)",
+          name: lbl?.name ?? labelId,
+        };
+      });
+
+      return { kind: "label_distribution", segments };
     }
     return "—";
   },

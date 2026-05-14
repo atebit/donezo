@@ -82,6 +82,8 @@ export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
   };
 
   return (
+    // biome-ignore lint/a11y/useFocusableInteractive: column header divs in a CSS grid are display-only; keyboard navigation is handled by the inner interactive children
+    // biome-ignore lint/a11y/useSemanticElements: <th> cannot be used inside a CSS grid layout; role="columnheader" is intentional for a11y + Playwright targeting
     <div
       ref={draggable ? sortable.setNodeRef : undefined}
       style={
@@ -95,6 +97,7 @@ export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
       }
       {...(draggable ? sortable.attributes : {})}
       {...(draggable ? sortable.listeners : {})}
+      role="columnheader"
       className="relative flex h-10 items-center gap-1 border-r border-[color:var(--color-border-strong)] px-2 select-none group"
       data-column-id={column.id}
     >

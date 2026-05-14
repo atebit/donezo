@@ -63,6 +63,10 @@ const DERIVED_TYPES = new Set<CellTypeId>([
 interface CellEditorProps {
   task: Task;
   column: Column;
+  /** The DOM element that triggered the editor open (the cell button). Used as
+   *  the anchor for Base UI's Popover.Positioner so the popover appears next to
+   *  the triggering cell instead of at viewport (0,0). */
+  anchorEl: HTMLElement | null;
   onClose: () => void;
 }
 
@@ -70,7 +74,7 @@ interface CellEditorProps {
 // CellEditor
 // ---------------------------------------------------------------------------
 
-export function CellEditor({ task, column, onClose }: CellEditorProps) {
+export function CellEditor({ task, column, anchorEl, onClose }: CellEditorProps) {
   // ── Derived-type guard ───────────────────────────────────────────────────
   const columnType = column.type as CellTypeId;
   useEffect(() => {
@@ -83,11 +87,11 @@ export function CellEditor({ task, column, onClose }: CellEditorProps) {
     return null;
   }
 
-  return <CellEditorInner task={task} column={column} onClose={onClose} />;
+  return <CellEditorInner task={task} column={column} anchorEl={anchorEl} onClose={onClose} />;
 }
 
 // Separated so we only run hooks when not derived (avoids conditional hook calls)
-function CellEditorInner({ task, column, onClose }: CellEditorProps) {
+function CellEditorInner({ task, column, anchorEl, onClose }: CellEditorProps) {
   const columnType = column.type as CellTypeId;
   const def = getCellDef(columnType);
 
@@ -192,13 +196,18 @@ function CellEditorInner({ task, column, onClose }: CellEditorProps) {
         }}
       >
         {/*
-          A hidden trigger is required by Base UI for positioning context.
-          The cell click already happened; we open immediately with `open` prop.
+          Controlled anchor pattern: no hidden trigger needed.
+          anchorEl is the cell button DOM node captured by TableCell on click.
+          Popover.Positioner positions the popup relative to that element.
+          Popover.Portal MUST remain — removing it throws Base UI error #45
+          during SSR and breaks page-level redirect().
         */}
-        <Popover.Trigger render={<span />} style={{ display: "none" }} aria-hidden="true" />
         <Popover.Portal>
-          <Popover.Positioner sideOffset={0} align="start">
-            <Popover.Popup className="z-[var(--z-popover)] bg-[color:var(--color-surface)] border border-[color:var(--color-border-strong)] rounded-[var(--radius-sm)] shadow-[var(--shadow-modal)]">
+          <Popover.Positioner anchor={anchorEl} sideOffset={0} align="start">
+            <Popover.Popup
+              data-testid="cell-editor-popup"
+              className="z-[var(--z-popover)] bg-[color:var(--color-surface)] border border-[color:var(--color-border-strong)] rounded-[var(--radius-sm)] shadow-[var(--shadow-modal)]"
+            >
               {/* biome-ignore lint/suspicious/noExplicitAny: def.Editor is heterogeneous; props are structurally compatible */}
               <def.Editor {...(editorProps as any)} />
             </Popover.Popup>

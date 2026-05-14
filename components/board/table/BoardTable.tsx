@@ -33,16 +33,19 @@ import { AddTaskFooter } from "./AddTaskFooter";
 import { BulkActionBar } from "./BulkActionBar";
 import { DndProviders, type DndProvidersProps } from "./DndProviders";
 import { NoGroupsEmptyState } from "./EmptyStates";
+import { GroupColumnHeader } from "./GroupColumnHeader";
 import { GroupDragHandle } from "./GroupDragHandle";
 import { GroupFooter } from "./GroupFooter";
 import { GroupOverflowMenu } from "./GroupOverflowMenu";
-import { colorToToken } from "./group-color";
+import { GroupSection } from "./GroupSection";
+import { GridTemplateContext } from "./grid-template-context";
 import { StickyHeader } from "./StickyHeader";
 import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./TableVirtualizer";
 import { TaskRow } from "./TaskRow";
 import { TableKeyboardContext, useTableKeyboard } from "./table-keyboard-context";
 import { TableScrollContext } from "./table-scroll-context";
 import type { Group } from "./types";
+import { useVisibleColumns } from "./use-visible-columns";
 
 // isQueuedResult — type-narrowing guard for withOutbox's queued branch.
 // Kept local so it does not add a new export to lib/realtime/outbox.ts.
@@ -133,7 +136,6 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
   const { registerGroupTitleRef } = useTableKeyboard();
 
   const isCollapsed = useBoardStore((s) => s.collapsedGroupIds.has(group.id));
-  const colorToken = colorToToken(group.color);
 
   // Ref to the group title's EditableTitleHandle — the overflow menu Rename item
   // calls registerGroupTitleRef to notify the controller, which then calls
@@ -231,8 +233,8 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
         </svg>
       </button>
 
-      {/* Group title — colored in the group accent */}
-      <span style={{ color: `var(${colorToken})` }}>
+      {/* Group title — colored via --group-accent set once on GroupSection */}
+      <span style={{ color: "var(--group-accent)" }}>
         <EditableTitle
           ref={editableRef}
           initialValue={group.name}
@@ -264,6 +266,10 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
 // from the already-hydrated store and renders the table.
 // ---------------------------------------------------------------------------
 
+// Width constants for the grid template.
+const MIN_WIDTH = 80;
+const TITLE_MIN_WIDTH = 200;
+
 export function BoardTable() {
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
   const [, startTransition] = useTransition();
@@ -276,6 +282,22 @@ export function BoardTable() {
   const collapsedGroupIds = useBoardStore((s) => s.collapsedGroupIds);
   const cells = useBoardStore((s) => s.cells);
   const columns = useBoardStore(useShallow((s) => s.columns));
+
+  // ---------------------------------------------------------------------------
+  // Grid template — shared column axis for header, task rows, and footers.
+  // Computed once here and provided via GridTemplateContext.
+  // ---------------------------------------------------------------------------
+  const { titleColumn, otherColumns, getColumnWidth } = useVisibleColumns();
+  const gridTemplateColumns = useMemo(() => {
+    const checkboxTrack = "var(--size-cell-w-checkbox)";
+    const titleTrack = titleColumn
+      ? `minmax(${TITLE_MIN_WIDTH}px, ${getColumnWidth(titleColumn)}px)`
+      : `minmax(${TITLE_MIN_WIDTH}px, var(--size-cell-w-task))`;
+    const otherTracks = otherColumns.map((c) => `minmax(${MIN_WIDTH}px, ${getColumnWidth(c)}px)`);
+    return [checkboxTrack, titleTrack, ...otherTracks, "auto"].join(" ");
+  }, [titleColumn, otherColumns, getColumnWidth]);
+
+  const gridTemplateContextValue = useMemo(() => ({ gridTemplateColumns }), [gridTemplateColumns]);
 
   // Epic 11 — view state. The hook is client-only; it reads URL and syncs the store.
   const { effective } = useBoardView();
@@ -402,11 +424,17 @@ export function BoardTable() {
       result.push({ kind: "group-header", group: groupObj });
 
       if (!collapsedGroupIds.has(bucket.key)) {
+        // Per-group column header repeat (always shown when not collapsed).
+        result.push({ kind: "group-column-header", group: groupObj });
+
         for (const task of bucket.tasks) {
           result.push({ kind: "task", task, group: groupObj });
         }
 
-        result.push({ kind: "group-footer", group: groupObj });
+        // Hide the aggregation footer when the group has no tasks.
+        if (bucket.tasks.length > 0) {
+          result.push({ kind: "group-footer", group: groupObj });
+        }
 
         // Suppress "+ Add task" for column-based group-by buckets.
         if (!isColumnGroupBy) {
@@ -762,17 +790,37 @@ export function BoardTable() {
         const taskCount = tasks.filter((t) => t.group_id === entry.group.id).length;
         const taskIds = taskIdsByGroup.get(entry.group.id) ?? [];
         return (
-          <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-            <GroupHeaderRow group={entry.group} taskCount={taskCount} />
-          </SortableContext>
+          <GroupSection group={entry.group}>
+            <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+              <GroupHeaderRow group={entry.group} taskCount={taskCount} />
+            </SortableContext>
+          </GroupSection>
         );
       }
+      case "group-column-header":
+        return (
+          <GroupSection group={entry.group}>
+            <GroupColumnHeader />
+          </GroupSection>
+        );
       case "task":
-        return <TaskRow task={entry.task} group={entry.group} />;
-      case "group-footer": // S21 — per-group aggregation footer
-        return <GroupFooter group={entry.group} />;
+        return (
+          <GroupSection group={entry.group}>
+            <TaskRow task={entry.task} group={entry.group} />
+          </GroupSection>
+        );
+      case "group-footer":
+        return (
+          <GroupSection group={entry.group}>
+            <GroupFooter group={entry.group} />
+          </GroupSection>
+        );
       case "add-task-footer":
-        return <AddTaskFooter group={entry.group} />;
+        return (
+          <GroupSection group={entry.group}>
+            <AddTaskFooter group={entry.group} />
+          </GroupSection>
+        );
       case "add-group-footer":
         return (
           <AddGroupFooter
@@ -834,23 +882,31 @@ export function BoardTable() {
       {/* containerRef is on the outermost div so keydown events from any focused
           row (inside the tree) bubble up to the single listener attached by the
           keyboard nav hook. */}
-      <div ref={containerRef} className="flex flex-col flex-1 min-h-0">
-        <TableScrollContext.Provider value={scrollContextValue}>
-          <DndProviders
-            onGroupReorder={handleGroupReorder}
-            onTaskReorder={handleTaskReorder}
-            onColumnReorder={handleColumnReorder}
-          >
-            {/* StickyHeader is INSIDE DndProviders so the ColumnReorder
-                SortableContext inside StickyHeader has a parent DndContext.
-                DndProviders renders <DndContext> with no DOM wrapper, so
-                sticky positioning (sticky top-0) is unaffected. */}
-            <StickyHeader />
-            <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
-              <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
-            </SortableContext>
-          </DndProviders>
-        </TableScrollContext.Provider>
+      {/* biome-ignore lint/a11y/useSemanticElements: CSS-grid table; <table> doesn't fit the virtualized + sticky layout */}
+      <div
+        ref={containerRef}
+        className="flex flex-col flex-1 min-h-0"
+        data-testid="board-table"
+        role="grid"
+      >
+        <GridTemplateContext.Provider value={gridTemplateContextValue}>
+          <TableScrollContext.Provider value={scrollContextValue}>
+            <DndProviders
+              onGroupReorder={handleGroupReorder}
+              onTaskReorder={handleTaskReorder}
+              onColumnReorder={handleColumnReorder}
+            >
+              {/* StickyHeader is INSIDE DndProviders so the ColumnReorder
+                  SortableContext inside StickyHeader has a parent DndContext.
+                  DndProviders renders <DndContext> with no DOM wrapper, so
+                  sticky positioning (sticky top-0) is unaffected. */}
+              <StickyHeader />
+              <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
+                <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
+              </SortableContext>
+            </DndProviders>
+          </TableScrollContext.Provider>
+        </GridTemplateContext.Provider>
         {/* BulkActionBar — floats above the bottom of the scroll container;
             renders nothing (opacity-0, pointer-events-none) when selection is empty */}
         <BulkActionBar />

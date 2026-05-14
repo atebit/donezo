@@ -34,16 +34,38 @@ import { MigrateLegacyColumnPrefs } from "@/components/board/MigrateLegacyColumn
 import type { TableData } from "@/components/board/table/types";
 import { useBoardRealtime } from "@/hooks/use-board-realtime";
 import { flushOutbox } from "@/lib/realtime/outbox";
+import type { Database } from "@/lib/supabase/types";
 import { useBoardStore } from "@/stores/board-store";
+
+type LabelRow = Database["public"]["Tables"]["label"]["Row"];
 
 interface BoardDataProviderProps {
   boardId: string;
   userId: string;
   initial: TableData;
+  /**
+   * Labels for all status/priority columns on this board.
+   * Passed separately (not via TableData) to keep the TableData type stable
+   * while Slice A refactors table layout concerns.
+   *
+   * Without this, labelsByColumn is always empty after page load, causing:
+   *   (a) all status/priority cells to render gray (label not resolvable), and
+   *   (b) the "same-type column independence" regression where two status columns
+   *       appear to share state because neither can resolve its own label set.
+   *
+   * Slice F root-cause fix — epic 16.
+   */
+  labels?: LabelRow[];
   children: ReactNode;
 }
 
-export function BoardDataProvider({ boardId, userId, initial, children }: BoardDataProviderProps) {
+export function BoardDataProvider({
+  boardId,
+  userId,
+  initial,
+  labels,
+  children,
+}: BoardDataProviderProps) {
   const hydratedRef = useRef<string | null>(null);
 
   // Mount the board-scoped Realtime subscription (postgres_changes + presence +
@@ -92,6 +114,8 @@ export function BoardDataProvider({ boardId, userId, initial, children }: BoardD
       groups: initial.groups,
       tasks: initial.tasks,
       cells: initial.cells,
+      columns: initial.columns,
+      labels: labels ?? [],
     });
     // Epic 10 — hydrate board-level attachments (idempotent, filters non-uploaded)
     store.hydrateAttachmentsForBoard(initial.attachments ?? []);

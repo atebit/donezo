@@ -15,6 +15,7 @@ import {
   RenameViewSchema,
   SaveViewSchema,
 } from "@/lib/validations/view";
+import { uniqueName } from "@/lib/views/unique-name";
 
 // ---------------------------------------------------------------------------
 // createView
@@ -37,6 +38,17 @@ export const createView = withUser(async ({ supabase, userId }, raw) => {
   // Admin+ to create shared; member+ to create personal.
   await requireBoardRole(input.boardId, input.isShared ? "admin" : "member");
 
+  // Deduplicate view name: if a view with the same name already exists on this
+  // board, auto-suffix with (2), (3), etc. This avoids duplicate "Main table"
+  // tabs (epic 16 Slice D).
+  const { data: existingViews } = await supabase
+    .from("view")
+    .select("name")
+    .eq("board_id", input.boardId);
+
+  const existingNames = (existingViews ?? []).map((v) => v.name);
+  const dedupedName = uniqueName(input.name ?? "Main table", existingNames);
+
   // Next position = max(position) + 1 scoped to this board.
   const { data: maxRow } = await supabase
     .from("view")
@@ -53,7 +65,7 @@ export const createView = withUser(async ({ supabase, userId }, raw) => {
     .insert({
       board_id: input.boardId,
       owner_id: input.isShared ? null : userId,
-      name: input.name,
+      name: dedupedName,
       kind: input.kind,
       is_shared: input.isShared,
       // ViewConfig is structurally compatible with Json but TypeScript can't

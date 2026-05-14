@@ -11,7 +11,7 @@
  */
 
 import { BarChart2 } from "lucide-react";
-
+import type { AggregateRenderDescriptor } from "@/lib/cells/aggregate-descriptors";
 import { aggregateCount } from "@/lib/cells/aggregations";
 import type { AggregationKind, CellTypeDef } from "@/lib/cells/types";
 
@@ -71,22 +71,20 @@ export const timelineType: CellTypeDef<TimelineCellValue, Record<string, never>>
   },
 
   aggregations: ["count", "range"],
+  defaultAggregation: "range",
 
-  aggregate: (values, kind: AggregationKind) => {
+  aggregate: (values, kind: AggregationKind): string | AggregateRenderDescriptor => {
     if (kind === "count") return aggregateCount(values);
     if (kind === "range") {
       const nonNull = values.filter((v): v is TimelineCellValue => v != null);
-      if (nonNull.length === 0) return "—";
+      if (nonNull.length === 0) return { kind: "date_range", min: null, max: null };
       const starts = nonNull.map((v) => new Date(v.start).getTime());
       const ends = nonNull.map((v) => new Date(v.end).getTime());
-      const min = new Date(Math.min(...starts));
-      const max = new Date(Math.max(...ends));
-      const fmt = new Intl.DateTimeFormat(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-      return `${fmt.format(min)} – ${fmt.format(max)}`;
+      const minTime = Math.min(...starts);
+      const maxTime = Math.max(...ends);
+      const minIso = nonNull[starts.indexOf(minTime)]?.start ?? null;
+      const maxIso = nonNull[ends.indexOf(maxTime)]?.end ?? null;
+      return { kind: "date_range", min: minIso, max: maxIso };
     }
     return "—";
   },

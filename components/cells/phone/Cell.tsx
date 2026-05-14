@@ -23,11 +23,7 @@ function PhoneCellInner({ value, config: _config, row: _row }: PhoneCellProps) {
         >
           {value}
         </a>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          Empty
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }

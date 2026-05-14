@@ -39,6 +39,7 @@ interface TableCellProps {
 
 function TableCellInner({ task, column }: TableCellProps) {
   const [editing, setEditing] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const columnType = column.type as CellTypeId;
   const def = getCellDef(columnType);
@@ -55,22 +56,38 @@ function TableCellInner({ task, column }: TableCellProps) {
   const { userId } = useBoard();
   const { emit } = useCursorBroadcast(boardId ?? "", userId);
 
-  if (editing) {
-    return <CellEditor task={task} column={column} onClose={() => setEditing(false)} />;
-  }
-
   // Cast to a looser component type so we can pass optional contract props
   // (columnId, members) that individual Cell components accept but that
   // CellTypeDef.Cell's generic signature doesn't declare.
   // biome-ignore lint/suspicious/noExplicitAny: intentional boundary cast — each Cell component declares these as optional in its own interface
   const CellComponent = def.Cell as React.ComponentType<any>;
 
+  const isPopoverMode = def.editorMode === "popover";
+
+  // Inline-mode editors (text, number, email, …) replace the cell content
+  // in place — no anchor needed.
+  if (editing && !isPopoverMode) {
+    return (
+      <div className="relative" data-task-id={task.id} data-column-id={column.id}>
+        <CellEditor task={task} column={column} anchorEl={null} onClose={() => setEditing(false)} />
+        <CursorOverlay taskId={task.id} columnId={column.id} />
+      </div>
+    );
+  }
+
+  // Popover-mode editors (status, date, person, …) float over the cell. The
+  // button MUST stay mounted while editing so it remains the anchor for
+  // Popover.Positioner — if we swap it out for <CellEditor /> the captured
+  // anchorEl becomes a detached node and Base UI falls back to viewport (0,0).
   return (
     // Relative wrapper required for CursorOverlay's absolute positioning.
     <div className="relative" data-task-id={task.id} data-column-id={column.id}>
       <button
         type="button"
-        onClick={() => setEditing(true)}
+        onClick={(e) => {
+          setAnchorEl(e.currentTarget);
+          setEditing(true);
+        }}
         onMouseEnter={() => emit(task.id, column.id)}
         onFocus={() => emit(task.id, column.id)}
         className="cursor-pointer w-full text-left p-0 border-0 bg-transparent"
@@ -89,6 +106,14 @@ function TableCellInner({ task, column }: TableCellProps) {
           members={undefined}
         />
       </button>
+      {editing && (
+        <CellEditor
+          task={task}
+          column={column}
+          anchorEl={anchorEl}
+          onClose={() => setEditing(false)}
+        />
+      )}
       {/* Cursor overlay — renders other users' colored dots in cell top-right */}
       <CursorOverlay taskId={task.id} columnId={column.id} />
     </div>

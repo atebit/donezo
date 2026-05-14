@@ -40,11 +40,7 @@ function LinkCellInner({ value, config: _config, row: _row }: LinkCellProps) {
         >
           {getDisplayLabel(value)}
         </a>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          Empty
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }

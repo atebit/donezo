@@ -12,6 +12,7 @@ import { createView } from "./views/actions";
 
 type Cell = Database["public"]["Tables"]["cell"]["Row"];
 type AttachmentRow = Database["public"]["Tables"]["attachment"]["Row"];
+type LabelRow = Database["public"]["Tables"]["label"]["Row"];
 type ViewRow = Database["public"]["Tables"]["view"]["Row"];
 
 // ---------------------------------------------------------------------------
@@ -187,23 +188,57 @@ export default async function BoardLayout({
   const initialActiveViewId = resolveActiveViewId(views, lastViewId);
 
   // ---------------------------------------------------------------------------
-  // Round 2 — load cells and uploaded attachments in parallel.
+  // Round 2 — load cells, uploaded attachments, and labels in parallel.
+  //
+  // Labels are queried separately from column ids so StatusCell / PriorityCell
+  // can resolve their label options after page load. Without this query the
+  // labelsByColumn store map is always empty after a refresh, causing:
+  //   (a) all status/priority cells to render gray (no label color/name), and
+  //   (b) the "same-type column independence" regression where two status
+  //       columns appear to share state because neither can resolve its label.
+  //
+  // Board-scoped filter: label.column_id FK → column.board_id.
+  // We derive column ids from the already-fetched columns array so this is
+  // a single IN query (no extra join). If there are no columns (new board),
+  // we skip the query.
   // ---------------------------------------------------------------------------
+  const columnIds = columns.map((c) => c.id);
   const taskIds = tasks.map((t) => t.id);
   let cells: Cell[] = [];
   let attachments: AttachmentRow[] = [];
+  let labels: LabelRow[] = [];
 
-  if (taskIds.length > 0) {
-    const [cellsResult, attachmentsResult] = await Promise.all([
-      supabase.from("cell").select("*").in("task_id", taskIds),
-      supabase.from("attachment").select("*").eq("board_id", boardId).eq("is_uploaded", true),
-    ]);
+  const fetchCells =
+    taskIds.length > 0
+      ? supabase.from("cell").select("*").in("task_id", taskIds)
+      : Promise.resolve({ data: [] as Cell[], error: null });
 
-    if (cellsResult.error) throw cellsResult.error;
-    if (attachmentsResult.error) throw attachmentsResult.error;
-    cells = cellsResult.data;
-    attachments = attachmentsResult.data;
-  }
+  const fetchAttachments =
+    taskIds.length > 0
+      ? supabase.from("attachment").select("*").eq("board_id", boardId).eq("is_uploaded", true)
+      : Promise.resolve({ data: [] as AttachmentRow[], error: null });
+
+  const fetchLabels =
+    columnIds.length > 0
+      ? supabase
+          .from("label")
+          .select("*")
+          .in("column_id", columnIds)
+          .order("position", { ascending: true })
+      : Promise.resolve({ data: [] as LabelRow[], error: null });
+
+  const [cellsResult, attachmentsResult, labelsResult] = await Promise.all([
+    fetchCells,
+    fetchAttachments,
+    fetchLabels,
+  ]);
+
+  if (cellsResult.error) throw cellsResult.error;
+  if (attachmentsResult.error) throw attachmentsResult.error;
+  if (labelsResult.error) throw labelsResult.error;
+  cells = cellsResult.data ?? [];
+  attachments = attachmentsResult.data ?? [];
+  labels = labelsResult.data ?? [];
 
   // The initial data blob passed to <BoardDataProvider>.
   const initial = {
@@ -235,7 +270,12 @@ export default async function BoardLayout({
        * the user switches between view kinds. This satisfies the "must NOT re-hydrate
        * on intra-board kind navigation" contract from the epic spec.
        */}
-      <BoardDataProvider boardId={boardId} userId={currentUser.id} initial={initial}>
+      <BoardDataProvider
+        boardId={boardId}
+        userId={currentUser.id}
+        initial={initial}
+        labels={labels}
+      >
         <div className="flex flex-col h-full min-h-0">
           <BoardHeader boardId={board.id} />
           <ViewTabs />

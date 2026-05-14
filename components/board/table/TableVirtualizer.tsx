@@ -13,6 +13,7 @@ import type { Group, Task } from "./types";
 
 export type RowEntry =
   | { kind: "group-header"; group: Group }
+  | { kind: "group-column-header"; group: Group }
   | { kind: "task"; task: Task; group: Group }
   | { kind: "group-footer"; group: Group } // S21 — per-group aggregation row
   | { kind: "add-task-footer"; group: Group }
@@ -25,6 +26,7 @@ export type RowEntry =
 
 const DEFAULT_HEIGHTS: Record<RowEntry["kind"], number> = {
   "group-header": 48,
+  "group-column-header": 36,
   task: 36, // matches --size-cell-h
   "group-footer": 36, // S21 — matches GroupFooter's h-9 (36px)
   "add-task-footer": 36,
@@ -66,6 +68,8 @@ function rowKey(entry: RowEntry, index: number): string {
   switch (entry.kind) {
     case "group-header":
       return `gh:${entry.group.id}`;
+    case "group-column-header":
+      return `gch:${entry.group.id}`;
     case "task":
       return `t:${entry.task.id}`;
     case "group-footer": // S21 — per-group aggregation row

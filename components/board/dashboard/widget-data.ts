@@ -261,7 +261,10 @@ export function aggregateForWidget(
   let display: string;
   try {
     // biome-ignore lint/suspicious/noExplicitAny: def.aggregate is generic over TValue
-    display = def.aggregate(values as any[], kind, columnConfig ?? def.defaultConfig);
+    const raw = def.aggregate(values as any[], kind, columnConfig ?? def.defaultConfig);
+    // aggregate() may now return an AggregateRenderDescriptor for footer use;
+    // widget-data only needs the string representation (chart context).
+    display = typeof raw === "string" ? raw : "—";
   } catch {
     return { display: "—", numeric: null };
   }
