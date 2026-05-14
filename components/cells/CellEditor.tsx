@@ -23,8 +23,9 @@
  */
 
 import { Popover } from "@base-ui/react";
-import { useEffect, useRef, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { LabelEditorModal } from "@/components/board/table/LabelEditorModal";
 import type { Column, Task } from "@/components/board/table/types";
 import { getCellDef } from "@/lib/cells/registry";
 import type { CellTypeId } from "@/lib/cells/types";
@@ -90,10 +91,20 @@ export function CellEditor({ task, column, anchorEl, onClose }: CellEditorProps)
   return <CellEditorInner task={task} column={column} anchorEl={anchorEl} onClose={onClose} />;
 }
 
+const LABEL_CELL_TYPES = new Set<CellTypeId>(["status", "priority"]);
+
 // Separated so we only run hooks when not derived (avoids conditional hook calls)
 function CellEditorInner({ task, column, anchorEl, onClose }: CellEditorProps) {
   const columnType = column.type as CellTypeId;
   const def = getCellDef(columnType);
+
+  // ── Label editor modal (status/priority columns) ──────────────────────────
+  const [labelEditorOpen, setLabelEditorOpen] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(true);
+  const handleEditLabels = useCallback(() => {
+    setPopoverOpen(false);
+    setLabelEditorOpen(true);
+  }, []);
 
   // ── Current cell value from store ────────────────────────────────────────
   const cellKey = `${task.id}:${column.id}`;
@@ -180,44 +191,66 @@ function CellEditorInner({ task, column, anchorEl, onClose }: CellEditorProps) {
     columnId: column.id, // StatusEditor, PriorityEditor use this for label lookup
     members: undefined, // No member roster in BoardContext; cells fall back gracefully
     currentUserId: currentUserIdRef.current, // VoteEditor uses this to toggle vote
+    onEditLabels: LABEL_CELL_TYPES.has(columnType) ? handleEditLabels : undefined,
     // Epic 10 — file editor needs the task row to derive taskId for upload context.
     // Other editors ignore this prop (structural compatibility via the `as any` cast below).
     row: task,
     task,
   };
 
+  // ── Label editor modal (rendered as sibling, survives popover close) ─────
+  const labelModal = LABEL_CELL_TYPES.has(columnType) ? (
+    <LabelEditorModal
+      column={column}
+      open={labelEditorOpen}
+      onOpenChange={(open) => {
+        setLabelEditorOpen(open);
+        if (!open) onClose();
+      }}
+    />
+  ) : null;
+
   // ── Render based on editorMode ───────────────────────────────────────────
   if (def.editorMode === "popover") {
     return (
-      <Popover.Root
-        open
-        onOpenChange={(open) => {
-          if (!open) handleEditorClose();
-        }}
-      >
-        {/*
-          Controlled anchor pattern: no hidden trigger needed.
-          anchorEl is the cell button DOM node captured by TableCell on click.
-          Popover.Positioner positions the popup relative to that element.
-          Popover.Portal MUST remain — removing it throws Base UI error #45
-          during SSR and breaks page-level redirect().
-        */}
-        <Popover.Portal>
-          <Popover.Positioner anchor={anchorEl} sideOffset={0} align="start">
-            <Popover.Popup
-              data-testid="cell-editor-popup"
-              className="z-[var(--z-popover)] bg-[color:var(--color-surface)] border border-[color:var(--color-border-strong)] rounded-[var(--radius-sm)] shadow-[var(--shadow-modal)]"
-            >
-              {/* biome-ignore lint/suspicious/noExplicitAny: def.Editor is heterogeneous; props are structurally compatible */}
-              <def.Editor {...(editorProps as any)} />
-            </Popover.Popup>
-          </Popover.Positioner>
-        </Popover.Portal>
-      </Popover.Root>
+      <>
+        <Popover.Root
+          open={popoverOpen}
+          onOpenChange={(open) => {
+            if (!open && !labelEditorOpen) handleEditorClose();
+            setPopoverOpen(open);
+          }}
+        >
+          {/*
+            Controlled anchor pattern: no hidden trigger needed.
+            anchorEl is the cell button DOM node captured by TableCell on click.
+            Popover.Positioner positions the popup relative to that element.
+            Popover.Portal MUST remain — removing it throws Base UI error #45
+            during SSR and breaks page-level redirect().
+          */}
+          <Popover.Portal>
+            <Popover.Positioner anchor={anchorEl} sideOffset={0} align="start">
+              <Popover.Popup
+                data-testid="cell-editor-popup"
+                className="z-[var(--z-popover)] bg-[color:var(--color-surface)] border border-[color:var(--color-border-strong)] rounded-[var(--radius-sm)] shadow-[var(--shadow-modal)]"
+              >
+                {/* biome-ignore lint/suspicious/noExplicitAny: def.Editor is heterogeneous; props are structurally compatible */}
+                <def.Editor {...(editorProps as any)} />
+              </Popover.Popup>
+            </Popover.Positioner>
+          </Popover.Portal>
+        </Popover.Root>
+        {labelModal}
+      </>
     );
   }
 
   // Inline mode — render editor directly without a popover wrapper.
-  // biome-ignore lint/suspicious/noExplicitAny: same rationale
-  return <def.Editor {...(editorProps as any)} />;
+  return (
+    <>
+      {/* biome-ignore lint/suspicious/noExplicitAny: same rationale */}
+      <def.Editor {...(editorProps as any)} />
+      {labelModal}
+    </>
+  );
 }
