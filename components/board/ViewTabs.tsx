@@ -80,7 +80,7 @@ function ViewTab({ view, isActive, onSwitch }: ViewTabProps) {
           : "text-[color:var(--color-fg-muted)] hover:text-[color:var(--color-fg)] hover:bg-[color:var(--color-surface-hover)]",
         // Active bottom border (2px, primary color).
         isActive &&
-          "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[color:var(--color-primary)] after:rounded-t-sm",
+          "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[color:var(--color-primary)] after:rounded-t-sm",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary)]",
       )}
       tabIndex={0}
