@@ -162,26 +162,6 @@ export async function loadBoardSnapshot(args: {
   }
 
   // ---------------------------------------------------------------------------
-  // Personal "My view" auto-create
-  //
-  // On first board open per user: if no personal view exists for this user,
-  // create one.
-  // ---------------------------------------------------------------------------
-  const hasPersonalView = views.some((v) => v.owner_id === currentUser.id && !v.is_shared);
-  if (!hasPersonalView) {
-    const createPersonalResult = await createView({
-      boardId,
-      kind: "table",
-      name: "My view",
-      isShared: false,
-      config: {},
-    });
-    if (createPersonalResult.ok) {
-      views = [...views, createPersonalResult.data].sort((a, b) => a.position - b.position);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
   // Resolve the initial active view id.
   // ---------------------------------------------------------------------------
   const activeViewId = resolveActiveViewId(views, searchParamViewId, lastViewId);

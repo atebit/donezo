@@ -88,7 +88,7 @@ export function ItemDrawer() {
         side="right"
         showCloseButton={false}
         className={cn(
-          "w-[480px] max-w-[100vw] p-0 flex flex-col",
+          "w-[960px] max-w-[100vw] p-0 flex flex-col",
           "bg-[color:var(--color-surface)]",
           "border-l border-[color:var(--color-border)]",
         )}

@@ -28,7 +28,6 @@ import { deleteTask, duplicateTask } from "@/app/(app)/w/[workspaceSlug]/b/[boar
 import { MenuList, MenuListItem } from "@/components/ui/menu-list";
 import { useBoardStore } from "@/stores/board-store";
 
-import { useTableKeyboard } from "./table-keyboard-context";
 import type { Group, Task } from "./types";
 
 interface TaskOverflowMenuProps {
@@ -41,8 +40,6 @@ export function TaskOverflowMenu({ task, group: _group }: TaskOverflowMenuProps)
   const [, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const { focusTaskTitle } = useTableKeyboard();
-
   const taskTitle = task.title || "Untitled";
 
   // ---------------------------------------------------------------------------
@@ -133,20 +130,6 @@ export function TaskOverflowMenu({ task, group: _group }: TaskOverflowMenuProps)
           <Popover.Positioner sideOffset={4} align="start">
             <Popover.Popup className="z-[var(--z-popover)]">
               <MenuList>
-                {/* Rename — closes the popover then defers focus via setTimeout(0).
-                    The deferral is required because Base UI Popover restores focus
-                    to its trigger when it closes; a synchronous focus() call would
-                    be overridden by that restore. setTimeout(0) sequences our call
-                    after the popover's focus-restore in the microtask queue. */}
-                <MenuListItem
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setTimeout(() => focusTaskTitle(task.id), 0);
-                  }}
-                >
-                  Rename
-                </MenuListItem>
-
                 {/* Duplicate */}
                 <MenuListItem onClick={handleDuplicate}>Duplicate</MenuListItem>
 

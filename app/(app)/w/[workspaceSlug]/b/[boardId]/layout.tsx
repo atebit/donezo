@@ -158,30 +158,6 @@ export default async function BoardLayout({
   }
 
   // ---------------------------------------------------------------------------
-  // Personal "My view" auto-create
-  //
-  // On first board open per user: if no personal view exists for this user,
-  // create one. This is idempotent — subsequent loads skip because the row
-  // will be present in the fetched views.
-  //
-  // Race safety: v1 accepts potential duplicate "My view" rows under tab-race
-  // (Epic 11 risk note #7). No unique index — acceptable for v1.
-  // ---------------------------------------------------------------------------
-  const hasPersonalView = views.some((v) => v.owner_id === currentUser.id && !v.is_shared);
-  if (!hasPersonalView) {
-    const createPersonalResult = await createView({
-      boardId,
-      kind: "table",
-      name: "My view",
-      isShared: false,
-      config: {},
-    });
-    if (createPersonalResult.ok) {
-      views = [...views, createPersonalResult.data].sort((a, b) => a.position - b.position);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
   // Resolve the initial active view id.
   // Note: ?view= URL param resolution is handled client-side by useBoardView.
   // ---------------------------------------------------------------------------

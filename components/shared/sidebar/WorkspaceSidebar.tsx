@@ -211,40 +211,19 @@ function SidebarInner({ workspaces, user, mobileMode = false }: SidebarInnerProp
         flexDirection: "column",
       }}
     >
-      {/* Collapsed icon rail — desktop only, absolute overlay */}
-      {!mobileMode && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            opacity: collapsed ? 1 : 0,
-            pointerEvents: collapsed ? undefined : "none",
-            transition: collapsed
-              ? "opacity var(--motion-base) var(--ease-standard) 100ms"
-              : "opacity var(--motion-fast) var(--ease-standard)",
-          }}
-        >
-          <CollapsedRail
-            workspaceName={currentWorkspace?.name ?? ""}
-            workspaceSlug={currentWorkspace?.slug ?? ""}
-            sidebarBoards={sidebarBoards}
-            activeBoardId={activeBoardId}
-            user={user}
-            onExpand={() => setCollapsed(false)}
-          />
-        </div>
-      )}
-
-      {/* Expanded content — fades out when collapsing */}
+      {/* Collapsed icon rail — desktop only, conditionally mounted to avoid useId() hydration mismatch */}
+      {!mobileMode && collapsed ? (
+        <CollapsedRail
+          workspaceName={currentWorkspace?.name ?? ""}
+          workspaceSlug={currentWorkspace?.slug ?? ""}
+          sidebarBoards={sidebarBoards}
+          activeBoardId={activeBoardId}
+          user={user}
+          onExpand={() => setCollapsed(false)}
+        />
+      ) : (
       <div
         style={{
-          opacity: mobileMode ? 1 : collapsed ? 0 : 1,
-          transition: mobileMode
-            ? undefined
-            : collapsed
-              ? "opacity var(--motion-fast) var(--ease-standard)"
-              : `opacity var(--motion-base) var(--ease-standard) 250ms`,
-          pointerEvents: !mobileMode && collapsed ? "none" : undefined,
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -336,6 +315,7 @@ function SidebarInner({ workspaces, user, mobileMode = false }: SidebarInnerProp
           <UserMenu user={user} variant="small" />
         </div>
       </div>
+      )}
 
     </aside>
 

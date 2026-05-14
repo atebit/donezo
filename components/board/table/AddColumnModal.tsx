@@ -279,6 +279,8 @@ export function AddColumnModal({ open, onOpenChange }: AddColumnModalProps) {
 
   const handleClose = () => {
     onOpenChange(false);
+    setStep("pick");
+    setSelectedType(null);
   };
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
