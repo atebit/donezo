@@ -882,7 +882,13 @@ export function BoardTable() {
       {/* containerRef is on the outermost div so keydown events from any focused
           row (inside the tree) bubble up to the single listener attached by the
           keyboard nav hook. */}
-      <div ref={containerRef} className="flex flex-col flex-1 min-h-0">
+      {/* biome-ignore lint/a11y/useSemanticElements: CSS-grid table; <table> doesn't fit the virtualized + sticky layout */}
+      <div
+        ref={containerRef}
+        className="flex flex-col flex-1 min-h-0"
+        data-testid="board-table"
+        role="grid"
+      >
         <GridTemplateContext.Provider value={gridTemplateContextValue}>
           <TableScrollContext.Provider value={scrollContextValue}>
             <DndProviders
