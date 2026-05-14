@@ -635,6 +635,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          last_view_per_board: Json
           last_workspace_id: string | null
           updated_at: string
         }
@@ -644,6 +645,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          last_view_per_board?: Json
           last_workspace_id?: string | null
           updated_at?: string
         }
@@ -653,6 +655,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          last_view_per_board?: Json
           last_workspace_id?: string | null
           updated_at?: string
         }
@@ -967,6 +970,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      current_user_email: { Args: never; Returns: string }
+      global_search: {
+        Args: { p_workspace_id: string; q: string }
+        Returns: {
+          board_id: string
+          board_title: string
+          id: string
+          kind: string
+          title: string
+        }[]
+      }
       greater_role: { Args: { a: string; b: string }; Returns: string }
       is_workspace_member: {
         Args: { p_user_id: string; p_workspace_id: string }
@@ -1002,6 +1016,10 @@ export type Database = {
         Returns: string
       }
       role_rank: { Args: { r: string }; Returns: number }
+      shares_workspace_with: {
+        Args: { p_user_id: string; p_with_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
