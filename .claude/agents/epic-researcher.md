@@ -20,7 +20,7 @@ You will be given one of three jobs:
 2. `docs/conversion-plan/00-overview.md` (target stack, principles, sequencing)
 3. `docs/conversion-plan/<NN>-*.md` (the epic itself)
 4. **Every prior epic doc** that this one depends on (per the epic's "Dependencies" section)
-5. Relevant audit notes in `docs/audit/` only if they materially affect a decision
+5. Relevant audit notes in `docs/archive/audit/` only if they materially affect a decision (point-in-time, no longer maintained)
 6. The actual repo state — what's already merged, what files exist, what migrations are in `supabase/migrations/`
 
 Do not skim. The epic docs are dense; the rationale matters.

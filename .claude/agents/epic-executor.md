@@ -87,7 +87,7 @@ When the slice is fully implemented, lint/typecheck/tests green, and committed:
 
 - No scope creep. Out-of-scope improvements go in the followups section, not the diff.
 - No guessing on architecture, schema, or product behavior. Escalate.
-- No modifying `frontend/` or `backend/`.
+- Do not re-add legacy code under `frontend/` or `backend/`. Both folders were removed in commit `a5d47c2` and remain `.gitignore`-listed as cheap insurance.
 - No `--no-verify`, `--force`, or destructive git operations.
 - No mass file rewrites when an Edit would do.
 - Never reproduce code from an external source verbatim without verifying it actually fits and is licensed appropriately.
