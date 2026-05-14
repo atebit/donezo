@@ -25,11 +25,7 @@ function CountryCellInner({ value, config: _config, row: _row }: CountryCellProp
             {country.code}
           </span>
         </>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          Empty
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }
