@@ -16,7 +16,7 @@ import { E2E_WORKSPACE_SLUG, SMOKE_BOARD_ID } from "./fixtures/seed";
 const BOARD_URL = `/w/${E2E_WORKSPACE_SLUG}/b/${SMOKE_BOARD_ID}`;
 
 // Popover must overlap the cell horizontally and left edge within ±8px.
-const ANCHOR_LEFT_TOLERANCE = 8;
+const _ANCHOR_LEFT_TOLERANCE = 8;
 
 interface ViewportConfig {
   label: string;
@@ -114,47 +114,12 @@ for (const vp of VIEWPORTS) {
       // Click the center of the cell to open the editor.
       await targetCell.click();
 
-      // Wait for a popover or popup to appear.
-      // CellEditor wraps content in Popover.Popup inside Popover.Portal.
-      const popover = page
-        .locator('[data-popup], [role="dialog"], [data-radix-popper-content-wrapper]')
-        .first()
-        .or(page.locator('.popover-popup, [data-testid*="editor"]').first());
+      // CellEditor renders Popover.Popup with data-testid="cell-editor-popup".
+      // Base UI does not emit [data-popup], [role="dialog"], or Radix wrapper attrs.
+      const popover = page.locator('[data-testid="cell-editor-popup"]').first();
 
-      // Give the popover time to mount and position.
-      await page.waitForTimeout(300);
-
-      // Check if any overlay/popup appeared.
-      const popoverVisible = await popover.isVisible().catch(() => false);
-      if (!popoverVisible) {
-        // Try Base UI popup selectors.
-        const baseUiPopup = page.locator("[data-popup]").first();
-        const baseVisible = await baseUiPopup.isVisible().catch(() => false);
-        if (!baseVisible) {
-          test.info().annotations.push({
-            type: "info",
-            description:
-              "Popover did not appear — cell may require a specific interaction. Verifying it is not at viewport origin.",
-          });
-          // At minimum, verify no popover appeared at (0,0).
-          // This means the anchor bug is not present if no popover at top-left.
-          return;
-        }
-
-        const popoverBbox = await baseUiPopup.boundingBox();
-        if (!popoverBbox) return;
-
-        // Popover should not be at viewport origin (the bug we fixed).
-        expect(popoverBbox.x, "Popover x must not be at viewport origin").toBeGreaterThan(10);
-        expect(popoverBbox.y, "Popover y must not be at viewport origin").toBeGreaterThan(10);
-
-        // Popover left edge should be within tolerance of the cell's left edge.
-        expect(
-          Math.abs(popoverBbox.x - cellBbox.x),
-          `Popover left (${popoverBbox.x}) vs cell left (${cellBbox.x}) within ${ANCHOR_LEFT_TOLERANCE}px`,
-        ).toBeLessThanOrEqual(ANCHOR_LEFT_TOLERANCE + cellBbox.width);
-        return;
-      }
+      // Hard-fail if the popover does not mount — a missing popover is a regression.
+      await expect(popover).toBeVisible({ timeout: 3000 });
 
       const popoverBbox = await popover.boundingBox();
       if (!popoverBbox) return;
@@ -207,18 +172,16 @@ for (const vp of VIEWPORTS) {
       }
 
       await targetCell.click();
-      await page.waitForTimeout(300);
 
-      // Check no popover at viewport origin.
-      const anyPopup = page.locator("[data-popup]").first();
-      const visible = await anyPopup.isVisible().catch(() => false);
-      if (visible) {
-        const popoverBbox = await anyPopup.boundingBox();
-        if (popoverBbox) {
-          expect(popoverBbox.x, "Priority popover x not at viewport origin").toBeGreaterThan(10);
-          expect(popoverBbox.y, "Priority popover y not at viewport origin").toBeGreaterThan(10);
-        }
-      }
+      // Hard-fail if the popover does not mount — a missing popover is a regression.
+      const popover = page.locator('[data-testid="cell-editor-popup"]').first();
+      await expect(popover).toBeVisible({ timeout: 3000 });
+
+      const popoverBbox = await popover.boundingBox();
+      if (!popoverBbox) return;
+
+      expect(popoverBbox.x, "Priority popover x not at viewport origin").toBeGreaterThan(10);
+      expect(popoverBbox.y, "Priority popover y not at viewport origin").toBeGreaterThan(10);
     });
   });
 }

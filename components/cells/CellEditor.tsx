@@ -204,7 +204,10 @@ function CellEditorInner({ task, column, anchorEl, onClose }: CellEditorProps) {
         */}
         <Popover.Portal>
           <Popover.Positioner anchor={anchorEl} sideOffset={0} align="start">
-            <Popover.Popup className="z-[var(--z-popover)] bg-[color:var(--color-surface)] border border-[color:var(--color-border-strong)] rounded-[var(--radius-sm)] shadow-[var(--shadow-modal)]">
+            <Popover.Popup
+              data-testid="cell-editor-popup"
+              className="z-[var(--z-popover)] bg-[color:var(--color-surface)] border border-[color:var(--color-border-strong)] rounded-[var(--radius-sm)] shadow-[var(--shadow-modal)]"
+            >
               {/* biome-ignore lint/suspicious/noExplicitAny: def.Editor is heterogeneous; props are structurally compatible */}
               <def.Editor {...(editorProps as any)} />
             </Popover.Popup>
