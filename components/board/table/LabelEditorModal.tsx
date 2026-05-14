@@ -85,13 +85,21 @@ const LABEL_PALETTE: { token: string; name: string }[] = [
 ];
 
 /**
- * Resolve a CSS variable token to its hex value at runtime.
- * Used only for persistence (server stores the resolved hex, not var names).
+ * Resolve a CSS variable token to a 6-digit hex value at runtime.
+ * Dark-theme tokens use oklch(), so we paint a temporary canvas pixel
+ * and read back the rgb to guarantee hex output for DB persistence.
  */
 function resolveToken(token: string): string {
   if (typeof window === "undefined") return "#c4c4c4";
-  const val = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
-  return val || "#c4c4c4";
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  if (!raw) return "#c4c4c4";
+  if (/^#[0-9a-f]{6}$/i.test(raw)) return raw;
+  const ctx = document.createElement("canvas").getContext("2d");
+  if (!ctx) return "#c4c4c4";
+  ctx.fillStyle = raw;
+  ctx.fillRect(0, 0, 1, 1);
+  const d = ctx.getImageData(0, 0, 1, 1).data;
+  return `#${(d[0] ?? 0).toString(16).padStart(2, "0")}${(d[1] ?? 0).toString(16).padStart(2, "0")}${(d[2] ?? 0).toString(16).padStart(2, "0")}`;
 }
 
 // ---------------------------------------------------------------------------
