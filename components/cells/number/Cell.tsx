@@ -5,7 +5,7 @@
  *
  * Renders the number formatted with Intl.NumberFormat (thousands separators)
  * using the configured decimal places (default 2) and optional suffix.
- * Empty state: muted "—".
+ * Empty state: visually empty (hover outline affordance only).
  *
  * Note (deferred): hover-reveal +/- increment icons are deferred to the
  * epic-14 polish pass. They require interactive child controls firing
@@ -44,11 +44,7 @@ function NumberCellInner({ value, config }: NumberCellProps) {
         <span className="truncate text-sm text-[color:var(--color-fg)] tabular-nums">
           {display}
         </span>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          —
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }

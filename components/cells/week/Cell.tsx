@@ -4,7 +4,7 @@
  * WeekCell — read-mode renderer for the "week" cell type.
  *
  * Renders the week in "2026-W19" ISO format.
- * Empty state: muted "—".
+ * Empty state: visually empty (hover outline affordance only).
  */
 
 import React from "react";
@@ -27,11 +27,7 @@ function WeekCellInner({ value, config: _config, row: _row }: WeekCellProps) {
         <span className="truncate text-sm text-[color:var(--color-fg)] tabular-nums">
           {formatWeek(value)}
         </span>
-      ) : (
-        <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
-          —
-        </span>
-      )}
+      ) : null}
     </div>
   );
 }
