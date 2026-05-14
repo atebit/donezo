@@ -121,8 +121,8 @@ function LabelColorSwatch({ labelId, color, onColorChange }: LabelColorSwatchPro
         className="h-5 w-5 shrink-0 rounded-[var(--radius-xs)] border border-[color:var(--color-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] cursor-pointer"
       />
       <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="start">
-          <Popover.Popup className="z-[var(--z-popover)] rounded-[var(--radius-md)] bg-[color:var(--color-surface)] shadow-[var(--shadow-modal)] border border-[color:var(--color-border-strong)] p-2">
+        <Popover.Positioner sideOffset={6} align="start" className="z-[var(--z-popover)]">
+          <Popover.Popup className="rounded-[var(--radius-md)] bg-[color:var(--color-surface)] shadow-[var(--shadow-modal)] border border-[color:var(--color-border-strong)] p-2">
             <fieldset
               className="grid gap-1.5 border-0 p-0 m-0"
               style={{ gridTemplateColumns: "repeat(4, 22px)", width: "max-content" }}
