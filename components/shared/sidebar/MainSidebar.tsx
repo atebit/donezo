@@ -130,7 +130,7 @@ export function MainSidebar({ user, workspaces = [] }: MainSidebarProps) {
           style={{ width: "100vw", maxWidth: "100vw", padding: 0 }}
           aria-label="Workspace navigation"
         >
-          <WorkspaceSidebar workspaces={workspaces} mobileDrawerMode />
+          <WorkspaceSidebar workspaces={workspaces} user={user} />
         </SheetContent>
       </Sheet>
     </>

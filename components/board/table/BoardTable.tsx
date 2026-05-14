@@ -1,6 +1,5 @@
 "use client";
 
-import { Checkbox } from "@base-ui/react/checkbox";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -39,7 +38,6 @@ import { GroupFooter } from "./GroupFooter";
 import { GroupOverflowMenu } from "./GroupOverflowMenu";
 import { GroupSection } from "./GroupSection";
 import { GridTemplateContext } from "./grid-template-context";
-import { StickyHeader } from "./StickyHeader";
 import { type RowEntry, TableVirtualizer, type TableVirtualizerHandle } from "./TableVirtualizer";
 import { TaskRow } from "./TaskRow";
 import { TableKeyboardContext, useTableKeyboard } from "./table-keyboard-context";
@@ -75,61 +73,6 @@ interface GroupHeaderRowProps {
   taskCount: number;
 }
 
-// ---------------------------------------------------------------------------
-// GroupTriStateCheckbox — tri-state checkbox for a single group.
-// Reads selection + tasks from the store and computes checked/indeterminate.
-// ---------------------------------------------------------------------------
-function GroupTriStateCheckbox({ group }: { group: Group }) {
-  const { selection, tasks } = useBoardStore(
-    useShallow((s) => ({
-      selection: s.selection,
-      tasks: s.tasks,
-    })),
-  );
-
-  const groupTasks = tasks.filter((t) => t.group_id === group.id);
-  const totalInScope = groupTasks.length;
-  const selectedInScope = groupTasks.filter((t) => selection.has(t.id)).length;
-
-  const checked = selectedInScope === totalInScope && totalInScope > 0;
-  const indeterminate = selectedInScope > 0 && selectedInScope < totalInScope;
-
-  return (
-    <Checkbox.Root
-      checked={checked}
-      indeterminate={indeterminate}
-      onCheckedChange={(next) => useBoardStore.getState().selectGroup(group.id, next)}
-      aria-label={`Select all tasks in ${group.name}`}
-      className="w-[var(--size-cell-w-checkbox)] flex-shrink-0 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)]"
-    >
-      <span
-        className="w-4 h-4 rounded-[var(--radius-xs)] border border-[color:var(--color-border-strong)] flex items-center justify-center transition-colors duration-[var(--motion-fast)]"
-        style={{
-          backgroundColor: checked || indeterminate ? "var(--color-primary)" : "transparent",
-          borderColor: checked || indeterminate ? "var(--color-primary)" : undefined,
-        }}
-      >
-        <Checkbox.Indicator keepMounted>
-          {indeterminate ? (
-            <svg width="10" height="2" viewBox="0 0 10 2" fill="none" aria-hidden="true">
-              <path d="M1 1H9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          ) : (
-            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
-              <path
-                d="M1 4L3.5 6.5L9 1"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </Checkbox.Indicator>
-      </span>
-    </Checkbox.Root>
-  );
-}
 
 function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
   const [, startTransition] = useTransition();
@@ -161,8 +104,15 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
     data: { kind: "group", groupId: group.id },
   });
 
+  // translateX(var(--table-scroll-x)) counteracts horizontal scroll so the group
+  // header stays anchored at the viewport's left edge. CSS sticky + left:0 does
+  // not work here because transform:translateZ(0) on the virtualizer row div
+  // creates a local coordinate context that breaks the sticky left threshold.
+  const scrollCompensation = "translateX(var(--table-scroll-x, 0px))";
   const style: React.CSSProperties = {
-    ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
+    transform: transform
+      ? `${CSS.Transform.toString(transform)} ${scrollCompensation}`
+      : scrollCompensation,
     ...(transition ? { transition } : {}),
     ...(isDragging ? { zIndex: 3, opacity: 0.85 } : {}),
   };
@@ -198,14 +148,11 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group sticky top-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] flex items-center h-10 gap-1"
+      className="group sticky top-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] flex items-center h-10 gap-1 pl-3"
       data-group-id={group.id}
     >
       {/* Drag handle — wired to dnd-kit useSortable */}
       <GroupDragHandle attributes={attributes} listeners={listeners} />
-
-      {/* Tri-state group-level select checkbox */}
-      <GroupTriStateCheckbox group={group} />
 
       {/* Collapse / expand arrow */}
       <button
@@ -269,6 +216,10 @@ function GroupHeaderRow({ group, taskCount }: GroupHeaderRowProps) {
 // Width constants for the grid template.
 const MIN_WIDTH = 80;
 const TITLE_MIN_WIDTH = 200;
+// Matches --size-cell-w-checkbox in globals.css. Used to compute tableMinWidth
+// so the virtualizer's inner container is always wide enough to show a
+// horizontal scrollbar without needing an in-flow header element.
+const CHECKBOX_TRACK_W = 32;
 
 export function BoardTable() {
   const [isAddGroupOpen, setIsAddGroupOpen] = useState(false);
@@ -298,6 +249,17 @@ export function BoardTable() {
   }, [titleColumn, otherColumns, getColumnWidth]);
 
   const gridTemplateContextValue = useMemo(() => ({ gridTemplateColumns }), [gridTemplateColumns]);
+
+  // Minimum pixel width of the table content — passed to TableVirtualizer so the
+  // inner container is always wide enough to enable horizontal scroll even when
+  // there is no in-flow header element to drive max-content width measurement.
+  const tableMinWidth = useMemo(
+    () =>
+      CHECKBOX_TRACK_W +
+      (titleColumn ? getColumnWidth(titleColumn) : 336) +
+      otherColumns.reduce((sum, col) => sum + getColumnWidth(col), 0),
+    [titleColumn, otherColumns, getColumnWidth],
+  );
 
   // Epic 11 — view state. The hook is client-only; it reads URL and syncs the store.
   const { effective } = useBoardView();
@@ -366,8 +328,8 @@ export function BoardTable() {
   // Row ordering per bucket:
   //   1. group-header
   //   2. (if not collapsed) task rows
-  //   3. (if not collapsed) group-footer (aggregations)
-  //   4. (if not collapsed) add-task-footer (suppressed for column-based group-by)
+  //   3. (if not collapsed) add-task-footer (suppressed for column-based group-by)
+  //   4. (if not collapsed) group-footer (aggregations; only when tasks exist)
   // After all buckets:
   //   5. add-group-footer (suppressed for column-based group-by)
   //
@@ -431,14 +393,14 @@ export function BoardTable() {
           result.push({ kind: "task", task, group: groupObj });
         }
 
-        // Hide the aggregation footer when the group has no tasks.
-        if (bucket.tasks.length > 0) {
-          result.push({ kind: "group-footer", group: groupObj });
-        }
-
         // Suppress "+ Add task" for column-based group-by buckets.
         if (!isColumnGroupBy) {
           result.push({ kind: "add-task-footer", group: groupObj });
+        }
+
+        // Hide the aggregation footer when the group has no tasks.
+        if (bucket.tasks.length > 0) {
+          result.push({ kind: "group-footer", group: groupObj });
         }
       }
     }
@@ -784,41 +746,127 @@ export function BoardTable() {
   // just visible/virtualized ones) is passed so dnd-kit can track off-screen
   // items even when their DOM nodes are unmounted.
   // ---------------------------------------------------------------------------
-  const renderRow = (entry: RowEntry): React.ReactNode => {
+  // Floating card wrapper — shared by the group-column-header, task, group-footer,
+  // and add-task-footer rows. Provides:
+  //   • Horizontal margin so groups "float" away from the page edge
+  //   • Slightly elevated surface background (lighter than page bg, especially in dark mode)
+  //   • CSS-var override so sticky cells inherit the same elevated background
+  //   • Colored left border using the group accent token
+  //   • overflow: clip respects border-radius without breaking sticky positioning
+  //   • height: 100% fills the virtualizer row so there are no dark-background gaps
+  //     between adjacent card rows (the inter-group gap lives in group-header paddingTop)
+  const cardRow = (
+    content: React.ReactNode,
+    position: "top" | "middle" | "bottom" | "single",
+  ): React.ReactNode => {
+    const radius =
+      position === "top"
+        ? "6px 6px 0 0"
+        : position === "bottom"
+          ? "0 0 6px 6px"
+          : position === "single"
+            ? "6px"
+            : "0";
+    return (
+      <div
+        style={
+          {
+            "--color-surface": "var(--color-surface-info)",
+            backgroundColor: "var(--color-surface-info)",
+            // inset box-shadow instead of borderLeft — visually identical but
+            // does not consume width under box-sizing:border-box, so grid
+            // columns inside the card align exactly with the sticky header.
+            boxShadow: "inset 3px 0 0 0 var(--group-accent)",
+            borderRadius: radius,
+            overflow: "clip",
+            marginLeft: 12,
+            marginRight: 12,
+            height: "100%",
+          } as React.CSSProperties
+        }
+      >
+        {content}
+      </div>
+    );
+  };
+
+  // Determine card position for a row by peeking at neighbours in the rows array.
+  // Group-header rows are NOT card rows, so they terminate a card on both sides.
+  const isCardRowKind = (kind: RowEntry["kind"]): boolean =>
+    kind === "group-column-header" ||
+    kind === "task" ||
+    kind === "add-task-footer" ||
+    kind === "group-footer";
+
+  const cardPos = (entry: RowEntry, index: number): "top" | "middle" | "bottom" | "single" => {
+    const prev = rows[index - 1];
+    const next = rows[index + 1];
+    const eg = "group" in entry ? entry.group.id : null;
+    const pg = prev && "group" in prev ? prev.group.id : null;
+    const ng = next && "group" in next ? next.group.id : null;
+    const isFirst = !prev || !isCardRowKind(prev.kind) || pg !== eg;
+    const isLast = !next || !isCardRowKind(next.kind) || ng !== eg;
+    if (isFirst && isLast) return "single";
+    if (isFirst) return "top";
+    if (isLast) return "bottom";
+    return "middle";
+  };
+
+  const renderRow = (entry: RowEntry, index: number): React.ReactNode => {
     switch (entry.kind) {
       case "group-header": {
         const taskCount = tasks.filter((t) => t.group_id === entry.group.id).length;
         const taskIds = taskIdsByGroup.get(entry.group.id) ?? [];
+        // paddingTop creates the inter-group gap above each group's header label.
+        // The virtualizer row height (DEFAULT_HEIGHTS["group-header"]) is sized to
+        // include this padding so the absolute layout stays consistent.
         return (
-          <GroupSection group={entry.group}>
-            <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-              <GroupHeaderRow group={entry.group} taskCount={taskCount} />
-            </SortableContext>
-          </GroupSection>
+          <div style={{ paddingTop: 14, height: "100%", boxSizing: "border-box" }}>
+            <GroupSection group={entry.group}>
+              <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+                <GroupHeaderRow group={entry.group} taskCount={taskCount} />
+              </SortableContext>
+            </GroupSection>
+          </div>
         );
       }
       case "group-column-header":
         return (
           <GroupSection group={entry.group}>
-            <GroupColumnHeader />
+            {cardRow(<GroupColumnHeader />, cardPos(entry, index))}
           </GroupSection>
         );
       case "task":
         return (
           <GroupSection group={entry.group}>
-            <TaskRow task={entry.task} group={entry.group} />
-          </GroupSection>
-        );
-      case "group-footer":
-        return (
-          <GroupSection group={entry.group}>
-            <GroupFooter group={entry.group} />
+            {cardRow(<TaskRow task={entry.task} group={entry.group} />, cardPos(entry, index))}
           </GroupSection>
         );
       case "add-task-footer":
         return (
           <GroupSection group={entry.group}>
-            <AddTaskFooter group={entry.group} />
+            {cardRow(
+              // translateX keeps "+ Add task" anchored during horizontal scroll.
+              // cardRow has marginLeft:12, so we subtract that offset: once
+              // scrollLeft exceeds 12px the footer slides right to stay at x=0.
+              // max(0px,...) prevents leftward shift before the threshold.
+              <div
+                style={{
+                  transform:
+                    "translateX(max(0px, calc(var(--table-scroll-x, 0px) - 12px)))",
+                  height: "100%",
+                }}
+              >
+                <AddTaskFooter group={entry.group} />
+              </div>,
+              cardPos(entry, index),
+            )}
+          </GroupSection>
+        );
+      case "group-footer":
+        return (
+          <GroupSection group={entry.group}>
+            {cardRow(<GroupFooter group={entry.group} />, cardPos(entry, index))}
           </GroupSection>
         );
       case "add-group-footer":
@@ -896,13 +944,13 @@ export function BoardTable() {
               onTaskReorder={handleTaskReorder}
               onColumnReorder={handleColumnReorder}
             >
-              {/* StickyHeader is INSIDE DndProviders so the ColumnReorder
-                  SortableContext inside StickyHeader has a parent DndContext.
-                  DndProviders renders <DndContext> with no DOM wrapper, so
-                  sticky positioning (sticky top-0) is unaffected. */}
-              <StickyHeader />
               <SortableContext items={groupIds} strategy={verticalListSortingStrategy}>
-                <TableVirtualizer ref={tableRef} rows={rows} renderRow={renderRow} />
+                <TableVirtualizer
+                  ref={tableRef}
+                  rows={rows}
+                  renderRow={renderRow}
+                  tableMinWidth={tableMinWidth}
+                />
               </SortableContext>
             </DndProviders>
           </TableScrollContext.Provider>

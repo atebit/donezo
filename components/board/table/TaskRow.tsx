@@ -65,9 +65,6 @@ export function TaskRow({ task, group }: TaskRowProps) {
     ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
     ...(transition ? { transition } : {}),
     ...(isDragging ? { zIndex: 1, opacity: 0.85 } : {}),
-    // Group accent stripe as inset box-shadow — does not consume a grid track,
-    // preserving alignment with the header.
-    boxShadow: "inset 6px 0 0 0 var(--group-accent)",
     gridTemplateColumns,
   };
 

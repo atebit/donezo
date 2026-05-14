@@ -77,7 +77,7 @@ function StatusCellInner({ value, columnId }: StatusCellProps) {
      *   is documented here per guardrail #1.
      */
     <div
-      className="relative min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center justify-center overflow-hidden border border-[color:var(--color-border-strong)] cursor-pointer group"
+      className="relative min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center justify-center overflow-hidden cursor-pointer group"
       style={{ backgroundColor: bgColor }}
       role="img"
       aria-label={labelName}

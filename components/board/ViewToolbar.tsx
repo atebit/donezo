@@ -22,19 +22,19 @@
  * Count badges on Filter/Sort/Hide show the number of active items.
  */
 
-import { Filter, Group, LayoutList, RefreshCw, Save, SortAsc } from "lucide-react";
+import { Filter, LayoutList, RefreshCw, Save, SortAsc } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { useShallow } from "zustand/react/shallow";
+import { AddColumnButton } from "@/components/board/table/AddColumnButton";
 import { ColumnVisibilityPanel } from "@/components/filters/ColumnVisibilityPanel";
 import { FilterBuilder } from "@/components/filters/FilterBuilder";
-import { GroupByPicker } from "@/components/filters/GroupByPicker";
 import { PopoverShell } from "@/components/filters/PopoverShell";
 import { SortBuilder } from "@/components/filters/SortBuilder";
 import { useBoard } from "@/hooks/use-board";
 import { useBoardView } from "@/hooks/use-board-view";
 import { cn } from "@/lib/utils";
-import type { FilterTree, GroupBy } from "@/lib/views/config-schema";
+import type { FilterTree } from "@/lib/views/config-schema";
 import { useBoardStore } from "@/stores/board-store";
 
 import { InlineSearchBar } from "./InlineSearchBar";
@@ -56,15 +56,6 @@ function countFilters(filter: FilterTree | undefined): number {
 function countHidden(visibility: Record<string, boolean> | undefined): number {
   if (!visibility) return 0;
   return Object.values(visibility).filter((v) => v === false).length;
-}
-
-function groupByLabel(
-  groupBy: GroupBy | undefined,
-  columns: { id: string; name: string }[],
-): string {
-  if (!groupBy || groupBy.kind === "native") return "";
-  const col = columns.find((c) => c.id === groupBy.columnId);
-  return col?.name ?? "";
 }
 
 // ---------------------------------------------------------------------------
@@ -119,15 +110,15 @@ function CountBadge({ count }: { count: number }) {
 // (density moved to ViewTabDropdown — per-view setting)
 // ---------------------------------------------------------------------------
 
-type ToolbarItem = "filter" | "sort" | "hide" | "group" | "search";
+type ToolbarItem = "filter" | "sort" | "hide" | "search";
 
 const KIND_DISABLED_ITEMS: Record<string, ToolbarItem[]> = {
   table: [],
-  kanban: ["hide", "group"],
-  calendar: ["hide", "group"],
-  timeline: ["hide", "group"],
-  dashboard: ["sort", "hide", "group", "search"],
-  form: ["filter", "sort", "hide", "group", "search"],
+  kanban: ["hide"],
+  calendar: ["hide"],
+  timeline: ["hide"],
+  dashboard: ["sort", "hide", "search"],
+  form: ["filter", "sort", "hide", "search"],
 };
 
 // ---------------------------------------------------------------------------
@@ -170,11 +161,6 @@ export function ViewToolbar() {
   const hiddenCount = useMemo(
     () => countHidden(effective.columnVisibility),
     [effective.columnVisibility],
-  );
-  const currentGroupBy = effective.groupBy;
-  const groupLabel = useMemo(
-    () => groupByLabel(currentGroupBy, columns),
-    [currentGroupBy, columns],
   );
 
   // ---------------------------------------------------------------------------
@@ -298,36 +284,8 @@ export function ViewToolbar() {
         </PopoverShell>
       )}
 
-      {/* ── Group by ── */}
-      {disabledItems.has("group") ? (
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          title={`Group is not available on ${viewKind} view`}
-          className={toolbarBtnCn("opacity-40 cursor-not-allowed")}
-        >
-          <Group size={14} aria-hidden="true" />
-          Group
-        </button>
-      ) : (
-        <PopoverShell
-          trigger={
-            <button type="button" className={toolbarBtnCn()}>
-              <Group size={14} aria-hidden="true" />
-              {groupLabel ? `Group: ${groupLabel}` : "Group"}
-            </button>
-          }
-          side="bottom"
-          align="start"
-        >
-          <GroupByPicker
-            groupBy={currentGroupBy}
-            columns={columns}
-            onChange={(next: GroupBy) => applyDraft({ groupBy: next })}
-          />
-        </PopoverShell>
-      )}
+      {/* ── Add column ── */}
+      <AddColumnButton />
 
       {/* ── Search (grows to fill remaining space) ── */}
       {disabledItems.has("search") ? <div className="flex-1 min-w-0" /> : <InlineSearchBar />}

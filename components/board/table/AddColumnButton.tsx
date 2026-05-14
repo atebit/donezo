@@ -8,6 +8,13 @@ import { useBoard } from "@/hooks/use-board";
 import { ROLE_RANK } from "@/lib/authorization/roles";
 import { AddColumnModal } from "./AddColumnModal";
 
+const btnCn =
+  "flex items-center gap-[5px] h-8 px-2 rounded cursor-pointer select-none " +
+  "text-sm font-medium text-[color:var(--color-fg-muted)] whitespace-nowrap " +
+  "hover:text-[color:var(--color-fg)] hover:bg-[color:var(--color-surface-hover)] " +
+  "transition-colors duration-[var(--motion-base,150ms)] " +
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary)]";
+
 /**
  * AddColumnButton — opens AddColumnModal for admins/owners.
  * For viewers/members: renders disabled with a tooltip ("Admins can add columns").
@@ -31,9 +38,10 @@ export function AddColumnButton() {
               aria-label="Add column"
               tabIndex={-1}
               onClick={(e) => e.preventDefault()}
-              className="h-9 w-9 flex items-center justify-center rounded-[var(--radius-xs)] text-[color:var(--color-fg-muted)] opacity-40 cursor-not-allowed focus-visible:outline-none"
+              className={`${btnCn} opacity-40 cursor-not-allowed`}
             >
-              <Plus size={16} aria-hidden="true" />
+              <Plus size={14} aria-hidden="true" />
+              Add column
             </button>
           </Tooltip.Trigger>
           <Tooltip.Portal>
@@ -54,9 +62,10 @@ export function AddColumnButton() {
         type="button"
         aria-label="Add column"
         onClick={() => setOpen(true)}
-        className="h-9 w-9 flex items-center justify-center rounded-[var(--radius-xs)] text-[color:var(--color-fg-muted)] hover:bg-[color:var(--color-surface-hover)] hover:text-[color:var(--color-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent)] transition-colors"
+        className={btnCn}
       >
-        <Plus size={16} aria-hidden="true" />
+        <Plus size={14} aria-hidden="true" />
+        Add column
       </button>
 
       <AddColumnModal open={open} onOpenChange={setOpen} />

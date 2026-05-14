@@ -18,7 +18,7 @@ import React from "react";
 export const EmptyCellTile = React.memo(function EmptyCellTile() {
   return (
     <div
-      className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-dashed border-[color:var(--color-border-strong)] flex items-center justify-center"
+      className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center justify-center"
       aria-label="Not set"
       role="img"
     />

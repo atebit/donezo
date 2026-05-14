@@ -1,7 +1,7 @@
 "use client";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { forwardRef, type ReactNode, useImperativeHandle, useRef } from "react";
+import { forwardRef, type ReactNode, useCallback, useImperativeHandle, useRef } from "react";
 
 import type { Group, Task } from "./types";
 
@@ -25,11 +25,11 @@ export type RowEntry =
 // ---------------------------------------------------------------------------
 
 const DEFAULT_HEIGHTS: Record<RowEntry["kind"], number> = {
-  "group-header": 48,
+  "group-header": 54, // 40px header (h-10) + 14px inter-group gap (paddingTop in renderRow)
   "group-column-header": 36,
   task: 36, // matches --size-cell-h
   "group-footer": 36, // S21 — matches GroupFooter's h-9 (36px)
-  "add-task-footer": 36,
+  "add-task-footer": 36, // 36px content; inter-group gap is provided by the next group-header
   "add-group-footer": 48,
 };
 
@@ -58,6 +58,27 @@ interface TableVirtualizerProps {
    * after render and corrects offsets automatically.
    */
   estimateRowHeight?: (entry: RowEntry, index: number) => number;
+  /**
+   * Optional sticky header rendered inside the scroll container before the
+   * virtual rows. Placing it here (rather than as a sibling outside) means it
+   * participates in the same horizontal scroll surface as the table rows, so
+   * column headers stay aligned with cells at all viewport widths.
+   */
+  header?: ReactNode;
+  /**
+   * Minimum pixel width of the inner scroll content.
+   *
+   * Absolutely-positioned rows (the virtual items) do not contribute to the
+   * scroll container's scrollWidth on their own — the browser only measures
+   * in-flow content for that. When there is no in-flow element wide enough to
+   * establish horizontal scroll (e.g. after removing a sticky header), this
+   * prop makes the inner container wide enough that the scroll container shows
+   * a horizontal scrollbar and the absolutely-positioned rows inherit the
+   * correct width via `width: 100%`.
+   *
+   * Computed in BoardTable as: checkbox_track + title_col_width + Σ other_col_widths.
+   */
+  tableMinWidth?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,9 +121,13 @@ function rowKey(entry: RowEntry, index: number): string {
  * flex-1 min-h-0` container, which clips at the available viewport height
  * (the parent SidebarShell chain guarantees 100dvh at the root with all
  * intermediate divs set to `overflow: hidden`). This means the virtualizer's
- * scroll div fills the remaining space below the StickyHeader without adding a
- * second independent scrollbar — the main content column already uses
- * `overflow: hidden`, so the only overflow surface is this div.
+ * scroll div fills the remaining space and is the ONLY overflow surface.
+ *
+ * The sticky column header (`header` prop) lives INSIDE this scroll div so
+ * it shares the same horizontal scroll surface as the virtual rows. Without
+ * this, scrolling columns horizontally on narrow viewports would desync the
+ * header from the rows. The header uses `position: sticky; top: 0` relative
+ * to this scroll container, so it still pins vertically when scrolling down.
  *
  * Imperative API (for S18 keyboard navigation)
  * -------------------------------------------
@@ -123,7 +148,7 @@ function rowKey(entry: RowEntry, index: number): string {
  * tooling. See S10 done report for the deferred-ARIA rationale.
  */
 export const TableVirtualizer = forwardRef<TableVirtualizerHandle, TableVirtualizerProps>(
-  function TableVirtualizer({ rows, renderRow, estimateRowHeight }, ref) {
+  function TableVirtualizer({ rows, renderRow, estimateRowHeight, header, tableMinWidth }, ref) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const virtualizer = useVirtualizer({
@@ -152,15 +177,44 @@ export const TableVirtualizer = forwardRef<TableVirtualizerHandle, TableVirtuali
       [virtualizer],
     );
 
+    // Track horizontal scroll position as a CSS custom property so that
+    // anchored rows (group headers, add-task footers) can counteract it via
+    // translateX(var(--table-scroll-x)). CSS sticky + left:0 does not work
+    // inside absolutely-positioned virtualizer rows with transform:translateZ(0)
+    // because the transform creates a local coordinate context that breaks the
+    // sticky left threshold calculation.
+    const handleScroll = useCallback(() => {
+      const el = scrollRef.current;
+      if (el) el.style.setProperty("--table-scroll-x", `${el.scrollLeft}px`);
+    }, []);
+
     const totalSize = virtualizer.getTotalSize();
     const virtualItems = virtualizer.getVirtualItems();
 
     return (
-      /* Scroll container — overflow-auto with flex-1 min-h-0 lets this fill
-         the remaining board-table column height without double-scrolling. */
-      <div ref={scrollRef} className="relative flex-1 min-h-0 overflow-auto">
-        {/* Spacer div establishes total scroll height for the virtualizer. */}
-        <div style={{ height: totalSize, position: "relative" }}>
+      /* Scroll container — the single overflow surface for the board table.
+         Both the sticky header and virtual rows live inside so horizontal
+         scroll keeps columns aligned at all viewport widths. */
+      <div ref={scrollRef} className="relative flex-1 min-h-0 overflow-auto" onScroll={handleScroll}>
+        {/*
+         * Inner width container — min-width: max-content lets the browser
+         * compute the intrinsic column width from StickyHeader's grid tracks.
+         * This establishes the scroll container's scroll width so:
+         *   1. Absolutely-positioned rows (which don't affect scroll width on
+         *      their own) inherit the correct width via width:100% on the spacer.
+         *   2. The StickyHeader (position:sticky top:0) is as wide as the full
+         *      table, so it scrolls horizontally with the rows rather than being
+         *      clipped at the viewport edge.
+         * At viewport widths wider than the table the inner container grows to
+         * fill the scroll div normally (auto block sizing wins over max-content).
+         */}
+        <div style={{ minWidth: tableMinWidth ?? "max-content" }}>
+          {/* Sticky column header — shares horizontal scroll with rows. */}
+          {header}
+          {/* Spacer div establishes total scroll height for the virtualizer.
+              Rows are absolutely positioned within it; vi.start values are
+              0-based from the list start (the spacer's top edge). */}
+          <div style={{ height: totalSize, position: "relative", overflow: "clip" }}>
           {virtualItems.map((vi) => {
             const entry = rows[vi.index];
             if (!entry) return null;
@@ -183,6 +237,7 @@ export const TableVirtualizer = forwardRef<TableVirtualizerHandle, TableVirtuali
               </div>
             );
           })}
+          </div>
         </div>
       </div>
     );

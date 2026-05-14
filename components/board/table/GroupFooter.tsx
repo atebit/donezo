@@ -87,22 +87,22 @@ export const GroupFooter = memo(function GroupFooter({ group }: GroupFooterProps
 
   return (
     <div
-      className="h-9 grid items-center bg-[color:var(--color-surface)] border-b border-[color:var(--color-border-strong)] border-t-[2px]"
-      style={{
-        gridTemplateColumns,
-        borderTopColor: "var(--group-accent)",
-      }}
+      className="h-9 grid items-center bg-[color:var(--color-surface)] border-b border-[color:var(--color-border-strong)]"
+      style={{ gridTemplateColumns }}
     >
       {/* Checkbox track — empty */}
       <div className="h-full" />
 
-      {/* Title column slot — always empty; aggregations do not apply to titles */}
+      {/* Title column slot — task count; starts the data-bearing content at the leftmost column */}
       {titleColumn && (
         <div
-          className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] h-full border-r border-[color:var(--color-border-strong)]"
+          className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] h-full border-r border-[color:var(--color-border-strong)] flex items-center px-3"
           style={{ width: getColumnWidth(titleColumn) }}
-          aria-hidden="true"
-        />
+        >
+          <span className="text-xs text-[color:var(--color-fg-muted)]">
+            {groupTasks.length} {groupTasks.length === 1 ? "task" : "tasks"}
+          </span>
+        </div>
       )}
 
       {/* Per-column aggregation cells */}

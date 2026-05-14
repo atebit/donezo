@@ -32,7 +32,7 @@ function PersonCellInner({ value, members }: PersonCellProps) {
 
   if (userIds.length === 0) {
     return (
-      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
         <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
           —
         </span>
@@ -51,7 +51,7 @@ function PersonCellInner({ value, members }: PersonCellProps) {
   // If member objects resolved, render MemberStack.
   if (resolvedMembers.length > 0) {
     return (
-      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
         <MemberStack members={resolvedMembers} max={3} size={26} overlap={-5} />
       </div>
     );
@@ -59,7 +59,7 @@ function PersonCellInner({ value, members }: PersonCellProps) {
 
   // Fallback: member roster not hydrated — show count badge.
   return (
-    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
       <span
         role="img"
         aria-label={`${userIds.length} person${userIds.length !== 1 ? "s" : ""} assigned`}

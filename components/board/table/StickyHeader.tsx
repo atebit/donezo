@@ -85,7 +85,7 @@ export function StickyHeader() {
 
   return (
     <div
-      className="sticky top-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] border-b border-[color:var(--color-border-strong)] h-9 grid"
+      className="sticky top-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] border-b border-[color:var(--color-border-strong)] h-9 grid px-3"
       style={{ gridTemplateColumns }}
     >
       {/* Board-level tri-state select-all checkbox */}

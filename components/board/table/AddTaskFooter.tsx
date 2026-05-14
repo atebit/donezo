@@ -100,7 +100,7 @@ export function AddTaskFooter({ group }: AddTaskFooterProps) {
       <button
         type="button"
         onClick={handleOpen}
-        className="flex items-center gap-2 h-[var(--size-cell-h)] w-full px-4 text-sm text-[color:var(--color-fg-muted)] hover:text-foreground hover:bg-[color:var(--color-surface-row-hover)] transition-colors duration-[var(--motion-base)] cursor-pointer"
+        className="flex items-center gap-2 h-[var(--size-cell-h)] w-full px-4 text-sm text-[color:var(--color-fg-muted)] hover:text-foreground hover:bg-[color:var(--color-surface-row-hover)] transition-colors duration-[var(--motion-base)] cursor-pointer border-b border-[color:var(--color-border-strong)]"
       >
         <span aria-hidden="true" className="text-base leading-none">
           +

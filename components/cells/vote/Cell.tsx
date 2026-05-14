@@ -31,7 +31,7 @@ function VoteCellInner({ value, config: _config, row: _row }: VoteCellProps) {
     <div
       role="img"
       aria-label={`${count} vote${count === 1 ? "" : "s"}`}
-      className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 gap-1.5 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden cursor-pointer"
+      className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 gap-1.5 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden cursor-pointer"
     >
       <ThumbsUp
         size={14}

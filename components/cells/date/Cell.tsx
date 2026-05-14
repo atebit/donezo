@@ -38,7 +38,7 @@ function DateCellInner({ value, config: _config, row: _row }: DateCellProps) {
   }
 
   return (
-    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
       {display ? (
         <span className="truncate text-sm text-[color:var(--color-fg)]">{display}</span>
       ) : null}

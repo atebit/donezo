@@ -32,7 +32,7 @@ function RatingCellInner({ value, config }: RatingCellProps) {
   const effectiveFilled = hovered !== null ? hovered : filled;
 
   return (
-    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden gap-0.5">
+    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden gap-0.5">
       {Array.from({ length: max }, (_, i) => {
         const starIndex = i + 1;
         const isFilled = starIndex <= effectiveFilled;

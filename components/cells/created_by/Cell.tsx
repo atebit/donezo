@@ -34,7 +34,7 @@ function CreatedByCellInner({ row, members }: CreatedByCellProps) {
 
   if (!userId) {
     return (
-      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
         <span className="text-sm text-[color:var(--color-fg-muted)]" aria-hidden="true">
           —
         </span>
@@ -46,7 +46,7 @@ function CreatedByCellInner({ row, members }: CreatedByCellProps) {
   const timeStr = relativeTime(createdAt);
 
   return (
-    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center gap-1.5 px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center gap-1.5 px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
       {resolvedMember ? (
         <MemberStack members={[resolvedMember]} max={1} size={26} overlap={0} />
       ) : (

@@ -28,7 +28,7 @@ function getDisplayLabel(value: LinkValue): string {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function LinkCellInner({ value, config: _config, row: _row }: LinkCellProps) {
   return (
-    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+    <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
       {value ? (
         <a
           href={value.url}

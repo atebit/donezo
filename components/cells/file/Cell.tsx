@@ -54,7 +54,7 @@ function FileCellInner({ value, row }: FileCellProps) {
   // Empty state
   if (visibleIds.length === 0) {
     return (
-      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
+      <div className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center px-2 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden">
         <Paperclip
           size={14}
           aria-hidden="true"
@@ -71,7 +71,7 @@ function FileCellInner({ value, row }: FileCellProps) {
     <div
       role="img"
       aria-label={`${resolvedIds.length} attachment${resolvedIds.length === 1 ? "" : "s"}`}
-      className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] border border-[color:var(--color-border-strong)] flex items-center gap-1 px-1.5 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden"
+      className="min-w-[var(--size-cell-w)] h-[var(--size-cell-h)] flex items-center gap-1 px-1.5 hover:outline hover:outline-1 hover:outline-[color:var(--color-border-strong)] overflow-hidden"
     >
       {visibleIds.map((id) => {
         const att = attachmentMap.get(id);
