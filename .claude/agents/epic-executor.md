@@ -23,7 +23,7 @@ If the slice spec contradicts `CLAUDE.md` defaults, treat that as a needs-direct
 - **Write the tests the spec asks for.** No spec test list = ask, don't skip.
 - **Run lint, typecheck, and tests before declaring done.** Use `pnpm lint`, `pnpm typecheck`, `pnpm test` (or whatever the repo defines once foundation lands).
 - **Commit in logical chunks** with imperative messages. Do not amend or force-push.
-- **Never modify legacy `frontend/` or `backend/`.**
+- **Do not re-add legacy code.** The legacy CRA + MUI + Redux frontend and Express + MongoDB backend were removed in commit `a5d47c2` and are no longer on disk. Recovery path for archaeology: git history before that commit.
 
 ## When to stop and escalate (needs-direction)
 
