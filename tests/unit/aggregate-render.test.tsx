@@ -157,17 +157,7 @@ describe("AggregateRender", () => {
   });
 
   describe('kind: "unique_count_avatars"', () => {
-    it("renders the count", () => {
-      const d: AggregateRenderDescriptor = {
-        kind: "unique_count_avatars",
-        count: 4,
-        userIds: ["u1", "u2", "u3", "u4"],
-      };
-      render(<AggregateRender descriptor={d} />);
-      expect(screen.getByText("4")).toBeInTheDocument();
-    });
-
-    it("renders a dash when count is 0", () => {
+    it("renders a dash when count is 0 (empty state)", () => {
       const d: AggregateRenderDescriptor = {
         kind: "unique_count_avatars",
         count: 0,
@@ -175,6 +165,105 @@ describe("AggregateRender", () => {
       };
       render(<AggregateRender descriptor={d} />);
       expect(screen.getByText("—")).toBeInTheDocument();
+    });
+
+    it("renders 1 avatar and count=1 for a single userId", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 1,
+        userIds: ["user-a"],
+      };
+      const { container } = render(<AggregateRender descriptor={d} />);
+      // Container should have the accessible role="img" wrapper
+      const wrapper = container.querySelector("[role='img']");
+      expect(wrapper).toBeInTheDocument();
+      expect(wrapper?.getAttribute("aria-label")).toBe("1 person");
+      // Count text should be visible
+      expect(screen.getByText("1")).toBeInTheDocument();
+      // No overflow chip (only 1 user, no +N)
+      expect(screen.queryByText(/^\+\d+/)).toBeNull();
+    });
+
+    it("renders 2 avatars and count=2 with no overflow chip", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 2,
+        userIds: ["user-a", "user-b"],
+      };
+      const { container } = render(<AggregateRender descriptor={d} />);
+      const wrapper = container.querySelector("[role='img']");
+      expect(wrapper?.getAttribute("aria-label")).toBe("2 people");
+      expect(screen.getByText("2")).toBeInTheDocument();
+      // Exactly 2 Avatar elements (role="img" is on Avatar spans and the outer div)
+      // The outer div is role="img"; Avatar fallback spans are also role="img" — count inner ones
+      const allImgRoles = container.querySelectorAll("[role='img']");
+      // outer wrapper (1) + 2 avatars = 3
+      expect(allImgRoles).toHaveLength(3);
+      expect(screen.queryByText(/^\+\d+/)).toBeNull();
+    });
+
+    it("renders 3 avatars and count=3 with no overflow chip", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 3,
+        userIds: ["user-a", "user-b", "user-c"],
+      };
+      const { container } = render(<AggregateRender descriptor={d} />);
+      expect(screen.getByText("3")).toBeInTheDocument();
+      // 3 avatars, no +N chip
+      const allImgRoles = container.querySelectorAll("[role='img']");
+      // outer wrapper (1) + 3 avatars = 4
+      expect(allImgRoles).toHaveLength(4);
+      expect(screen.queryByText(/^\+\d+/)).toBeNull();
+    });
+
+    it("renders 3 avatars + +1 overflow chip + count=4 for 4 userIds", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 4,
+        userIds: ["user-a", "user-b", "user-c", "user-d"],
+      };
+      const { container } = render(<AggregateRender descriptor={d} />);
+      expect(screen.getByText("4")).toBeInTheDocument();
+      // Only 3 avatars rendered (slice 0..3)
+      const allImgRoles = container.querySelectorAll("[role='img']");
+      // outer wrapper (1) + 3 avatars = 4 (overflow chip has no role="img")
+      expect(allImgRoles).toHaveLength(4);
+      // +1 overflow chip
+      expect(screen.getByText("+1")).toBeInTheDocument();
+    });
+
+    it("renders 3 avatars + +2 overflow chip + count=5 for 5 userIds", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 5,
+        userIds: ["u1", "u2", "u3", "u4", "u5"],
+      };
+      render(<AggregateRender descriptor={d} />);
+      expect(screen.getByText("5")).toBeInTheDocument();
+      expect(screen.getByText("+2")).toBeInTheDocument();
+    });
+
+    it("renders pluralized aria-label for multiple people", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 2,
+        userIds: ["u1", "u2"],
+      };
+      const { container } = render(<AggregateRender descriptor={d} />);
+      const wrapper = container.querySelector("[role='img']");
+      expect(wrapper?.getAttribute("aria-label")).toBe("2 people");
+    });
+
+    it("renders singular aria-label for 1 person", () => {
+      const d: AggregateRenderDescriptor = {
+        kind: "unique_count_avatars",
+        count: 1,
+        userIds: ["u1"],
+      };
+      const { container } = render(<AggregateRender descriptor={d} />);
+      const wrapper = container.querySelector("[role='img']");
+      expect(wrapper?.getAttribute("aria-label")).toBe("1 person");
     });
   });
 });
