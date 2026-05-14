@@ -35,12 +35,12 @@ grep -rEni "frontend/src|legacy|MongoDB|\bmongo\b|\bMUI\b|Redux|Socket\.IO|Cloud
   --exclude-dir=".turbo" --exclude-dir="frontend" --exclude-dir="backend" \
   --exclude="pnpm-lock.yaml" --exclude="tsconfig.tsbuildinfo" \
   . \
-| grep -v "^\./docs/conversion-plan/_dispatch/" \
-| grep -v "^\./\.claude/worktrees/" \
+| grep -v "docs/conversion-plan/_dispatch/" \
+| grep -v "\.claude/worktrees/" \
 | sort
 ```
 
-**Total lines:** 620 (across 54 unique files)
+**Total lines:** 428 (across 54 unique files)
 
 ---
 
@@ -53,7 +53,7 @@ The dispatch plan headline projected **41 files**. The actual grep found **54 fi
 | `docs/conversion-plan/17-legacy-cleanup.md` | 1 | Intentionally excluded from edits; plan said "not edited by its own epic" but didn't subtract it from the file count |
 | `.claude/agents/epic-executor.md` + `epic-researcher.md` | 2 | Plan's slice 2-B covers these; researcher may have listed them separately from the 41 |
 | `docs/conversion-plan/` epics 04, 07, 09, 10, 11, 12, 13, 14 | 8 | Plan's slices 3-B/3-C cover "all numbered epics 01–16"; researcher estimated fewer would have hits |
-| `docs/conversion-plan/01-foundation.md` (additional hits) | covered in 3-B | — |
+| Net: preserve-live-semantic plan undercount (+4: `tests/policies/README.md`, `supabase/migrations/20260516000000_notifications_epic13.sql`, `tests/unit/AttachmentImageNode.test.tsx`, `app/(app)/w/[workspaceSlug]/b/[boardId]/layout.tsx`) offset by archive files with no grep hits (−2: `docs/pre-planning/05-google-login.md`, `docs/conversion-refinements/auth-google-only.md`) | 2 | Plan preserve-live-semantic headline said "10 files" but the plan's own explicit list contained 14 (4 extra not reflected in the 41-file projection); plan preconditions projected 12 + 6 + 1 = 19 archive files but only 17 have legacy-reference hits, reducing the net extra count by 2 |
 
 **No file requires a new treatment class.** Every hit is classifiable as one of the four valid treatments. This inventory proceeds under that finding; the orchestrator is advised of the discrepancy.
 
