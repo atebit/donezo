@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 /**
  * Menu list primitive — the canonical chrome for dropdown menus across the app.
  *
- * Implements the legacy @mixin menu-modal() recipe from
- * frontend/src/assets/styles/setup/_mixins.scss:107-132.
+ * Token and spacing contract is locked in `docs/conversion-plan/design-system.md`.
+ * (Original recipe: @mixin menu-modal() in the legacy SCSS partial, commit a5d47c2.)
  *
  * Usage:
  *   <MenuList>
