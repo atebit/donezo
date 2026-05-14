@@ -1,15 +1,15 @@
 # Donezo Design System (Locked)
 
-This document is the **canonical visual contract** for the new Next.js + Tailwind app. It is sourced verbatim from the legacy CRA + SCSS frontend at `frontend/` (kept locally per [CLAUDE.md](../../CLAUDE.md)). Every token here must round-trip into `app/globals.css` and `tailwind.config.ts` exactly as defined; new code must reference tokens, never hex literals.
+This document is the **canonical visual contract** for the Next.js + Tailwind app. Every token here must round-trip into `app/globals.css` and `tailwind.config.ts` exactly as defined; new code must reference tokens, never hex literals. (Historical note: the token values were originally derived from the legacy SCSS variables in commit `a5d47c2`.)
 
-The legacy frontend is the **only** source of truth for color, type, spacing, motion, and component visuals. We are not redesigning the product. Where the legacy SCSS is silent or contradictory, this doc proposes a value and flags it (look for **GAP**).
+This doc is the **only** source of truth for color, type, spacing, motion, and component visuals. We are not redesigning the product. Where the original SCSS was silent or contradictory, this doc proposes a value and flags it (look for **GAP**).
 
 > Translation rules — read first:
-> - `frontend/` uses **SCSS variables**; we use **CSS custom properties** under Tailwind v4's `@theme`. The variable name maps 1:1 (e.g., `$workspace-hover` → `--color-workspace-hover`).
-> - SCSS `darken($color, 20%)` is a build-time function that doesn't exist in CSS. Wherever the legacy code calls `darken($border-color, 20%)` we **bake the result into a new token** (`--color-border-strong`) and use that. Do not attempt to recreate `darken()` at runtime.
+> - The original app used **SCSS variables**; we use **CSS custom properties** under Tailwind v4's `@theme`. The variable name maps 1:1 (e.g., `$workspace-hover` → `--color-workspace-hover`).
+> - SCSS `darken($color, 20%)` is a build-time function that doesn't exist in CSS. Wherever the original SCSS called `darken($border-color, 20%)` we **bake the result into a new token** (`--color-border-strong`) and use that. Do not attempt to recreate `darken()` at runtime.
 > - SCSS `rem($px)` and `em($px)` helpers convert px → rem against a 16px root. We use Tailwind's standard rem scale and the same conversions inline.
-> - Legacy uses `react-icons` (Bs/Ai/Bi/Hi/Tb sets) and `@mui/icons-material`. New app uses **Lucide React** as the single icon source; mapping table below. Match shape/weight, not the exact icon family.
-> - Legacy uses **MUI** + plain SCSS. New app uses **shadcn/ui (Base UI under the hood)**. We re-skin shadcn primitives with our tokens; we do not import MUI.
+> - The original app used `react-icons` (Bs/Ai/Bi/Hi/Tb sets) and `@mui/icons-material`. This app uses **Lucide React** as the single icon source; mapping table below. Match shape/weight, not the exact icon family.
+> - The original app used **MUI** + plain SCSS. This app uses **shadcn/ui (Base UI under the hood)**. We re-skin shadcn primitives with our tokens; we do not import MUI.
 
 ---
 
@@ -17,16 +17,16 @@ The legacy frontend is the **only** source of truth for color, type, spacing, mo
 
 ### 1.1 Source map
 
-Every token below is lifted from `frontend/src/assets/styles/setup/_variables.scss`. The "Where" column is where the value already appears in legacy SCSS. The "New token" column is the CSS custom property name to add to `app/globals.css`. The "Tailwind class" column is the utility name once the token is wired into `@theme`.
+Every token below is locked in `app/globals.css` under the `@theme` block in §1.2. The "Legacy SCSS" column records the original SCSS variable name for provenance (from the pre-rebuild codebase at commit `a5d47c2`). The "New token" column is the CSS custom property name. The "Tailwind class" column is the utility name once the token is wired into `@theme`.
 
-> **Marketing-page tokens removed.** The legacy SCSS contained a deep-indigo + electric-violet palette and three home-page gradients (`$home-bg`, `$home-btn-bg-gradient`, etc.) for the public landing page. Per [00-overview.md](00-overview.md), the new app drops marketing entirely — the only public surface is the Google sign-in. None of the marketing tokens carry over.
+> **Marketing-page tokens removed.** The original SCSS contained a deep-indigo + electric-violet palette and three home-page gradients (`$home-bg`, `$home-btn-bg-gradient`, etc.) for the public landing page. Per [00-overview.md](00-overview.md), this app drops marketing entirely — the only public surface is the Google sign-in. None of the marketing tokens carry over.
 
 #### 1.1.2 App surface
 
 | Legacy SCSS | Hex | Role | New CSS variable | Tailwind utility |
 |---|---|---|---|---|
 | `$app-bg` | `#ffffff` | Default surface (board, modals, cards) | `--color-surface` | `bg-surface` |
-| `$login-bg` | `#f7f7f7` | Auth-page wash ([_login-signup.scss:4](../../frontend/src/assets/styles/views/_login-signup.scss)) | `--color-surface-auth` | `bg-surface-auth` |
+| `$login-bg` | `#f7f7f7` | Auth-page wash | `--color-surface-auth` | `bg-surface-auth` |
 | `$sidebar-workspace-bg` | `#F6F7FB` | Workspace sidebar (left rail content) | `--color-surface-rail` | `bg-surface-rail` |
 | `$sidebar-main-bg` | `#292f4c` | Main sidebar (icon column) — Monday-blue navy | `--color-surface-nav` | `bg-surface-nav` |
 | `$board-description-bg` | `#f5f6f8` | Right-pane in board description modal | `--color-surface-info` | `bg-surface-info` |
@@ -60,7 +60,7 @@ This is the brand-anchor color of the app — used for primary buttons, active t
 | `$dark-black` | `#1f1f21` | Hard-contrast text (rare) | `--color-fg-strong` | `text-fg-strong` |
 | `$border-color` | `#d0d4e466` (40% alpha) | Soft cell/border lines | `--color-border` | `border-border` |
 | `$layout-border-color` | `#d0d4e4` | Solid layout borders, icon-hover wash | `--color-border-solid` | `border-border-solid` |
-| `darken($border-color, 20%)` | `#a8aebb` (baked) | Stronger cell borders, focus-visible outlines, divider lines — used pervasively in legacy | `--color-border-strong` | `border-border-strong` |
+| `darken($border-color, 20%)` | `#a8aebb` (baked) | Stronger cell borders, focus-visible outlines, divider lines — used pervasively across UI surfaces | `--color-border-strong` | `border-border-strong` |
 | `darken($border-color, 30%)` | `#8c93a3` (baked) | Sidebar separator lines | `--color-border-rail` | `border-border-rail` |
 | `$task-box-shadow-color` | `#c3c6d4` | Task card shadow color, activity row separator | `--color-shadow-card` | (use in shadow tokens) |
 
@@ -68,7 +68,7 @@ This is the brand-anchor color of the app — used for primary buttons, active t
 
 #### 1.1.5 Status / priority palette ("Monday colors")
 
-These five named colors are the canonical label palette. They map to default status labels (`Done`, `Working on it`, `Stuck`, etc.) and are referenced from `frontend/src/services/board.service.js`. This palette **must** seed the database in [02](02-supabase-schema.md).
+These five named colors are the canonical label palette. They map to default status labels (`Done`, `Working on it`, `Stuck`, etc.). This palette **must** seed the database in [02](02-supabase-schema.md).
 
 | Legacy name | Hex | Hover | Selected | Selected (60% α) | New CSS variable group |
 |---|---|---|---|---|---|
@@ -87,11 +87,11 @@ Additional label colors used in the default seed (`board.service.js`) but withou
 | pending-blue | `#579BFC` | `Pending`, `Low` priority |
 | critical-black | `#333333` | `Critical` priority |
 
-**GAP**: legacy lacks formal hover/selected ramps for orange/red/purple/critical-black. Recommend deriving them in [02](02-supabase-schema.md) seed using the same SCSS pattern (≈15% darken for hover, ≈35% lighten for selected). Until then, use single-tone for hover (no shift) and same color at 50% alpha for selected.
+**GAP**: no formal hover/selected ramps were defined for orange/red/purple/critical-black in the original SCSS. Recommend deriving them in [02](02-supabase-schema.md) seed using the same SCSS pattern (≈15% darken for hover, ≈35% lighten for selected). Until then, use single-tone for hover (no shift) and same color at 50% alpha for selected.
 
 #### 1.1.6 Group color picker palette
 
-`frontend/src/services/util.service.js:65` defines the 12-color palette offered to users for group accents (the colored left-bar on each group):
+The 12-color palette offered to users for group accents (the colored left-bar on each group) is locked as follows:
 
 ```
 #a25ddc  #FBBC04  #F1E4DE  #FDCFE8  #F28B82  #FFF475
@@ -106,7 +106,7 @@ These should be exposed via `--color-group-1` through `--color-group-12` in `glo
 |---|---|---|---|
 | `$react-modal-background` | `rgba(41, 47, 76, 0.7)` | Modal scrim (`.dark-screen`) | `--color-overlay` |
 
-> **GAP — dark mode**: legacy has no dark-mode tokens. Epic [14](14-mobile-a11y-polish.md) adds them. When generating dark variants, derive from the light tokens (do not reinvent the palette): invert `--color-fg`/`--color-surface`, dial back saturation on labels by ≈10%, keep `--color-primary` close to `#0073ea` (Monday's dark-mode primary is essentially unchanged).
+> **GAP — dark mode**: no dark-mode tokens were defined in the original design. Epic [14](14-mobile-a11y-polish.md) adds them. When generating dark variants, derive from the light tokens (do not reinvent the palette): invert `--color-fg`/`--color-surface`, dial back saturation on labels by ≈10%, keep `--color-primary` close to `#0073ea` (Monday's dark-mode primary is essentially unchanged).
 
 ### 1.2 `app/globals.css` block (canonical)
 
@@ -192,17 +192,17 @@ Drop this in `app/globals.css` under the existing `@theme`. Replace the placehol
 
 ### 2.1 Fonts
 
-From `_variables.scss:82-83` and `_fonts.scss`:
+The canonical font stack (provenance: original SCSS variables at commit `a5d47c2`):
 
 ```scss
 $font-family: "Figtree", "Roboto", "Rubik", "Noto Kufi Arabic", "Noto Sans JP", sans-serif;
 $title-font-family: "Poppins", "Roboto", "Rubik", "Noto Kufi Arabic", "Noto Sans JP", sans-serif;
 ```
 
-- **Body / UI:** Figtree (loaded from `frontend/src/assets/fonts/Figtree-Regular.ttf`)
-- **Headings / titles:** Poppins (loaded from `frontend/src/assets/fonts/Poppins-Regular.ttf`) — applied to `h1`–`h6` per [_base.scss:46](../../frontend/src/assets/styles/basics/_base.scss).
+- **Body / UI:** Figtree — loaded via `next/font/google` in `app/layout.tsx`.
+- **Headings / titles:** Poppins — loaded via `next/font/google` in `app/layout.tsx`, applied to `h1`–`h6`.
 
-> **GAP**: legacy ships only a single weight per family (`Regular`). `_base.scss` and component SCSS reference `font-weight: 500/600/700` freely — meaning legacy is silently falling back to the system font for non-400 weights. We **fix this in the new app** by loading variable fonts via `next/font/google`.
+> **Note**: the original app shipped only a single weight per family (`Regular`). The new app loads variable-weight fonts via `next/font/google` to support `font-weight: 500/600/700` correctly.
 
 #### 2.1.1 Loader (Next.js, in `app/layout.tsx`)
 
@@ -237,18 +237,18 @@ Then in `globals.css`:
 
 ### 2.2 Base sizes
 
-`_base.scss`:
+Base typography rules locked in `app/globals.css`:
 - `body { font-size: 18px; line-height: 1.6; }`
 - `html { line-height: 1.6; }`
 - All `h1`–`h6` use `--font-display` with no margin/padding reset values.
 
-> **Decision**: keep the 18px body baseline. Most app surfaces override down to 14px (table cells, modals) — see helper scale below. Don't cargo-cult Tailwind's 16px default; legacy boards visibly use 18px for prose.
+> **Decision**: keep the 18px body baseline. Most app surfaces override down to 14px (table cells, modals) — see helper scale below. Don't cargo-cult Tailwind's 16px default; board surfaces use 18px for prose.
 
 ### 2.3 Helper / utility scale
 
-From `_helpers.scss` — these are the explicit sizes the legacy app uses. Match them in Tailwind utilities (Tailwind's `text-xs`/`text-sm`/`text-base` already cover most; expose the legacy-named ones too):
+The explicit sizes used across the app. Match them in Tailwind utilities (Tailwind's `text-xs`/`text-sm`/`text-base` already cover most; expose the named ones too):
 
-| Legacy class | Size | Tailwind equivalent | Common usage |
+| SCSS helper class | Size | Tailwind equivalent | Common usage |
 |---|---|---|---|
 | `.fs12` | 12px | `text-xs` | Comment counts, statistic sums |
 | `.fs14` | 14px | `text-sm` | Cell content, modal body, sidebar labels, comments |
@@ -256,9 +256,9 @@ From `_helpers.scss` — these are the explicit sizes the legacy app uses. Match
 | `.fs20` | 20px | `text-xl` | Section headers |
 | `.fs24` | 24px | `text-2xl` | Board title (narrow+) |
 | `.fs28` | 28px | `text-[28px]` | Modal headings |
-| `.fs30` | 30px | `text-3xl` | (legacy marketing only — unused in new app) |
+| `.fs30` | 30px | `text-3xl` | (marketing only — not used in this app) |
 
-### 2.4 Weights (used in legacy)
+### 2.4 Weights
 
 `400` (default body), `500` (sidebar items, board info, group titles, secondary headings), `600` (group titles, sidebar favorites title), `700` (logo). No use of 800/900.
 
@@ -267,13 +267,13 @@ From `_helpers.scss` — these are the explicit sizes the legacy app uses. Match
 - Body: `1.6` (set on `html` and `body`)
 - Board title (narrow+): `42px` (`_board-header.scss:234`)
 
-> **GAP**: legacy doesn't define a line-height token system. Use Tailwind's defaults (`leading-tight 1.25`, `leading-snug 1.375`, `leading-normal 1.5`, `leading-relaxed 1.625`) and reach for explicit pixel values only when a specific component spec demands it.
+> **GAP**: no line-height token system was defined in the original SCSS. Use Tailwind's defaults (`leading-tight 1.25`, `leading-snug 1.375`, `leading-normal 1.5`, `leading-relaxed 1.625`) and reach for explicit pixel values only when a specific component spec demands it.
 
 ---
 
 ## 3. Spacing scale
 
-From `_variables.scss:73-79`:
+The canonical spacing scale (provenance: original SCSS variables at commit `a5d47c2`):
 
 ```scss
 $spacing-xs:    4px;
@@ -285,9 +285,9 @@ $spacing-xxl:   48px;
 $spacing-xxxl:  64px;
 ```
 
-Tailwind's default scale (`1=4px, 2=8px, 4=16px, 6=24px, 8=32px, 12=48px, 16=64px`) already covers these 1:1. **Use Tailwind's numeric scale; don't introduce custom names.** A name-mapping cheatsheet for porting SCSS:
+Tailwind's default scale (`1=4px, 2=8px, 4=16px, 6=24px, 8=32px, 12=48px, 16=64px`) already covers these 1:1. **Use Tailwind's numeric scale; don't introduce custom names.** A name-mapping cheatsheet:
 
-| Legacy | Tailwind |
+| SCSS name | Tailwind |
 |---|---|
 | `$spacing-xs` | `1` (4px) |
 | `$spacing-small` | `2` (8px) |
@@ -301,22 +301,22 @@ Tailwind's default scale (`1=4px, 2=8px, 4=16px, 6=24px, 8=32px, 12=48px, 16=64p
 
 ## 4. Layout dimensions
 
-From SCSS, hard-coded constants that components depend on. These are part of the visual contract, not "magic numbers":
+Hard-coded constants that components depend on. These are part of the visual contract, not "magic numbers":
 
 | Token | Value | Used in |
 |---|---|---|
-| `$workspace-width` | `255px` | Workspace sidebar open width (also `230px` literal in `_workspace-sidebar.scss:11` — keep `230px`; `255` is dead) |
+| `$workspace-width` | `255px` | Workspace sidebar open width (also `230px` — keep `230px`; `255` is dead) |
 | `$cell-height` | `36px` | All table cells (rows + headers) |
 | `$cell-width` | `140px` | Default column min-width |
 | `$cell-width-task` | `336px` | Task title column |
 | `$cell-width-person` | `140px` | Person column |
 | `$cell-width-conversation` | `65px` | Comments column |
 | `$cell-width-checkbox` | `32px` | Bulk-select column |
-| Main sidebar min width | `66px` | `_main-sidebar.scss:4` |
-| Workspace sidebar (open) | `230px` | `_workspace-sidebar.scss:11` |
-| Workspace sidebar (collapsed, narrow+) | `30px` | `_workspace-sidebar.scss:19` |
-| Mobile bottom nav height | `8vh` | `_main-sidebar.scss:111` |
-| Board header sticky offset | `0` (header) / `182–211px` (group/title) | `_group-preview.scss:39, 119` |
+| Main sidebar min width | `66px` | Main sidebar component |
+| Workspace sidebar (open) | `230px` | Workspace sidebar component |
+| Workspace sidebar (collapsed, narrow+) | `30px` | Workspace sidebar component |
+| Mobile bottom nav height | `8vh` | Main sidebar mobile variant |
+| Board header sticky offset | `0` (header) / `182–211px` (group/title) | Group header sticky positioning |
 
 Expose these as CSS variables (`--size-cell-h`, `--size-cell-w`, `--size-cell-w-task`, etc.) so we don't hard-code in component code.
 
@@ -324,7 +324,7 @@ Expose these as CSS variables (`--size-cell-h`, `--size-cell-w`, `--size-cell-w-
 
 ## 5. Radii
 
-Legacy doesn't tokenize radii — it inlines them. Observed values:
+Radii are not tokenized in the original SCSS — they are inlined. Observed values:
 
 | Value | Where |
 |---|---|
@@ -354,7 +354,7 @@ Map: most cell/button corners → `--radius-xs`, board-tool corners → `--radiu
 
 ## 6. Shadows
 
-Legacy inlines shadows too. Canonical values:
+Shadows are inlined in the original SCSS too. Canonical values:
 
 | Token | Value | Where |
 |---|---|---|
@@ -367,7 +367,7 @@ Legacy inlines shadows too. Canonical values:
 
 ## 7. Z-index layers
 
-Lock these as named layers — legacy uses raw integers liberally, which causes stacking bugs:
+Lock these as named layers — the original SCSS used raw integers liberally, which caused stacking bugs:
 
 | Layer | Value | Where used |
 |---|---|---|
@@ -386,13 +386,13 @@ Reference these in components (`z-[var(--z-modal)]`) instead of arbitrary intege
 
 ## 8. Motion / micro-interactions
 
-Legacy is **not formally tokenized**, but a clear pattern emerges across SCSS. Lock these tokens to dedupe:
+Motion is **not formally tokenized** in the original SCSS, but a clear pattern emerges. Lock these tokens to dedupe:
 
 ### 8.1 Duration tokens
 
 | Token | Value | Derived from |
 |---|---|---|
-| `--motion-instant` | `100ms` | `add-btn` color shift `.1s` ([_group-preview.scss:75](../../frontend/src/assets/styles/cmps/group/_group-preview.scss)) |
+| `--motion-instant` | `100ms` | `add-btn` color shift `.1s` (group-preview component) |
 | `--motion-fast` | `150ms` | task-tools-modal opacity/transform `150ms` |
 | `--motion-base` | `200ms` | All `.2s` transitions: sidebar items, sidebar workspace open/close inner content, hover sidebar, board filter active, group title-info opacity |
 | `--motion-medium` | `300ms` | `.3s` transitions: sidebar icon-link bg, opacity ease |
@@ -401,7 +401,7 @@ Legacy is **not formally tokenized**, but a clear pattern emerges across SCSS. L
 
 ### 8.2 Easing
 
-Legacy almost universally relies on browser default easing (`ease`) and a few explicit `ease-out`/`ease-in-out`. Standardize:
+The original SCSS almost universally relied on browser default easing (`ease`) and a few explicit `ease-out`/`ease-in-out`. Standardize:
 
 | Token | Value | Use |
 |---|---|---|
@@ -415,25 +415,25 @@ Tailwind v4 already supplies `ease-in`/`ease-out`/`ease-in-out`; expose the name
 
 These are the visible "Monday-feel" moments. Components implementing them must match the timing, not just the visual.
 
-| Pattern | Spec | Source |
+| Pattern | Spec | Component |
 |---|---|---|
-| **Row hover reveals** | Background `--color-surface-row-hover`, hidden controls (`task-menu .icon`, `open-task-details`, `add-number-icons`) opacity `0 → 1` over `--motion-base` | task-preview, group-preview, number-picker |
-| **Sidebar item hover** | `bg-color` shift to `--color-surface-hover`, radius `4px`, transition `--motion-base` | workspace-sidebar `.workspace-btns > * { transition: .2s }` |
-| **Workspace sidebar collapse** | Width animates `0 ↔ 230px` over `--motion-slow`; inner content opacity `0 ↔ 1` with `transition-delay: .25s` so it fades in *after* the rail finishes opening | _workspace-sidebar.scss:7-25 |
-| **Toggle workspace pill** | Hover grows horizontal padding (`8px → 16px`) and color-flips to `--color-primary` over `--motion-base` | _workspace-sidebar.scss:194-208 |
-| **Status pill "fold" reveal** | On status cell hover, a triangular fold grows from 0 → 10×10 → 15×15 px in the top-right corner, transitioning `border-width` over `--motion-base` with `transition-delay: .2s` | _status-priority-picker.scss:6-28 |
-| **Avatar shrink-on-hover** | Logged-user avatar in main sidebar `transform: scale(.9)` over `--motion-base` | _main-sidebar.scss:48-53 |
-| **Board "+ New Item" button** | Halves of split-button independently round their corners (5px) on hover over `--motion-slow`; bg → `--color-primary-hover` | _board-filter.scss:43-66 |
-| **Search expand** | Search input width `58 → 140px` over `--motion-medium` on focus; chrome border on focus uses `--color-primary` | _board-filter.scss:90-110 |
-| **Board drawer slide-in** | `transform: translateX(100% → 0)` over `--motion-drawer`, paired with shadow fade | _board-modal.scss:9-23 |
-| **Active-tab indicator** | 2px bottom border in `--color-primary`; no animated underline (snap-on) | _board-header.scss:155-157, _board-modal.scss:58-60 |
-| **Cell on-typing wash** | While editing: `bg-color` `--color-surface-active` (light blue `#cce5ff`) — signals "this cell is live" | _task-preview.scss:15-17, 128-131 |
-| **Focus outline** | `outline: 1px solid --color-primary` on inputs/contenteditable cells; hover preview uses `outline: 1px solid --color-border-strong` | _task-preview.scss:147-153 |
-| **Group color stripe** | 6px solid left border on `.sticky-div`, color = group's chosen accent. Defines the row's group identity visually | _group-preview.scss:299 |
+| **Row hover reveals** | Background `--color-surface-row-hover`, hidden controls (`task-menu .icon`, `open-task-details`, `add-number-icons`) opacity `0 → 1` over `--motion-base` | TaskPreview, GroupPreview, NumberPicker |
+| **Sidebar item hover** | `bg-color` shift to `--color-surface-hover`, radius `4px`, transition `--motion-base` | WorkspaceSidebar |
+| **Workspace sidebar collapse** | Width animates `0 ↔ 230px` over `--motion-slow`; inner content opacity `0 ↔ 1` with `transition-delay: .25s` so it fades in *after* the rail finishes opening | WorkspaceSidebar |
+| **Toggle workspace pill** | Hover grows horizontal padding (`8px → 16px`) and color-flips to `--color-primary` over `--motion-base` | WorkspaceSidebar |
+| **Status pill "fold" reveal** | On status cell hover, a triangular fold grows from 0 → 10×10 → 15×15 px in the top-right corner, transitioning `border-width` over `--motion-base` with `transition-delay: .2s` | StatusCell / PriorityCell |
+| **Avatar shrink-on-hover** | Logged-user avatar in main sidebar `transform: scale(.9)` over `--motion-base` | MainSidebar |
+| **Board "+ New Item" button** | Halves of split-button independently round their corners (5px) on hover over `--motion-slow`; bg → `--color-primary-hover` | BoardFilter |
+| **Search expand** | Search input width `58 → 140px` over `--motion-medium` on focus; chrome border on focus uses `--color-primary` | BoardFilter |
+| **Board drawer slide-in** | `transform: translateX(100% → 0)` over `--motion-drawer`, paired with shadow fade | TaskDrawer |
+| **Active-tab indicator** | 2px bottom border in `--color-primary`; no animated underline (snap-on) | BoardHeader, TaskDrawer |
+| **Cell on-typing wash** | While editing: `bg-color` `--color-surface-active` (light blue `#cce5ff`) — signals "this cell is live" | TaskRow (inline-editable title) |
+| **Focus outline** | `outline: 1px solid --color-primary` on inputs/contenteditable cells; hover preview uses `outline: 1px solid --color-border-strong` | TaskRow |
+| **Group color stripe** | 6px solid left border on `.sticky-div`, color = group's chosen accent. Defines the row's group identity visually | GroupHeader, TaskRow |
 
 ### 8.4 Reduced motion
 
-Legacy ignores `prefers-reduced-motion`. The new app must wrap any animation with duration > `--motion-base` in `@media (prefers-reduced-motion: no-preference)` — see [14](14-mobile-a11y-polish.md).
+The original SCSS did not address `prefers-reduced-motion`. This app wraps any animation with duration > `--motion-base` in `@media (prefers-reduced-motion: no-preference)` — see [14](14-mobile-a11y-polish.md).
 
 ---
 
@@ -441,14 +441,14 @@ Legacy ignores `prefers-reduced-motion`. The new app must wrap any animation wit
 
 ### 9.1 Source
 
-- Legacy: `react-icons` (Bs, Ai, Bi, Hi, Hi2, Tb sets) + `@mui/icons-material`. ~30+ icons used across the app.
-- New app: **Lucide React** (`lucide-react`). One library. No MUI.
+- Original app: `react-icons` (Bs, Ai, Bi, Hi, Hi2, Tb sets) + `@mui/icons-material`. ~30+ icons used across the app. (Historical note: see commit `a5d47c2` for the full icon inventory.)
+- This app: **Lucide React** (`lucide-react`). One library. MUI icons are not used.
 
 ### 9.2 Mapping table
 
 Match shape and visual weight, not the exact icon family. Below is the mapping for icons that carry product meaning. Decorative icons can be re-picked freely from Lucide.
 
-| Legacy icon | Where used | Lucide equivalent |
+| Original icon | Where used | Lucide equivalent |
 |---|---|---|
 | `BsFillLightningFill` | Workspace logo glyph (green tile) | `Zap` (filled) |
 | `BsCheckSquare` / `BsSquare` | Checkbox cell | `Check` / `Square` |
@@ -472,17 +472,17 @@ Match shape and visual weight, not the exact icon family. Below is the mapping f
 | `HiOutlineChatBubbleOvalLeft` | Inactive comment indicator | `MessageCircle` |
 | `TbArrowsDiagonal` | "Open task" expand | `Maximize2` |
 
-> **Spacing & sizing**: legacy icons run `font-size: 16–28px` mapped to `rem()` units. In the new app, default Lucide size is `24px`; pass `size={20}` for inline cell glyphs and `size={16}` for badges/counts. Use `stroke-width={2}` (Lucide default) for everything except `Maximize2` and other expand affordances which look better at `1.5`.
+> **Spacing & sizing**: the original icons ran `font-size: 16–28px` mapped to `rem()` units. In this app, default Lucide size is `24px`; pass `size={20}` for inline cell glyphs and `size={16}` for badges/counts. Use `stroke-width={2}` (Lucide default) for everything except `Maximize2` and other expand affordances which look better at `1.5`.
 
 ### 9.3 Custom assets
 
-The legacy logo is a PNG (`frontend/src/assets/img/logo.png`). For the new app, create an SVG version preserving the silhouette. Until then, place the PNG in `public/logo.png` and use `next/image`. **Do not** ship the legacy `loader.gif`; the new app uses `<Skeleton />` (see [14](14-mobile-a11y-polish.md)).
+The logo is located at `public/logo.png`; the goal is an SVG version preserving the silhouette. Use `next/image` to render it. The app uses `<Skeleton />` for loading states (see [14](14-mobile-a11y-polish.md)) — no animated GIF loaders.
 
 ---
 
 ## 10. Scrollbar
 
-`_base.scss:1-20`:
+Replicate verbatim in `app/globals.css`:
 
 ```css
 * {
@@ -497,22 +497,22 @@ The legacy logo is a PNG (`frontend/src/assets/img/logo.png`). For the new app, 
 }
 ```
 
-Replicate verbatim in `globals.css`. The thin gray scrollbar is part of the visual identity — TanStack Virtual will inherit it.
+The thin gray scrollbar is part of the visual identity — TanStack Virtual will inherit it.
 
 ---
 
 ## 11. Breakpoints
 
-From `_variables.scss:86-88` and `_mixins.scss:3-25`:
+The original SCSS defined custom breakpoint mixins (provenance: `_variables.scss` + `_mixins.scss` at commit `a5d47c2`):
 
-| Legacy mixin | px | Tailwind class |
+| Original mixin | px | Tailwind class |
 |---|---|---|
 | `for-mobile-layout` | up to `460+40 = 500px` | `max-md:` (≤ 768) — *closest match* |
 | `for-narrow-layout` | from `500px` | `md:` (≥ 768) — *closest match* |
 | `for-normal-layout` | from `760px` | `lg:` (≥ 1024) — *closest match* |
 | `for-wide-layout` | from `1000px` | `xl:` (≥ 1280) — *closest match* |
 
-**Decision**: legacy breakpoints don't align with Tailwind's defaults and are smaller across the board. Use Tailwind defaults for the new app (`sm 640`, `md 768`, `lg 1024`, `xl 1280`, `2xl 1536`). The legacy breakpoints were CRA-era assumptions about a single-screen reality; the new app should target modern device classes. Mobile parity is a [14](14-mobile-a11y-polish.md) deliverable.
+**Decision**: the original breakpoints don't align with Tailwind's defaults and are smaller across the board. Use Tailwind defaults (`sm 640`, `md 768`, `lg 1024`, `xl 1280`, `2xl 1536`). The original breakpoints reflected early-era assumptions about single-screen layouts; this app targets modern device classes. Mobile parity is a [14](14-mobile-a11y-polish.md) deliverable.
 
 ---
 

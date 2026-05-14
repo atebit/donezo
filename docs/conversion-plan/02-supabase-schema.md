@@ -78,7 +78,7 @@ The tradeoff: writes have to know which value column to populate based on the co
 
 ### Stable column ids, label ids
 
-Critical lesson from the legacy app: `task.status = 'Done'` (the *title*) creates a cascade-rename bug ([06-data-model.md](../audit/06-data-model.md)). New schema:
+Storing a status value as a title string (e.g. `task.status = 'Done'`) creates a cascade-rename bug. The current schema avoids this by construction:
 
 - A `label` row has a stable id and editable title/color.
 - A `cell` row stores `label_id`, never the label title.
@@ -503,7 +503,7 @@ Strictly, `task.group_id → group.board_id`. We carry `board_id` directly on `t
 - Cell RLS can check `task.board_id` without joining `group`.
 - Board-wide queries (e.g., "all tasks on this board") avoid a join.
 
-A check constraint or trigger keeps it consistent: when a task moves between groups (rare, cross-group DnD), the move sets both columns. The legacy app's "move task across groups" is the only mutation that touches `group_id`.
+A check constraint or trigger keeps it consistent: when a task moves between groups (rare, cross-group DnD), the move sets both columns. Moving a task across groups is the only mutation that touches `group_id`.
 
 ## Local dev workflow
 
@@ -547,8 +547,8 @@ A `supabase/seed.sql` populates a demo workspace, board, columns, groups, tasks.
 
 ## Open questions
 
-- **Should `task.title` be a column-typed cell instead of a dedicated field?** The legacy app stored title separately, which is simpler but breaks the "everything is a column" mental model. Recommend keeping `task.title` denormalized for performance (it's read on every row render) and treating column 0 as a read-through to `task.title` rather than a real cell. Document the convention in [07](07-column-system.md).
+- **Should `task.title` be a column-typed cell instead of a dedicated field?** Storing title separately is simpler but breaks the "everything is a column" mental model. `task.title` is kept denormalized for performance (it's read on every row render); column 0 is a read-through to `task.title` rather than a real cell. The convention is documented in [07](07-column-system.md).
 - **Are we OK with `numeric` positions?** Some teams use `position int` + periodic compaction. `numeric` is simpler and matches Notion / Linear's approach.
 - **Branching strategy for Supabase migrations?** Supabase has a "branching" beta that creates per-PR DB instances. Worth piloting. Defer the decision to [15](15-observability-testing-cicd.md).
-- **Encrypted columns?** The legacy app stores no PII beyond email + name. If the internal user later wants encrypted notes (e.g., HR boards), `pgcrypto` is here. Not blocking initial release.
+- **Encrypted columns?** The app currently stores no PII beyond email + name. If the internal user later wants encrypted notes (e.g., HR boards), `pgcrypto` is here. Not blocking initial release.
 - **`activity` retention?** Activity grows forever. Add a partition or a TTL job at [15](15-observability-testing-cicd.md). Not blocking initial release.

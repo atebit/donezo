@@ -6,7 +6,7 @@ Make Postgres the source of truth for authorization. Define the role hierarchy, 
 
 ## Why this is its own epic
 
-The legacy app's defining flaw is that authorization lived in commented-out middleware. Re-creating that bug in a new framework would defeat the purpose of the migration. RLS policies are also notoriously easy to get subtly wrong (e.g., write-allow without a USING clause). They deserve a dedicated epic with tests.
+A common flaw in prior-generation web apps is authorization living in commented-out or inconsistently enforced middleware. This architecture puts authorization in Postgres via RLS so it cannot be bypassed by application bugs. RLS policies are also notoriously easy to get subtly wrong (e.g., write-allow without a USING clause). They deserve a dedicated epic with tests.
 
 ## In scope
 

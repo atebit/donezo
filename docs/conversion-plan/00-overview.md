@@ -1,19 +1,19 @@
 # Donezo Conversion Plan — Overview
 
-A re-architecture of Donezo from a CRA + Express + MongoDB stack into a Next.js + Supabase + Vercel application. This folder is the canonical plan; each subsequent file is an engineering epic with enough context to execute end-to-end without referring back to the legacy codebase.
+Donezo is a Next.js + Supabase + Vercel application rebuilt from scratch. This folder is the canonical plan; each subsequent file is an engineering epic with enough context to execute end-to-end. (Historical context: the original stack was CRA + Express + MongoDB; the rebuild plan was executed and the legacy code removed in commit `a5d47c2`.)
 
 The goal is a credible monday.com-class internal tool. Billing, tenant isolation hardening, automations/recipes, public API, integrations, and white-labeling are deliberately deferred until the core product is solid.
 
 ## Why this plan exists
 
-The audit at [`docs/audit/`](../audit/00-index.md) inventories the legacy codebase and concludes that a structural rebuild beats incremental fixes ([decision memo](../audit/11-recommendation-migrate-now.md)). This conversion plan is the execution of that decision. We are not porting code — we are rebuilding on the right substrate.
+The audit at [`docs/archive/audit/`](../archive/audit/00-index.md) inventories the pre-rebuild codebase and concludes that a structural rebuild beats incremental fixes ([decision memo](../archive/audit/11-recommendation-migrate-now.md)). This conversion plan is the execution of that decision. We are not porting code — we are rebuilding on the right substrate.
 
-**Visual fidelity is a hard contract, not aspirational.** The legacy CRA + SCSS + MUI frontend at `frontend/` (kept locally per [CLAUDE.md](../../CLAUDE.md)) is the single source of truth for color, typography, spacing, motion, and component visuals. The new app must match it. Rebuilding "on the right substrate" means new code (Next.js, Supabase, Tailwind, shadcn/ui) — it does **not** mean a new visual identity.
+**Visual fidelity is a hard contract, not aspirational.** The canonical sources of truth for color, typography, spacing, motion, and component visuals are [`design-system.md`](design-system.md) and [`component-system.md`](component-system.md). (Historical note: the tokens were originally derived from the legacy SCSS variables in commit `a5d47c2`.) The app must match these specs. Rebuilding "on the right substrate" means new code (Next.js, Supabase, Tailwind, shadcn/ui) — it does **not** mean a new visual identity.
 
 The locked specs are:
 
-- **[`design-system.md`](design-system.md)** — every color, font, spacing value, radius, shadow, z-index, motion duration, and icon mapping, sourced verbatim from `frontend/src/assets/styles/setup/_variables.scss` and the SCSS partials. Includes the canonical `app/globals.css` `@theme` block.
-- **[`component-system.md`](component-system.md)** — every significant legacy component's visual + interaction contract, mapped to the epic that ships it and tagged with a fidelity bar (`must-match` / `match` / `inspired`).
+- **[`design-system.md`](design-system.md)** — every color, font, spacing value, radius, shadow, z-index, motion duration, and icon mapping. Includes the canonical `app/globals.css` `@theme` block.
+- **[`component-system.md`](component-system.md)** — every significant component's visual + interaction contract, mapped to the epic that ships it and tagged with a fidelity bar (`must-match` / `match` / `inspired`).
 
 Every epic that touches UI references these docs in a "Visual fidelity requirements" section. Executors must consume tokens from `design-system.md` and component contracts from `component-system.md`; they may not invent palettes, derive new spacing, or pick alternative icons. Architectural deviations escalate to the `epic-researcher` (Opus), as with any other ambiguity.
 
@@ -22,18 +22,18 @@ Every epic that touches UI references these docs in a "Visual fidelity requireme
 | Concern | Choice | Why |
 |---|---|---|
 | Framework | **Next.js 15 (App Router)** | RSC + server actions remove the bespoke REST layer. File-based routing, middleware, edge runtime, image optimization, built-in caching. |
-| Language | **TypeScript (strict)** | No untyped service modules, no `any`-typed Redux state. Generated Supabase types enforce DB shape end-to-end. |
-| UI | **Tailwind v4 + shadcn/ui + Radix primitives** | Replace MUI + SCSS. Tokens-driven theming, accessible primitives, consistent component vocabulary. Drops ~600KB of MUI. Tokens locked in [`design-system.md`](design-system.md); component contracts in [`component-system.md`](component-system.md). |
+| Language | **TypeScript (strict)** | No untyped service modules, no any-typed state. Generated Supabase types enforce DB shape end-to-end. |
+| UI | **Tailwind v4 + shadcn/ui + Radix primitives** | Replaced MUI + SCSS (historical context: MUI was the legacy UI framework). Tokens-driven theming, accessible primitives, consistent component vocabulary. Tokens locked in [`design-system.md`](design-system.md); component contracts in [`component-system.md`](component-system.md). |
 | Forms | **React Hook Form + Zod** | One schema validates client and server-action inputs. |
 | Tables | **TanStack Table + TanStack Virtual** | Virtualized rows for 10k+ task boards. Headless, fully styleable. |
 | DnD | **dnd-kit** | Replaces abandoned `react-beautiful-dnd`. Touch-capable. Nested drop zones for kanban. |
 | Charts | **Recharts** | Used by dashboard view. |
 | Rich text | **Tiptap** | Comments, long-text cells, mentions. |
-| State | **React Server Components + Zustand for client-only state** | No Redux. Server state lives on the server; client store is for UI state (modals, drag, selection). |
+| State | **React Server Components + Zustand for client-only state** | This repo uses Zustand, not Redux. Server state lives on the server; client store is for UI state (modals, drag, selection). |
 | Data | **Supabase Postgres** | Managed Postgres, RLS, generated types via `supabase gen types`. |
 | Auth | **Supabase Auth** (`@supabase/ssr`) | Google OAuth + email/password + magic link. SSR-aware cookies. |
-| Realtime | **Supabase Realtime** | Postgres Changes + Presence + Broadcast. Replaces Socket.IO. |
-| Storage | **Supabase Storage** | Replaces Cloudinary. Bucket policies via RLS. |
+| Realtime | **Supabase Realtime** | Postgres Changes + Presence + Broadcast. This repo uses Supabase Realtime, not Socket.IO. |
+| Storage | **Supabase Storage** | Bucket policies via RLS. This repo uses Supabase Storage, not Cloudinary. |
 | Email | **Resend + React Email** | Transactional + digests. |
 | Errors | **Sentry** | Frontend + edge + server-action coverage. |
 | Hosting | **Vercel** | Preview deploys per PR, edge middleware, image optimization, env management. |
@@ -46,13 +46,13 @@ Every epic that touches UI references these docs in a "Visual fidelity requireme
 
 These shape every epic. When in doubt, return to these.
 
-0. **Visual fidelity is a contract.** Tokens come from [`design-system.md`](design-system.md). Component contracts come from [`component-system.md`](component-system.md). Both are sourced from the legacy `frontend/` SCSS. No "neutral" palette, no "we'll polish later," no inventing tokens during slice work. If a component looks different from the legacy app's screenshot, it's wrong.
+0. **Visual fidelity is a contract.** Tokens come from [`design-system.md`](design-system.md). Component contracts come from [`component-system.md`](component-system.md). (Historical note: the token values were originally derived from the legacy SCSS variables in commit `a5d47c2`.) No "neutral" palette, no "we'll polish later," no inventing tokens during slice work. If a component looks different from the locked specs, it's wrong.
 1. **RSC-first.** Default to Server Components. Drop to `"use client"` only for interactivity (drag, picker popovers, optimistic UI). Server Actions handle mutations; no `/api` route handlers unless we need a webhook or third-party integration.
 2. **RLS is the source of truth for authorization.** The server cannot trust the client, but it also doesn't need to: every query goes through Postgres with the user's JWT, and policies enforce access. Server-side checks are a defense-in-depth layer, not the primary gate.
 3. **Type-safe end-to-end.** `supabase gen types typescript` runs on every schema change. Server actions accept Zod-validated input. Component props are narrow.
 4. **Optimistic by default for cell edits.** Status, priority, checkbox, number, text edits update locally first, sync to server, reconcile via Realtime. Comments, attachments, structural edits (add/remove/reorder column) are pessimistic.
-5. **Re-architect freely.** No backwards compatibility with the legacy data shape. We are not migrating data — we are rebuilding. The legacy app remains running until cutover; new app starts empty.
-6. **One column-cell model from day one.** Stable column ids, cells keyed by column id, polymorphic value storage. The legacy "store the label title in `task.status`" pattern is gone.
+5. **Re-architect freely.** No backwards compatibility with the pre-rebuild data shape. We are not migrating data — we are rebuilding. The new app starts empty.
+6. **One column-cell model from day one.** Stable column ids, cells keyed by column id, polymorphic value storage. The current schema stores label references by id; the old pattern of storing the label title directly in `task.status` is not used.
 7. **Concurrency is per-cell, not per-board.** Two users editing different cells on the same task never conflict. Last-write-wins per cell, with `updated_at` for visibility.
 8. **Realtime is opt-in per channel.** Subscribe only to the active board. Tear down on navigation. Presence is an explicit feature, not implicit.
 9. **Accessibility is not a phase.** Every component lands with keyboard nav, focus management, and ARIA. Phase 14 is a polish/audit pass, not the first time we think about it.
@@ -193,7 +193,7 @@ A board where:
 - Audit log export, compliance modes (SOC2/HIPAA)
 - Public form sharing beyond authenticated users (form view exists; public sharing deferred)
 - Cross-board mirror/dependency cell types (column types listed but stubbed in [07](07-column-system.md))
-- **Marketing / public landing page.** The only public route is the Google sign-in screen ([03](03-auth.md)). The legacy `cmps/home/` + `cmps/custom/` components are not ported; the marketing-only tokens (brand-violet gradients, home-page hero gradient) are not ported either. See [`design-system.md`](design-system.md) and [`component-system.md`](component-system.md).
+- **Marketing / public landing page.** The only public route is the Google sign-in screen ([03](03-auth.md)). The pre-rebuild marketing components (`cmps/home/`, `cmps/custom/`) were not ported; the marketing-only tokens (brand-violet gradients, home-page hero gradient) are not present in the current app. See [`design-system.md`](design-system.md) and [`component-system.md`](component-system.md).
 
 ## How to read each epic doc
 

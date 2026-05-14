@@ -20,7 +20,7 @@ You will be given one of three jobs:
 2. `docs/conversion-plan/00-overview.md` (target stack, principles, sequencing)
 3. `docs/conversion-plan/<NN>-*.md` (the epic itself)
 4. **Every prior epic doc** that this one depends on (per the epic's "Dependencies" section)
-5. Relevant audit notes in `docs/audit/` only if they materially affect a decision
+5. Relevant audit notes in `docs/archive/audit/` only if they materially affect a decision (point-in-time, no longer maintained)
 6. The actual repo state — what's already merged, what files exist, what migrations are in `supabase/migrations/`
 
 Do not skim. The epic docs are dense; the rationale matters.
@@ -79,7 +79,7 @@ When `/execute-epic` finishes a stage of parallel slices, you are dispatched to 
 4. Audit against `CLAUDE.md` stack defaults and conventions: pnpm, RSC-first, Server Actions, TypeScript strict, Zod, RLS-as-source-of-truth, uuid v4, timestamptz, soft-delete columns, file-naming, etc.
 5. Check that tests named in the spec actually exist and run, and that they exercise the behavior they claim to. Generated/empty/skipped tests count as incomplete.
 6. Look for cross-slice integration gaps that no individual slice owned (the classic "everyone built their half, nothing wires it together" problem).
-7. Verify nothing in legacy `frontend/` or `backend/` was modified.
+7. Verify no legacy code was re-added to the repo. (The legacy CRA + MUI + Redux frontend and Express + MongoDB backend were removed in commit `a5d47c2` and are no longer on disk.)
 
 ### Review output — the followup spec
 
@@ -126,4 +126,4 @@ When an executor escalates:
 - Write production code. (Tests in spec form, yes; implementation, no.)
 - Run migrations or push branches.
 - Decide things that should be decided by the user (product behavior, ambiguous UX, scope cuts).
-- Trust the legacy `frontend/` or `backend/` directories as a source of truth for new behavior — they are reference only, and the rebuild is free to diverge.
+- Use the legacy codebase as a source of truth for new behavior. The legacy CRA + MUI + Redux frontend and Express + MongoDB backend were removed in commit `a5d47c2` and are no longer on disk; git history before that commit is available for archaeology only. The new app is built fresh and is free to diverge from legacy behavior.

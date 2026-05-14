@@ -74,7 +74,7 @@ These are non-negotiable stack defaults. Executors and contributors must not dri
 - **Next.js 15 App Router, RSC-first.** Use `"use client"` only for components that require browser APIs or React state/effects. Default to Server Components.
 - **Server Actions for mutations.** No `/api` route handlers except for webhooks. Actions live in `app/**/actions.ts` co-located with the route that calls them.
 - **TypeScript strict.** `any` is banned via Biome rule. Use `unknown` at untrusted boundaries. Imports of types must use `import type`.
-- **Tailwind v4 + shadcn/ui + Base UI** (`@base-ui/react`, the explicit successor to Radix used by shadcn's `base-nova` style). Design tokens live in `app/globals.css` under `@theme`. No `tailwind.config.ts`. No MUI, no SCSS in new code. shadcn components are copied into `components/ui/` and owned by this repo.
+- **Tailwind v4 + shadcn/ui + Base UI** (`@base-ui/react`, the explicit successor to Radix used by shadcn's `base-nova` style). Design tokens live in `app/globals.css` under `@theme`. No `tailwind.config.ts`. This repo uses Tailwind v4 + shadcn/ui + Base UI, not MUI or SCSS. shadcn components are copied into `components/ui/` and owned by this repo.
 - **Forms: React Hook Form + Zod.** The same Zod schema validates both client-side and inside the Server Action.
 - **RLS is the source of truth for authorization.** Row-Level Security policies in Supabase Postgres enforce access control. Application-layer checks are defense-in-depth, not the gate.
 - **All ids are `uuid v4`** from Postgres (`gen_random_uuid()`). No client-generated ids.
@@ -88,11 +88,7 @@ Storybook is **deferred** per epic 01 decision Q4. Cell renderers will use Playw
 
 ## Legacy code
 
-The legacy CRA + MUI + Redux frontend and Express + MongoDB backend have been **removed from git** (after epic 01, commit `a5d47c2`). Maintainers may keep local copies of `frontend/` and `backend/` outside the repo, or untracked inside it — both paths are now in `.gitignore`. They exist for dev reference only.
-
-- Do not re-add legacy code to the repo.
-- Do not import from a local copy.
-- Git history before `a5d47c2` still contains the legacy code if needed for archaeology.
+The legacy CRA + MUI + Redux frontend and Express + MongoDB backend were removed from git in commit `a5d47c2` and are no longer on disk. See git history at or before that commit for archaeology. Do not re-add legacy code to the repo; do not import from old code or port files into the new substrate.
 
 ## Vercel project setup (manual, one-time, by repo admin)
 

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Replace every legacy auth artifact (Cryptr cookies, hand-rolled bcrypt, the broken login service) with Supabase Auth integrated into Next.js via `@supabase/ssr`. Support Google OAuth, email/password, and magic-link sign-in. Provide sign-in / sign-up / password-reset / verify-email / account-settings UI and the SSR session-handling primitives every other epic depends on.
+The auth layer is Supabase Auth integrated into Next.js via `@supabase/ssr`. Supports Google OAuth, email/password, and magic-link sign-in. Provides sign-in / sign-up / password-reset / verify-email / account-settings UI and the SSR session-handling primitives every other epic depends on.
 
 ## Why this is its own epic
 
@@ -36,7 +36,7 @@ Authorization ([04](04-authorization-rls.md)) and every authenticated feature ne
 
 ### Why `@supabase/ssr`
 
-The official `@supabase/ssr` package is the only correct way to use Supabase Auth in Next.js App Router. It handles the cookie dance between RSC, server actions, route handlers, and middleware. Rolling our own session handling is exactly the legacy mistake we're avoiding.
+The official `@supabase/ssr` package is the only correct way to use Supabase Auth in Next.js App Router. It handles the cookie dance between RSC, server actions, route handlers, and middleware. Rolling our own session handling is exactly the mistake this architecture was designed to avoid.
 
 ### Three Supabase clients
 
@@ -285,7 +285,7 @@ The avatar bucket is created in [10](10-attachments.md) infrastructure but the `
 
 ### Cookie hardening
 
-Supabase cookies are `HttpOnly`, `Secure`, `SameSite=Lax` by default in `@supabase/ssr`. No legacy hand-rolled cookie config to fight with. Verify via dev-tools.
+Supabase cookies are `HttpOnly`, `Secure`, `SameSite=Lax` by default in `@supabase/ssr`. No hand-rolled cookie configuration is needed. Verify via dev-tools.
 
 ### CSRF
 
@@ -339,7 +339,7 @@ For the initial internal release, we lock signup to a domain allowlist (e.g., `@
 ## Open questions
 
 - **Domain allowlist mechanism**: Edge Function hook vs database check vs Supabase's "email-domain restriction" feature. Edge Function is most flexible. Pick one before starting.
-- **Anonymous / guest mode**: the legacy app supported a guest mode for demos. Internal release doesn't need it. Drop entirely or keep behind a feature flag?
+- **Anonymous / guest mode**: a guest mode for demos is not in scope for the internal release. Dropped; revisit if external access is ever needed.
 - **2FA**: Supabase supports TOTP. Skip for v1; revisit when an HR or finance board lands.
 - **Org-managed Google Workspace**: do we want to require Google Workspace SSO? Or any Google account? Recommend "any Google account, restricted by email allowlist."
 - **Avatar bucket policy**: public-read or signed-URL only? Recommend public-read for simplicity (avatars aren't sensitive).

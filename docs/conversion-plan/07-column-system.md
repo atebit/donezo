@@ -298,7 +298,7 @@ Members come from a server-fetched list cached in workspace context ([05](05-wor
 
 ### Status / priority labels
 
-Labels live in `label` table. The status/priority editor lists them, plus an "Add label" option (admin+). Editing a label (title, color) is a separate modal accessed from the column settings. Renaming a label updates the one row; cells continue to reference it by id (the bug from the legacy app, fixed by construction).
+Labels live in `label` table. The status/priority editor lists them, plus an "Add label" option (admin+). Editing a label (title, color) is a separate modal accessed from the column settings. Renaming a label updates the one row; cells continue to reference it by id. The current schema uses stable id references precisely to avoid cascade-rename bugs.
 
 ### Updated-by / created-by / created-at columns
 
@@ -362,13 +362,13 @@ Must-match across all cell types:
 
 Per-type must-matches:
 
-- **`<StatusCell />` / `<PriorityCell />`** — full-bleed bg = label color, centered white label text, **diagonal "fold" reveal in top-right on hover**. The fold animates `border-width 0 → 10×10 → 15×15px` over `--motion-base` with `transition-delay: .2s`. This is the single most distinctive interaction in the product — must match. Empty state bg `--color-label-gray` (`#c4c4c4`). See [_status-priority-picker.scss:6-28](../../frontend/src/assets/styles/cmps/task-picker/_status-priority-picker.scss).
+- **`<StatusCell />` / `<PriorityCell />`** — full-bleed bg = label color, centered white label text, **diagonal "fold" reveal in top-right on hover**. The fold animates `border-width 0 → 10×10 → 15×15px` over `--motion-base` with `transition-delay: .2s`. This is the single most distinctive interaction in the product — must match. Empty state bg `--color-label-gray` (`#c4c4c4`). See [component-system.md §3.4](component-system.md#34-statuslabeleditor-popover) for the locked spec (the original interaction was documented in `_status-priority-picker.scss` in commit `a5d47c2`).
 - **`<StatusLabelEditor />` popover** — 152px-wide chips, gap 8px, white-text-on-color, "Edit Labels" button at bottom with `1px solid --color-border-strong` top border. See [component-system.md §3.4](component-system.md#34-statuslabeleditor-popover).
 - **`<PersonCell />`** — 26px avatars, `-5px` overlap, white border, `+N` overflow tile. Empty state shows muted person glyph in `--color-fg-subtle`.
 - **`<DateCell />`** — centered text input, hover text → `--color-primary`, focus border `--color-primary`.
 - **`<NumberCell />`** — centered numeric input, hover reveals `+`/`−` icons in `--color-primary` and a `clear` chip top-right (bg `--color-surface-hover`, radius 3px) over `--motion-base`.
 - **`<CheckboxCell />`** — centered icon, checked = `--color-primary`, hover wash `rgba(0,0,0,0.05)` over `--motion-base` (note: checked state is **primary blue**, not green).
-- **`<UpdatedByCell />`** — 26px avatar + relative-time string (`2h`, `5d`, `3w`) computed via the legacy `calculateTime` algorithm.
+- **`<UpdatedByCell />`** — 26px avatar + relative-time string (`2h`, `5d`, `3w`) computed via the `calculateTime` utility.
 - **All other cell types** (`text`, `long_text`, `email`, `phone`, `country`, `link`, `tags`, `rating`, `currency`, `vote`, `week`, `location`, `formula`, `created_by`, `created_at_col`) — inherit the cell skeleton, follow the picker patterns above for editor chrome, use `<MenuList />` for any dropdowns.
 
 Default seed labels (these must match exactly — they're the user's first impression of the system):
@@ -389,7 +389,7 @@ Default seed labels (these must match exactly — they're the user's first impre
 
 These must be inserted in the [02](02-supabase-schema.md) seed; this epic relies on them existing.
 
-**Aggregation row** at group footer: typography 14px (font-weight 500 for the number, 12px for "sum" sub-label in `--color-fg-muted`). See [_group-statistics.scss](../../frontend/src/assets/styles/cmps/group/_group-statistics.scss).
+**Aggregation row** at group footer: typography 14px (font-weight 500 for the number, 12px for "sum" sub-label in `--color-fg-muted`). See [component-system.md §2.2](component-system.md#22-groupheader) for the locked spec.
 
 ## Tasks
 

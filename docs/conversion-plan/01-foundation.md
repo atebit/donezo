@@ -34,10 +34,10 @@ None. This is the first epic.
 
 ### Why Next.js 15 App Router
 
-The legacy app is CRA + Express. The legacy frontend has zero benefit from running as a SPA (deep linking is the only "interactive" load), and the backend is mostly thin CRUD. Next.js with RSC + Server Actions collapses both layers:
+The original CRA + Express stack had a frontend with zero benefit from running as a SPA (deep linking was the only "interactive" load) and a backend of mostly thin CRUD. Next.js with RSC + Server Actions collapses both layers:
 
 - Boards render server-side, including the initial board snapshot, eliminating the loading-spinner-on-first-paint problem.
-- Server Actions replace the Express REST surface for ~90% of mutations. They run on the same Vercel function, so latency is one hop instead of two, and they share auth/session naturally via cookies.
+- Server Actions handle ~90% of mutations. They run on the same Vercel function, so latency is one hop instead of two, and they share auth/session naturally via cookies.
 - Edge middleware handles auth-cookie refresh and protects routes before the function spins up.
 
 We do **not** plan to use React Server Actions for everything. Long-lived subscriptions (Realtime), file uploads (direct-to-Supabase-Storage signed URLs), and webhooks remain client-driven or use route handlers. See [08](08-realtime-presence.md) and [10](10-attachments.md).
@@ -72,9 +72,9 @@ We do **not** plan to use React Server Actions for everything. Long-lived subscr
 
 Tailwind v4 uses CSS-native config (no `tailwind.config.ts` for tokens) — design tokens live in `app/globals.css` under `@theme`. shadcn components are copied into `components/ui/` (not installed as a package), giving us full ownership.
 
-**Tokens are not "initial — expand as needed."** The full token set is locked in [`design-system.md`](design-system.md), sourced verbatim from the legacy `frontend/` SCSS (see CLAUDE.md). The `@theme` block in `app/globals.css` MUST be the canonical block from [design-system.md §1.2](design-system.md#12-appglobalscss-block-canonical) — Monday-derived blue/navy/yellow/green palette plus brand-violet marketing gradients, plus the bake-out of SCSS `darken()` calls. Do not invent tokens or use a generic "neutral" palette.
+**Tokens are not "initial — expand as needed."** The full token set is locked in [`design-system.md`](design-system.md). The `@theme` block in `app/globals.css` is the canonical block from [design-system.md §1.2](design-system.md#12-appglobalscss-block-canonical) — Monday-derived blue/navy/yellow/green palette plus brand-violet marketing gradients, plus the bake-out of SCSS `darken()` calls (tokens were originally sourced from the legacy SCSS variables; see commit `a5d47c2` for archaeology). Do not invent tokens or use a generic "neutral" palette.
 
-Fonts: load **Figtree** (body) and **Poppins** (display) via `next/font/google` per [design-system.md §2.1.1](design-system.md#211-loader-nextjs-in-applayouttsx). Replace the SCSS `Figtree-Regular.ttf` / `Poppins-Regular.ttf` shipped in legacy with the variable subsets; do not use the legacy single-weight TTFs.
+Fonts: **Figtree** (body) and **Poppins** (display) are loaded via `next/font/google` per [design-system.md §2.1.1](design-system.md#211-loader-nextjs-in-applayouttsx) using the variable subsets.
 
 Scrollbar styles, overlay color, z-index layers, motion duration tokens, and radii are also locked in [design-system.md](design-system.md). Lift them all into `globals.css` in this epic.
 
@@ -88,7 +88,7 @@ Each shadcn primitive lands **already wired to the locked tokens**. The default 
 
 ### Icon library
 
-Single source: **Lucide React** (`lucide-react`). Establish `lib/icons.ts` re-exporting the named subset we use, with the legacy `react-icons` mapping documented in [design-system.md §9.2](design-system.md#92-mapping-table). No imports from `@mui/icons-material` or `react-icons` in new code.
+Single source: **Lucide React** (`lucide-react`). `lib/icons.ts` re-exports the named subset we use. The original react-icons mapping is documented for historical reference in [design-system.md §9.2](design-system.md#92-mapping-table). This repo does not import from `@mui/icons-material` or `react-icons`.
 
 ### Linting & formatting
 
@@ -210,8 +210,8 @@ Must-match items (any drift breaks every later epic):
 - Custom **scrollbar** styles per [design-system.md §10](design-system.md#10-scrollbar) (8px, `#A6A5A5` thumb on `#D9D9D9` track).
 - **z-index layer** custom properties (`--z-base/sticky/rail/board-header/overlay/modal/drawer/popover`) per [§7](design-system.md#7-z-index-layers).
 - **Motion duration** tokens (`--motion-instant/fast/base/medium/slow/drawer`) per [§8.1](design-system.md#81-duration-tokens).
-- **Lucide React** wired in `lib/icons.ts`. No `@mui/*` or `react-icons` imports anywhere in the repo.
-- **`<MenuList />` primitive** matching the legacy `@mixin menu-modal` recipe — see [component-system.md §3.2](component-system.md#32-menumodal-recipe-mixin).
+- **Lucide React** wired in `lib/icons.ts`. This repo does not import from `@mui/*` or `react-icons`.
+- **`<MenuList />` primitive** implemented per the recipe in [component-system.md §3.2](component-system.md#32-menumodal-recipe-mixin).
 - **`<Logo />`** matching [component-system.md §6.2](component-system.md#62-logo) (PNG fallback acceptable; SVG preferred).
 
 If the executor wants to swap a hex/value for a different one, they must escalate via `epic-researcher` — these are not negotiable in slice work.
