@@ -111,6 +111,50 @@ export function useBoardRealtime(boardId: string, userId: string): void {
     );
 
     // ------------------------------------------------------------------
+    // Postgres changes — label
+    // Labels live in the `label` table, keyed by column_id.
+    // The board-scoped filter routes via label.column_id → column.board_id.
+    // The `label` table does NOT have a direct board_id column, so we use
+    // a Supabase nested filter: column_id=in.(columns for this board).
+    // However, Supabase postgres_changes only supports simple column
+    // filters. We therefore subscribe without a filter and apply a
+    // client-side guard inside the handler (check that the label's
+    // column_id is in the current board's column set).
+    //
+    // DELETEs: applyLabelDelete removes the label by id (store method
+    // exists — unlike cell deletes).
+    // ------------------------------------------------------------------
+    channel.on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "label",
+      },
+      (e: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+        const store = useBoardStore.getState();
+        // Guard: only apply if the label belongs to one of this board's columns.
+        // This prevents cross-board label events from polluting the store when
+        // multiple boards are subscribed across tabs.
+        const boardColumns = new Set(store.columns.map((c) => c.id));
+        if (e.eventType === "INSERT" || e.eventType === "UPDATE") {
+          const columnId = (e.new as { column_id?: string }).column_id;
+          if (columnId && boardColumns.has(columnId)) {
+            store.applyLabelUpsert(e.new as Parameters<typeof store.applyLabelUpsert>[0]);
+          }
+        } else if (e.eventType === "DELETE") {
+          const id = (e.old as { id?: string }).id;
+          if (id) {
+            // For deletes, we don't have column_id in the old payload reliably
+            // in all Supabase configurations. applyLabelDelete scans all columns,
+            // so we call it unconditionally — it's a no-op if the label isn't found.
+            store.applyLabelDelete(id);
+          }
+        }
+      },
+    );
+
+    // ------------------------------------------------------------------
     // Postgres changes — cell
     // cell DELETEs: no store method exists for direct cell deletion.
     // Cells are removed client-side as a cascade from applyColumnDelete /
