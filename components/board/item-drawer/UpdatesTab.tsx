@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { CommentComposer, type CommentComposerHandle } from "@/components/comments/CommentComposer";
 import { CommentList } from "@/components/comments/CommentList";
 import type { MemberOption } from "@/components/comments/CommentEditor";
@@ -103,7 +103,7 @@ export function UpdatesTab({ taskId }: UpdatesTabProps) {
       setLoading(false);
     }
 
-    load();
+    load().catch(() => setLoading(false));
     return () => {
       cancelled = true;
     };
@@ -119,15 +119,17 @@ export function UpdatesTab({ taskId }: UpdatesTabProps) {
         composerRef={composerRef}
       />
       {!loading && (
-        <CommentList
-          taskId={taskId}
-          boardId={boardId}
-          currentUserId={userId}
-          boardRole={role}
-          mentionableMembers={mentionableMembers}
-          profiles={profiles}
-          composerRef={composerRef}
-        />
+        <Suspense fallback={null}>
+          <CommentList
+            taskId={taskId}
+            boardId={boardId}
+            currentUserId={userId}
+            boardRole={role}
+            mentionableMembers={mentionableMembers}
+            profiles={profiles}
+            composerRef={composerRef}
+          />
+        </Suspense>
       )}
     </div>
   );
