@@ -43,9 +43,15 @@ interface ColumnHeaderProps {
    * column which must not be draggable.
    */
   draggable?: boolean;
+  /**
+   * Fixed display label that overrides the column's name. Passed for the
+   * primary/title column, whose cells render the task title (not the
+   * column's own values) — so its name is cosmetic and not editable.
+   */
+  displayName?: string;
 }
 
-export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
+export function ColumnHeader({ column, draggable = true, displayName }: ColumnHeaderProps) {
   // Hook called unconditionally (Rules of Hooks) — outputs are only wired to
   // the DOM when draggable === true.
   const sortable = useColumnSortable(column.id);
@@ -109,16 +115,26 @@ export function ColumnHeader({ column, draggable = true }: ColumnHeaderProps) {
         />
       )}
 
-      {/* Editable column name — fills remaining width */}
+      {/* Column name — editable, except for the title column whose label is
+          fixed (displayName) and rendered as a static span. */}
       <div className="min-w-0 flex-1 overflow-hidden">
-        <EditableTitle
-          ref={editableRef}
-          initialValue={column.name}
-          variant="body"
-          onCommit={handleRename}
-          ariaLabel={`Column: ${column.name}`}
-          className="truncate"
-        />
+        {displayName !== undefined ? (
+          <span
+            className="block truncate text-sm text-[color:var(--color-fg)]"
+            aria-label={`Column: ${displayName}`}
+          >
+            {displayName}
+          </span>
+        ) : (
+          <EditableTitle
+            ref={editableRef}
+            initialValue={column.name}
+            variant="body"
+            onCommit={handleRename}
+            ariaLabel={`Column: ${column.name}`}
+            className="truncate"
+          />
+        )}
       </div>
 
       {/* Sort indicator — shown only when this column is the first sort key */}

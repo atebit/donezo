@@ -7,6 +7,12 @@ import type { Column } from "./types";
 const DEFAULT_TITLE_WIDTH = 336;
 const DEFAULT_COLUMN_WIDTH = 140;
 
+// The primary/title column is whichever text column comes first; its cells
+// render the task title (not the column's own values), so its name is
+// cosmetic. The header always shows this fixed label instead of the
+// underlying column's name.
+export const TITLE_COLUMN_LABEL = "Task";
+
 export interface VisibleColumnsResult {
   visibleColumns: Column[];
   titleColumn: Column | undefined;

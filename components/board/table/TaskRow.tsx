@@ -92,10 +92,19 @@ export function TaskRow({ task, group }: TaskRowProps) {
         <TaskOverflowMenu task={task} group={group} />
       </div>
 
-      {/* Title cell — sticky left; relative so the open-details button positions inside */}
+      {/* Title cell — anchored left during horizontal scroll. CSS sticky does
+          not work here: the virtualizer wraps each row in an absolutely
+          positioned div with transform:translateZ(0), which breaks the
+          sticky-left threshold. We counter-translate by the scroll offset
+          instead (same pattern as the group header / add-task footer). 12px
+          is the cardRow marginLeft; max(0px,…) avoids a leftward shift before
+          the threshold. `relative` keeps the open-details button positioned. */}
       <div
-        className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)] h-full overflow-hidden relative"
-        style={{ width: titleColumn ? getColumnWidth(titleColumn) : undefined }}
+        className="z-[var(--z-sticky)] bg-[color:var(--color-surface)] h-full overflow-hidden relative"
+        style={{
+          width: titleColumn ? getColumnWidth(titleColumn) : undefined,
+          transform: "translateX(max(0px, calc(var(--table-scroll-x, 0px) - 12px)))",
+        }}
       >
         <TaskTitleCell task={task} />
         {/* Open-details button — visible on row hover, right edge of title cell */}

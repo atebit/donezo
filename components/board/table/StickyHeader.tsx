@@ -18,7 +18,7 @@ import { ColumnHeader } from "./ColumnHeader";
 import { ColumnReorder } from "./ColumnReorder";
 import { ColumnResize } from "./ColumnResize";
 import { useGridTemplate } from "./grid-template-context";
-import { useVisibleColumns } from "./use-visible-columns";
+import { TITLE_COLUMN_LABEL, useVisibleColumns } from "./use-visible-columns";
 
 // ---------------------------------------------------------------------------
 // BoardLevelCheckbox — unchanged visual contract
@@ -99,7 +99,11 @@ export function StickyHeader() {
       {titleColumn && (
         <div className="sticky left-0 z-[var(--z-sticky)] bg-[color:var(--color-surface)]">
           <ColumnResize columnId={titleColumn.id} currentWidth={getColumnWidth(titleColumn)}>
-            <ColumnHeader column={titleColumn} draggable={false} />
+            <ColumnHeader
+              column={titleColumn}
+              draggable={false}
+              displayName={TITLE_COLUMN_LABEL}
+            />
           </ColumnResize>
         </div>
       )}
