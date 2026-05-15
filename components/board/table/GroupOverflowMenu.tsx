@@ -3,13 +3,14 @@
 /**
  * GroupOverflowMenu — overflow action menu for a group header row.
  *
- * Mounted inside the inline <GroupHeaderRow> helper in BoardTable.tsx,
- * replacing the S8 placeholder button.
- *
  * Items:
  *   1. Rename    — calls focusGroupTitle(group.id) via setTimeout(0) so the focus
  *                  runs after Base UI Popover's focus-restore (F4.1).
- *   2. Recolor   — opens <ColorPalette> (its own nested Popover); optimistic update.
+ *   2. Recolor   — toggles an inline swatch grid *inside the same menu*. We do
+ *                  NOT use a nested Popover here: Base UI does not close the
+ *                  parent menu when a child popover opens, which produced two
+ *                  overlapping popovers and a detached swatch grid. Selecting a
+ *                  swatch applies the color optimistically and closes the menu.
  *   3. Duplicate — pessimistic; router.refresh() re-hydrates new group + tasks.
  *   4. Delete    — Base UI Dialog confirm; optimistic; revert on error.
  *
@@ -18,7 +19,7 @@
  */
 
 import { Dialog, Popover } from "@base-ui/react";
-import { MoreHorizontal } from "lucide-react";
+import { ChevronRight, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -29,9 +30,10 @@ import {
   recolorGroup,
 } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/groups/actions";
 import { MenuList, MenuListItem } from "@/components/ui/menu-list";
+import { GROUP_PALETTE } from "@/lib/group-palette";
 import { useBoardStore } from "@/stores/board-store";
 
-import { ColorPalette } from "./ColorPalette";
+import { colorToToken } from "./group-color";
 import { useTableKeyboard } from "./table-keyboard-context";
 import type { Group } from "./types";
 
@@ -43,17 +45,23 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [recolorOpen, setRecolorOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const { focusGroupTitle } = useTableKeyboard();
 
   const taskCount = useBoardStore((s) => s.tasks.filter((t) => t.group_id === group.id).length);
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setRecolorOpen(false);
+  };
 
   // ---------------------------------------------------------------------------
   // Recolor handler — optimistic, revert on error
   // ---------------------------------------------------------------------------
   const handleColorChange = (color: string) => {
     const snapshot = group;
-    setMenuOpen(false);
+    closeMenu();
 
     useBoardStore.getState().applyGroupUpsert({
       ...group,
@@ -79,7 +87,7 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
   // Duplicate handler — pessimistic; router.refresh() re-hydrates
   // ---------------------------------------------------------------------------
   const handleDuplicate = () => {
-    setMenuOpen(false);
+    closeMenu();
     startTransition(async () => {
       const result = await duplicateGroup({ groupId: group.id });
       if (result.ok) {
@@ -158,7 +166,13 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
       </Dialog.Root>
 
       {/* Overflow menu trigger + controlled popover */}
-      <Popover.Root open={menuOpen} onOpenChange={setMenuOpen}>
+      <Popover.Root
+        open={menuOpen}
+        onOpenChange={(open) => {
+          setMenuOpen(open);
+          if (!open) setRecolorOpen(false);
+        }}
+      >
         <Popover.Trigger
           render={<button type="button" />}
           aria-label={`Group menu: ${group.name}`}
@@ -169,7 +183,7 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
         <Popover.Portal>
           <Popover.Positioner sideOffset={4} align="start">
             <Popover.Popup className="z-[var(--z-popover)]">
-              <MenuList>
+              <MenuList className="min-w-[180px]">
                 {/* Rename — closes the popover then defers focus via setTimeout(0).
                     The deferral is required because Base UI Popover restores focus
                     to its trigger when it closes; a synchronous focus() call would
@@ -177,20 +191,64 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
                     after the popover's focus-restore in the microtask queue. */}
                 <MenuListItem
                   onClick={() => {
-                    setMenuOpen(false);
+                    closeMenu();
                     setTimeout(() => focusGroupTitle(group.id), 0);
                   }}
                 >
                   Rename
                 </MenuListItem>
 
-                {/* Recolor — ColorPalette is its own nested Popover.
-                    handleColorChange closes the outer menu when a swatch is selected. */}
-                <ColorPalette
-                  value={group.color}
-                  onChange={handleColorChange}
-                  trigger={<MenuListItem type="button">Recolor</MenuListItem>}
-                />
+                {/* Recolor — toggles the inline swatch grid below (no nested
+                    popover; see file header). */}
+                <MenuListItem
+                  onClick={() => setRecolorOpen((v) => !v)}
+                  aria-expanded={recolorOpen}
+                  className="justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="h-3 w-3 rounded-[3px]"
+                      style={{ backgroundColor: `var(${colorToToken(group.color)})` }}
+                    />
+                    Recolor
+                  </span>
+                  <ChevronRight
+                    size={14}
+                    aria-hidden="true"
+                    className={`text-[color:var(--color-fg-muted)] transition-transform ${
+                      recolorOpen ? "rotate-90" : ""
+                    }`}
+                  />
+                </MenuListItem>
+
+                {recolorOpen && (
+                  <fieldset
+                    aria-label="Group color palette"
+                    className="grid grid-cols-6 gap-1.5 border-0 p-0 m-0 px-2 py-2"
+                  >
+                    {GROUP_PALETTE.map((swatch, i) => {
+                      const isSelected = swatch.toLowerCase() === group.color.toLowerCase();
+                      return (
+                        <button
+                          key={swatch}
+                          type="button"
+                          onClick={() => handleColorChange(swatch)}
+                          aria-label={`Color ${i + 1}`}
+                          aria-pressed={isSelected}
+                          className={`h-6 w-6 rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary)] focus-visible:ring-offset-1 focus-visible:ring-offset-[color:var(--color-surface)] ${
+                            isSelected
+                              ? "ring-2 ring-[color:var(--color-primary)] ring-offset-1 ring-offset-[color:var(--color-surface)]"
+                              : "ring-1 ring-inset ring-[color:var(--color-border-strong)]"
+                          }`}
+                          style={{
+                            backgroundColor: `var(${colorToToken(swatch)})`,
+                          }}
+                        />
+                      );
+                    })}
+                  </fieldset>
+                )}
 
                 {/* Duplicate */}
                 <MenuListItem onClick={handleDuplicate}>Duplicate</MenuListItem>
@@ -198,7 +256,7 @@ export function GroupOverflowMenu({ group }: GroupOverflowMenuProps) {
                 {/* Delete — close menu then open confirm dialog */}
                 <MenuListItem
                   onClick={() => {
-                    setMenuOpen(false);
+                    closeMenu();
                     setDeleteDialogOpen(true);
                   }}
                   className="text-destructive hover:bg-destructive/10"
