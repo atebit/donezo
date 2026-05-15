@@ -1,47 +1,50 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+// --- Email/password + sign-up temporarily disabled. Google-only for now. ---
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import Link from "next/link";
+// import { useRouter } from "next/navigation";
+// import { useForm } from "react-hook-form";
+// import { signInWithEmail } from "@/app/(auth)/actions";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { type SignInInput, SignInSchema } from "@/lib/validations/auth";
+import { useSearchParams } from "next/navigation";
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { signInWithEmail, signInWithGoogle } from "@/app/(auth)/actions";
+import { signInWithGoogle } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { type SignInInput, SignInSchema } from "@/lib/validations/auth";
 
 export function SignInForm() {
-  const router = useRouter();
+  // const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
-  const [pending, startTransition] = useTransition();
+  // const [pending, startTransition] = useTransition();
   const [googlePending, startGoogleTransition] = useTransition();
 
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm<SignInInput>({
-    resolver: zodResolver(SignInSchema),
-  });
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   setError,
+  //   formState: { errors },
+  // } = useForm<SignInInput>({
+  //   resolver: zodResolver(SignInSchema),
+  // });
 
-  function onSubmit(values: SignInInput) {
-    startTransition(async () => {
-      const result = await signInWithEmail(values);
-      if (result.ok) {
-        router.push(next);
-      } else if (result.error.field) {
-        setError(result.error.field as keyof SignInInput, {
-          message: result.error.message,
-        });
-      } else {
-        toast.error(result.error.message);
-      }
-    });
-  }
+  // function onSubmit(values: SignInInput) {
+  //   startTransition(async () => {
+  //     const result = await signInWithEmail(values);
+  //     if (result.ok) {
+  //       router.push(next);
+  //     } else if (result.error.field) {
+  //       setError(result.error.field as keyof SignInInput, {
+  //         message: result.error.message,
+  //       });
+  //     } else {
+  //       toast.error(result.error.message);
+  //     }
+  //   });
+  // }
 
   function handleGoogleSignIn() {
     startGoogleTransition(async () => {
@@ -58,9 +61,10 @@ export function SignInForm() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-xl font-semibold">Sign in</h2>
-        <p className="text-sm text-muted-foreground">Enter your credentials to continue.</p>
+        <p className="text-sm text-muted-foreground">Continue with your Google account.</p>
       </div>
 
+      {/* Email/password sign-in temporarily disabled — Google-only for now.
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Email</Label>
@@ -116,6 +120,7 @@ export function SignInForm() {
         <span className="text-xs text-muted-foreground">or</span>
         <div className="h-px flex-1 bg-border" />
       </div>
+      */}
 
       <Button
         type="button"
@@ -127,6 +132,7 @@ export function SignInForm() {
         {googlePending ? "Redirecting…" : "Continue with Google"}
       </Button>
 
+      {/* Sign-up temporarily disabled — Google-only for now.
       <p className="text-center text-sm text-muted-foreground">
         No account?{" "}
         <Link
@@ -136,6 +142,7 @@ export function SignInForm() {
           Sign up
         </Link>
       </p>
+      */}
     </div>
   );
 }
