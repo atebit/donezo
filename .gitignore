@@ -42,3 +42,6 @@ supabase/.temp/
 
 # Claude Code scheduled-task runtime lock
 .claude/scheduled_tasks.lock
+
+# Monday.com import intermediate (contains workspace data)
+scripts/import-monday/parsed.json
