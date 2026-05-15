@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { inviteToWorkspace } from "@/app/(app)/w/[workspaceSlug]/actions";
-import { inviteToBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/actions";
+import { inviteToBoard } from "@/app/(app)/w/[workspaceSlug]/b/[boardId]/settings/members/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
