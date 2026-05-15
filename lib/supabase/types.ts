@@ -912,6 +912,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation: {
+        Args: { p_token: string }
+        Returns: { workspace_id: string; board_id: string | null }[]
+      }
       clone_board: {
         Args: { p_board_id: string }
         Returns: {
