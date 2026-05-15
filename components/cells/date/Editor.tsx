@@ -97,14 +97,20 @@ function toWeeks(grid: (Date | null)[]): (Date | null)[][] {
   return weeks;
 }
 
+// The `date_value` column is timestamptz, so `value.iso` may come back as either
+// "YYYY-MM-DD" (the documented contract) or a full ISO timestamp like
+// "2026-05-14T00:00:00+00:00". Slice to the date portion before parsing.
+function toDateOnlyIso(iso: string): string {
+  return iso.slice(0, 10);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function Editor({ value, config: _config, onChange, onClose }: DateEditorProps) {
-  const initialDate = value?.iso ? new Date(`${value.iso}T00:00:00`) : new Date();
+  const selectedIso = value?.iso ? toDateOnlyIso(value.iso) : null;
+  const initialDate = selectedIso ? new Date(`${selectedIso}T00:00:00`) : new Date();
 
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
-
-  const selectedIso = value?.iso ?? null;
   const today = todayIso();
   const grid = buildGrid(viewYear, viewMonth);
   const weeks = toWeeks(grid);

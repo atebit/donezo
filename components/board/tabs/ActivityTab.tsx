@@ -50,6 +50,7 @@ export function ActivityTab({ taskId, profiles }: ActivityTabProps) {
           created_at: new Date(0).toISOString(),
           updated_at: new Date(0).toISOString(),
           last_workspace_id: null,
+          last_view_per_board: {},
         });
       }
     }

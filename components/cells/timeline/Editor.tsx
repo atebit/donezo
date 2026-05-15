@@ -78,6 +78,13 @@ function toWeeks(grid: (Date | null)[]): (Date | null)[][] {
   return weeks;
 }
 
+// The `date_value` / `date_end_value` columns are timestamptz, so values may
+// round-trip as a full ISO timestamp ("2026-05-14T00:00:00+00:00") rather than
+// the documented "YYYY-MM-DD" shape. Slice to the date portion before use.
+function toDateOnlyIso(iso: string): string {
+  return iso.slice(0, 10);
+}
+
 const MONTH_NAMES = Array.from({ length: 12 }, (_, i) =>
   new Intl.DateTimeFormat(undefined, { month: "long" }).format(new Date(2024, i, 1)),
 );
@@ -216,8 +223,10 @@ function MonthPicker({
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function Editor({ value, config: _config, onChange, onClose }: TimelineEditorProps) {
-  const [start, setStart] = useState<string | null>(value?.start ?? null);
-  const [end, setEnd] = useState<string | null>(value?.end ?? null);
+  const [start, setStart] = useState<string | null>(
+    value?.start ? toDateOnlyIso(value.start) : null,
+  );
+  const [end, setEnd] = useState<string | null>(value?.end ? toDateOnlyIso(value.end) : null);
 
   const handleStartSelect = (iso: string) => {
     setStart(iso);

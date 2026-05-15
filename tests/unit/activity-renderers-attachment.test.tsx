@@ -34,6 +34,7 @@ const profilesMap = new Map([
       created_at: "2024-01-01T00:00:00Z",
       updated_at: "2024-01-01T00:00:00Z",
       last_workspace_id: null,
+      last_view_per_board: {},
     },
   ],
 ]);

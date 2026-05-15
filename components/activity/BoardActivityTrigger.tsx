@@ -39,6 +39,7 @@ export function BoardActivityTrigger({ members }: BoardActivityTriggerProps) {
         created_at: new Date(0).toISOString(),
         updated_at: new Date(0).toISOString(),
         last_workspace_id: null,
+        last_view_per_board: {},
       });
     }
 
