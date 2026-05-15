@@ -46,7 +46,10 @@ export async function signInWithEmail(input: SignInInput): Promise<ActionResult<
   return { ok: true, data: { ok: true } };
 }
 
-export async function signUpWithEmail(input: SignUpInput): Promise<ActionResult<{ ok: true }>> {
+export async function signUpWithEmail(
+  input: SignUpInput,
+  next?: string,
+): Promise<ActionResult<{ ok: true }>> {
   const parsed = SignUpSchema.safeParse(input);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
@@ -54,13 +57,20 @@ export async function signUpWithEmail(input: SignUpInput): Promise<ActionResult<
     return validationError(first?.message ?? "Invalid input.", fieldPath || undefined);
   }
 
+  // Thread `next` into emailRedirectTo so the verification link returns the
+  // new user to where they came from (e.g. /join/<token>) instead of /.
+  const emailRedirectTo =
+    next && next !== "/"
+      ? `${env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=${encodeURIComponent(next)}`
+      : `${env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
       data: { display_name: parsed.data.displayName },
-      emailRedirectTo: `${env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo,
     },
   });
 

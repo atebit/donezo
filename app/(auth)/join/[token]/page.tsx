@@ -39,6 +39,23 @@ export default async function JoinPage({
     if (!result.ok) {
       redirect(`/join/${token}?error=${encodeURIComponent(result.error.message)}`);
     }
+    // After acceptance, land on the specific resource the invitation granted.
+    // Re-read the invitation post-accept to get workspace.slug + board.id without
+    // depending on closure values from before the action ran.
+    const supabase = await createClient();
+    const { data: inv } = await supabase
+      .from("invitation")
+      .select("workspace:workspace_id ( slug ), board:board_id ( id )")
+      .eq("token", token)
+      .maybeSingle();
+    const ws = inv?.workspace as { slug: string } | null;
+    const bd = inv?.board as { id: string } | null;
+    if (ws && bd) {
+      redirect(`/w/${ws.slug}/b/${bd.id}`);
+    }
+    if (ws) {
+      redirect(`/w/${ws.slug}`);
+    }
     redirect("/");
   }
 

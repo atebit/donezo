@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -14,6 +14,8 @@ import { type SignUpInput, SignUpSchema } from "@/lib/validations/auth";
 
 export function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/";
   const [pending, startTransition] = useTransition();
   const [googlePending, startGoogleTransition] = useTransition();
 
@@ -28,9 +30,14 @@ export function SignUpForm() {
 
   function onSubmit(values: SignUpInput) {
     startTransition(async () => {
-      const result = await signUpWithEmail(values);
+      // Pass `next` so the verification email's redirect lands the new user
+      // back on the invitation page (or wherever they were headed) after they
+      // click the link, instead of dropping them on /.
+      const result = await signUpWithEmail(values, next);
       if (result.ok) {
-        router.push("/verify-email");
+        router.push(
+          next === "/" ? "/verify-email" : `/verify-email?next=${encodeURIComponent(next)}`,
+        );
       } else if (result.error.field) {
         setError(result.error.field as keyof SignUpInput, {
           message: result.error.message,
@@ -43,7 +50,9 @@ export function SignUpForm() {
 
   function handleGoogleSignIn() {
     startGoogleTransition(async () => {
-      const result = await signInWithGoogle();
+      // Google flow uses its own callback handoff but still needs `next` to land
+      // a brand-new invitee back on /join/<token> after consent.
+      const result = await signInWithGoogle(next === "/" ? undefined : next);
       if (result.ok) {
         window.location.href = result.data.url;
       } else {
@@ -137,7 +146,10 @@ export function SignUpForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/sign-in" className="underline underline-offset-4 hover:text-foreground">
+        <Link
+          href={next === "/" ? "/sign-in" : `/sign-in?next=${encodeURIComponent(next)}`}
+          className="underline underline-offset-4 hover:text-foreground"
+        >
           Sign in
         </Link>
       </p>

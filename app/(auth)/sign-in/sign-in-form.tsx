@@ -129,7 +129,10 @@ export function SignInForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         No account?{" "}
-        <Link href="/sign-up" className="underline underline-offset-4 hover:text-foreground">
+        <Link
+          href={next === "/" ? "/sign-up" : `/sign-up?next=${encodeURIComponent(next)}`}
+          className="underline underline-offset-4 hover:text-foreground"
+        >
           Sign up
         </Link>
       </p>
