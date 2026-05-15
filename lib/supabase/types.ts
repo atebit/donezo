@@ -1020,6 +1020,8 @@ export type Database = {
         Args: { p_user_id: string; p_with_user_id: string }
         Returns: boolean
       }
+      soft_delete_task: { Args: { p_task_id: string }; Returns: string }
+      soft_delete_tasks: { Args: { p_task_ids: string[] }; Returns: string[] }
     }
     Enums: {
       [_ in never]: never

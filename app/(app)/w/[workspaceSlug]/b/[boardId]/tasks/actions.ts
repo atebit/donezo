@@ -251,10 +251,10 @@ export const deleteTask = withUser(async ({ supabase, userId }, raw) => {
 
   await requireBoardRole(task.board_id, "member");
 
-  const { error } = await supabase
-    .from("task")
-    .update({ deleted_at: new Date().toISOString(), updated_by: userId })
-    .eq("id", input.taskId);
+  // Soft-delete via SECURITY DEFINER RPC: a direct `update ... set deleted_at`
+  // is rejected by RLS because the post-update row fails the `task_select`
+  // (deleted_at is null) visibility check.
+  const { error } = await supabase.rpc("soft_delete_task", { p_task_id: input.taskId });
 
   if (error) throw { code: "DB", message: error.message };
 
@@ -375,11 +375,8 @@ export const bulkDeleteTasks = withUser(async ({ supabase, userId }, raw) => {
 
   await requireBoardRole(boardId, "member");
 
-  const { error } = await supabase
-    .from("task")
-    .update({ deleted_at: new Date().toISOString(), updated_by: userId })
-    .in("id", input.taskIds)
-    .is("deleted_at", null);
+  // Soft-delete via SECURITY DEFINER RPC (see deleteTask for the RLS rationale).
+  const { error } = await supabase.rpc("soft_delete_tasks", { p_task_ids: input.taskIds });
 
   if (error) throw { code: "DB", message: error.message };
 
