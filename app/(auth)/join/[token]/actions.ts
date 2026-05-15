@@ -41,7 +41,13 @@ export const acceptInvitation = withUser(async ({ supabase, userId }, raw) => {
       { board_id: inv.board_id, user_id: userId, role: inv.role },
       { onConflict: "board_id,user_id", ignoreDuplicates: true },
     );
-    if (bmError) throw { code: "DB", message: bmError.message };
+    if (bmError) {
+      console.error("[acceptInvitation] board_member upsert failed", bmError);
+      throw {
+        code: "INVITATION",
+        message: "We couldn't add you to that board. Ask the sender to re-invite you.",
+      };
+    }
 
     // 2b. Workspace visibility. Board-only members cannot read the workspace
     //     row (workspace_select gates on is_workspace_member), so accepting a
@@ -55,14 +61,26 @@ export const acceptInvitation = withUser(async ({ supabase, userId }, raw) => {
       { workspace_id: inv.workspace_id, user_id: userId, role: "viewer" },
       { onConflict: "workspace_id,user_id", ignoreDuplicates: true },
     );
-    if (wmError) throw { code: "DB", message: wmError.message };
+    if (wmError) {
+      console.error("[acceptInvitation] workspace_member seed failed", wmError);
+      throw {
+        code: "INVITATION",
+        message: "We couldn't add you to that workspace. Ask the sender to re-invite you.",
+      };
+    }
   } else {
     // Workspace-scoped invite: invitee self-inserts under the wsm_insert RLS.
     const { error: wmError } = await supabase.from("workspace_member").upsert(
       { workspace_id: inv.workspace_id, user_id: userId, role: inv.role },
       { onConflict: "workspace_id,user_id", ignoreDuplicates: true },
     );
-    if (wmError) throw { code: "DB", message: wmError.message };
+    if (wmError) {
+      console.error("[acceptInvitation] workspace_member upsert failed", wmError);
+      throw {
+        code: "INVITATION",
+        message: "We couldn't add you to that workspace. Ask the sender to re-invite you.",
+      };
+    }
   }
 
   // 3. Stamp accepted_at — column-restricted via the invitation update trigger.
@@ -73,7 +91,11 @@ export const acceptInvitation = withUser(async ({ supabase, userId }, raw) => {
   if (acceptError) {
     // NOTE: non-atomic. The membership insert succeeded; the invitation row stays
     // open until expiry. Acceptable trade-off for the RLS-gated flow (Q3=(b)).
-    throw { code: "DB", message: acceptError.message };
+    console.error("[acceptInvitation] accepted_at stamp failed", acceptError);
+    throw {
+      code: "INVITATION",
+      message: "You've been added, but we couldn't finalize the invitation. Try refreshing.",
+    };
   }
 
   return { workspaceId: inv.workspace_id, boardId: inv.board_id };
