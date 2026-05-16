@@ -769,3 +769,74 @@ Raw Postgres string visible: YES / NO
 ---
 
 *This checklist is complete when all four Result blocks are filled and the date is recorded. Gate Stage 1 (Slices 2 and 3) on Step 2 being resolved. Gate Slice 9 on Step 3 counts being reviewed.*
+
+---
+
+## §9 — Slice 10: Error-Leak Audit
+
+**Produced:** 2026-05-16
+**Verdict: NO RAW LEAK FOUND. All error paths on the join/accept flow are covered.**
+
+### Scope traced
+
+Every code path that could route a Supabase or Postgres `error.message` to the join page's `?error=` query string, or to any other user-visible surface, was inspected.
+
+Files read in full:
+- `app/(auth)/join/[token]/page.tsx`
+- `app/(auth)/join/[token]/actions.ts`
+- `lib/actions/with-user.ts`
+- `app/(auth)/actions.ts` (for `signOut`)
+- `lib/validations/invitation.ts` (for `AcceptInvitationSchema`)
+
+---
+
+### Per-path findings table
+
+| # | Path | Error origin | Reaches `?error=` | Raw PG/Supabase string? |
+|---|------|-------------|-------------------|------------------------|
+| 1 | `accept()` → `acceptInvitation` RPC error: `error.code === "P0002"` | `actions.ts:27` — hardcoded `"We couldn't find that invitation."` | Yes (`page.tsx:40` → `result.error.message`) | **NO** — hardcoded |
+| 2 | `accept()` → `acceptInvitation` RPC error: `/expired/i` matches `error.message` | `actions.ts:29` — hardcoded `"That invitation has expired. Ask the sender to invite you again."` | Yes (`page.tsx:40`) | **NO** — hardcoded; `error.message` used only as regex test input, never passed through |
+| 3 | `accept()` → `acceptInvitation` RPC error: `/revoked/i` matches `error.message` | `actions.ts:31` — hardcoded `"That invitation has been revoked."` | Yes (`page.tsx:40`) | **NO** — hardcoded |
+| 4 | `accept()` → `acceptInvitation` RPC error: `/different email/i` matches `error.message` | `actions.ts:33` — hardcoded `"This invitation was sent to a different email address."` | Yes (`page.tsx:40`) | **NO** — hardcoded |
+| 5 | `accept()` → `acceptInvitation` RPC error: no pattern matches (fallthrough) | `actions.ts:34` — hardcoded `"We couldn't accept that invitation. Ask the sender to re-invite you."` | Yes (`page.tsx:40`) | **NO** — hardcoded fallthrough; this is the critical case for any novel RAISE message |
+| 6 | `withUser` UNAUTHENTICATED branch (no user session) | `with-user.ts:53` — hardcoded `"Sign in required"` | Yes (`page.tsx:40`) | **NO** — hardcoded |
+| 7 | `withUser` VALIDATION branch (ZodError from `AcceptInvitationSchema.parse`) | `with-user.ts:82-87` — Zod-generated message e.g. `"String must contain at least 32 character(s)"` | Yes (`page.tsx:40`) | **NO** — Zod schema messages; not a PG string |
+| 8 | `withUser` INTERNAL branch (unexpected throw) | `with-user.ts:106` — hardcoded `"Unexpected error"` | Yes (`page.tsx:40`) | **NO** — hardcoded |
+| 9 | Pre-accept invitation lookup (`page.tsx:68-83`, outer page query) | `.error` is discarded via `const { data: inv }` destructuring; `!inv` renders hardcoded `"Invitation not found"` | **NO** — error never reaches `?error=` | **NO** |
+| 10 | Post-accept re-SELECT for redirect (`page.tsx:45-59`, inside `accept()`) | `.error` discarded via `const { data: inv }` destructuring; on failure `inv` is `null`, falls through to `redirect("/")` | **NO** — no error query param | **NO** |
+| 11 | `handleSignOut` → `signOut()` (`app/(auth)/actions.ts:150-154`) | `supabase.auth.signOut()` result ignored; action always calls `redirect("/sign-in")` | **NO** | **NO** |
+
+---
+
+### Detailed analysis of the critical path (paths 1–5)
+
+`acceptInvitation` in `actions.ts` calls the `accept_invitation` RPC and enters an `if (error)` block. The raw Supabase error object is used **only** as follows:
+
+1. `error.code` is compared to the string `"P0002"` (path 1).
+2. `error.message` is tested against three regexes (`/expired/i`, `/revoked/i`, `/different email/i`) as the argument to `.test()` — a boolean result only (paths 2–4).
+3. The `message` variable is always assigned one of **five hardcoded string literals** (paths 1–5). Under no branch is `error.message` (or any fragment of it) concatenated, interpolated, or otherwise placed into `message`.
+4. The action throws `{ code: "INVITATION", message }` — `message` is always one of those five hardcoded strings.
+
+`withUser` in `with-user.ts` catches this throw in the coded-error branch (lines 90–96) because the thrown object has `.code` and `.message` properties. It returns `{ ok: false, error: { code: "INVITATION", message: <hardcoded string> } }`.
+
+`page.tsx:40` calls `encodeURIComponent(result.error.message)`. Since `result.error.message` is always one of the five hardcoded strings above, the query parameter value is always user-safe copy.
+
+The regex-based dispatch (paths 2–4) is worth noting: it uses the raw PG RAISE message as the **classification signal** but never as the **output**. Any future RAISE with a novel message would fall to the hardcoded fallthrough (path 5). This is correct and robust.
+
+---
+
+### Supabase client error shape note
+
+The Supabase JS client surfaces PostgREST / PG RAISE messages in the `error.message` field. In `acceptInvitation`, the error object is a `PostgrestError` with `.code` (the PG errcode, e.g. `"P0002"`, `"42501"`) and `.message` (the RAISE message string, e.g. `"invitation not found"`, `"invitation expired"`). Neither field is passed to the caller as-is. The `.code` is compared by equality; the `.message` is compared by regex. The output is always a hardcoded string.
+
+---
+
+### No code change required
+
+The audit found no leak. Every path from the join/accept flow to user-visible surfaces produces hardcoded, user-safe copy. No surgical fix is needed.
+
+---
+
+### Regression guard recommendation (out of scope for this slice)
+
+The fallthrough case (path 5) is the safety net for any future RAISE message that doesn't match the three known patterns. It produces a generic safe message. A future maintainer adding a new RAISE to the `accept_invitation` RPC should add a corresponding regex branch to `acceptInvitation` in `actions.ts` — otherwise the new error case will surface the generic fallthrough message rather than specific guidance. Consider adding an inline comment in `actions.ts` noting this contract. This is an out-of-scope observation for the orchestrator to triage.
