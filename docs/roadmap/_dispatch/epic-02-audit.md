@@ -594,20 +594,25 @@ SELECT pg_get_functiondef(oid)
  WHERE proname = 'accept_invitation'
    AND pronamespace = 'public'::regnamespace;
 
--- 1c. Policies on board_member (bm_insert) and workspace_member (wsm_insert)
-SELECT polname, polcmd, pg_get_expr(polqual, polrelid) AS using_expr,
-       pg_get_expr(polwithcheck, polrelid) AS with_check_expr
+-- 1c. board_member / workspace_member self-insert policies
+SELECT tablename, policyname, cmd, qual, with_check
   FROM pg_policies
- WHERE tablename IN ('board_member', 'workspace_member')
-   AND polname IN ('bm_insert', 'wsm_insert');
+ WHERE schemaname = 'public'
+   AND tablename IN ('board_member', 'workspace_member')
+   AND policyname IN ('bm_insert', 'wsm_insert')
+ ORDER BY tablename, policyname;
 
 -- 1d. invitation_select policy
-SELECT polname, polcmd, pg_get_expr(polqual, polrelid) AS using_expr,
-       pg_get_expr(polwithcheck, polrelid) AS with_check_expr
+SELECT tablename, policyname, cmd, qual, with_check
   FROM pg_policies
- WHERE tablename = 'invitation'
-   AND polname = 'invitation_select';
+ WHERE schemaname = 'public'
+   AND tablename  = 'invitation'
+   AND policyname = 'invitation_select';
 ```
+
+Note: `qual` and `with_check` in `pg_policies` are already the rendered expressions — diff them
+directly against the §1 DDL. `pg_policies` normalizes whitespace/casing and fully-qualifies
+identifiers, so the diff is semantic, not character-exact.
 
 Diff each output against the DDL in §1 of this document. Record the date, any
 differences, and whether prod matches repo. If there is any difference, stop and resolve
@@ -676,12 +681,14 @@ workspace (accepted a board invite before the workspace-seed fix in
 `accept_invitation`'s workspace viewer seeding).
 
 ```sql
+-- counts members of soft-deleted boards too; intentional — this is a blast-radius upper-ish bound.
 SELECT count(*) AS board_member_without_workspace_member
   FROM public.board_member bm
+  JOIN public.board b ON b.id = bm.board_id
  WHERE NOT EXISTS (
    SELECT 1 FROM public.workspace_member wm
-    WHERE wm.workspace_id = bm.workspace_id
-      AND wm.user_id = bm.user_id
+    WHERE wm.workspace_id = b.workspace_id
+      AND wm.user_id     = bm.user_id
  );
 ```
 
@@ -723,6 +730,13 @@ SELECT count(*) AS accepted_invite_no_workspace_member
         )
    );
 ```
+
+> **Note:** Query (b) only counts invitees who already have a `public.profile`
+> row (matched by email). Invitees who were stamped `accepted_at` but never
+> created a profile cannot be resolved to a `user_id` and are NOT counted
+> here — this figure is a lower bound. If non-zero, Slice 9's backfill should
+> note that profile-less stranded invitees are out of its reach by
+> construction (no `user_id` to insert).
 
 **Result (maintainer fills):**
 ```
