@@ -17,5 +17,9 @@ export function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/webhooks/")) return true;
   if (pathname.startsWith("/api/cron/")) return true;
   if (pathname === "/api/health") return true;
+  // Dev-only login affordance — the handler itself returns 404 in production;
+  // list here so the middleware does not redirect unauthenticated callers to
+  // /sign-in before they reach the 404 guard in the handler.
+  if (pathname === "/api/dev-login") return true;
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
