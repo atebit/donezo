@@ -1,4 +1,5 @@
 "use server";
+import * as Sentry from "@sentry/nextjs";
 import { withUser } from "@/lib/actions";
 import { logger } from "@/lib/logger";
 import { AcceptInvitationSchema } from "@/lib/validations/invitation";
@@ -12,7 +13,7 @@ import { AcceptInvitationSchema } from "@/lib/validations/invitation";
 // chicken-and-egg trap that rejects genuine brand-new invitees in production;
 // the RPC re-validates authorization (caller email matches a live, unrevoked
 // invitation for the token) and performs the writes with definer privileges.
-export const acceptInvitation = withUser(async ({ supabase }, raw) => {
+export const acceptInvitation = withUser(async ({ supabase, userId }, raw) => {
   const input = AcceptInvitationSchema.parse(raw);
 
   const { data, error } = await supabase
@@ -22,6 +23,7 @@ export const acceptInvitation = withUser(async ({ supabase }, raw) => {
   if (error) {
     logger.error({ err: error }, "[acceptInvitation] accept_invitation rpc failed");
     // Map known RAISE errcodes to user-safe copy; never leak raw PG strings.
+    // CONTRACT: any new RAISE errcode/message added to accept_invitation RPC must get a mapping branch here or it falls through to the generic message.
     const message =
       error.code === "P0002"
         ? "We couldn't find that invitation."
@@ -32,6 +34,22 @@ export const acceptInvitation = withUser(async ({ supabase }, raw) => {
             : /different email/i.test(error.message)
               ? "This invitation was sent to a different email address."
               : "We couldn't accept that invitation. Ask the sender to re-invite you.";
+
+    // Action-local Sentry capture (OQ3). handler.name ambiguity is irrelevant here
+    // because capture is scoped to this action, not the generic withUser wrapper.
+    // PII rule: userId only — no email, no token, no raw RPC error message.
+    // board_id/workspace_id not available on error path (no extra queries per spec).
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error, {
+        extra: {
+          action: "acceptInvitation",
+          errcode: error.code,
+          messageCategory: message,
+          userId,
+        },
+      });
+    }
+
     throw { code: "INVITATION", message };
   }
 
